@@ -15,9 +15,10 @@ public class WzDataTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(WzDataTest.class);
 
     @Test
-    public void testData() {
+    public void testData() throws InterruptedException {
         Stopwatch started = Stopwatch.createStarted();
         WzResource.load().subscribe();
+        Thread.sleep(10000L);
         WzDirectory root = WzData.STRING.directory();
         Optional<WzFile> cashImg = root.findFile("Cash.img");
         assertTrue(cashImg.isPresent());

@@ -143,6 +143,7 @@ public class DCharacter extends Model {
     @NotNull
     Integer jaguar = 0;
     @NotNull
+    @Column(name = "rank_")
     Integer rank = 1;
     @NotNull
     Integer moveRank = 0;
@@ -163,9 +164,11 @@ public class DCharacter extends Model {
     DCharacter senior;
     @OneToOne
     @DbForeignKey(noConstraint = true)
+    @JoinColumn(name = "junior1")
     DCharacter junior1;
     @OneToOne
     @DbForeignKey(noConstraint = true)
+    @JoinColumn(name = "junior2")
     DCharacter junior2;
     @NotNull
     Integer currentRep = 0;
