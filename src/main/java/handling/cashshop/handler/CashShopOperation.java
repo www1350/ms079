@@ -76,7 +76,8 @@ public class CashShopOperation {
         MapleCharacter chr = MapleCharacter.ReconstructChr(transfer, c, false);
 
         c.setPlayer(chr);
-        c.setAccID(chr.getAccountID());
+        c.loadAccountData(chr.getAccountID());
+//        c.setAccID(chr.getAccountID());
 
         if (!c.CheckIPAddress()) { // Remote hack
             c.getSession().close();
