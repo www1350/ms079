@@ -178,6 +178,7 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Serializable {
 
@@ -994,7 +995,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (character.getHp() < 1) {
             character.setHp(50);
         }
-        character.setSp(Joiner.on(',').join(Lists.newArrayList(remainingSp)));
+        character.setSp(Arrays.stream(remainingSp)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining(",")));
         if (!fromcs && map != null) {
             if (map.getForcedReturnId() != 999999999) {
                 character.setMap(map.getForcedReturnId());
@@ -4048,6 +4051,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public int getGuildId() {
+        if (character.getGuild() ==null){
+            return 0;
+        }
         return character.getGuild().getId();
     }
 
