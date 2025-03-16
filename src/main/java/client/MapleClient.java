@@ -970,7 +970,7 @@ public class MapleClient implements Serializable {
         }
         qdAccount.asUpdate()
                 .set("banned", 0)
-                .set("banreason", "")
+                .set("banReason", "")
                 .update();
         return 0;
     }

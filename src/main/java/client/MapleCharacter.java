@@ -3598,7 +3598,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             new QDAccount().email.eq(account.getEmail())
                     .asUpdate()
                     .set("banned", autoban ? 2 : 1)
-                    .set("banreason", reason)
+                    .set("banReason", reason)
                     .update();
         }
 
@@ -3650,7 +3650,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     }
                     qdAccount.asUpdate()
                             .set("banned", 1)
-                            .set("banreason", reason)
+                            .set("banReason", reason)
                             .update();
                 }
             }
@@ -6321,7 +6321,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     public void updateGamePointsRQ(int amount) {
         new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld())
                 .asUpdate()
-                .set("gamePointspd", amount)
+                .set("gamePointsPd", amount)
                 .update();
     }
 
