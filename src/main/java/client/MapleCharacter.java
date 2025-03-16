@@ -1172,7 +1172,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 .set("mPoints", maplepoints)
                 .set("points", points)
                 .set("vPoints", vpoints)
-                .set("lastGainHM", lastGainHM)
+                .set("lastGainHm", lastGainHM)
                 .update();
 
         if (storage != null) {
@@ -6276,7 +6276,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public void updateGamePointsPD(int amount) {
         new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).asUpdate()
-                .set("gamePointspd", amount)
+                .set("gamePointsPd", amount)
                 .set("updated", LocalDate.now())
                 .update();
     }
