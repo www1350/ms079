@@ -38,6 +38,7 @@ public class DCharacter extends Model {
     @NotNull
     @ManyToOne
     @DbComment("所属账号")
+    @JoinColumn(name = "account_id")
     DAccount account;
 
     @NotNull
@@ -112,6 +113,7 @@ public class DCharacter extends Model {
     Integer party = 0;
     @NotNull
     @DbComment("好友数量上限")
+    @Column(name = "buddy_capacity")
     Integer buddyCapacity = 25;
     @WhenCreated
     @DbComment("创建时间")
@@ -119,6 +121,7 @@ public class DCharacter extends Model {
     @ManyToOne
     @DbComment("所在公会")
     @DbForeignKey(noConstraint = true)
+    @JoinColumn(name = "guild_id")
     DGuild guild;
     @NotNull
     Integer guildRank = 5;
