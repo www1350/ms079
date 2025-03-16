@@ -31,7 +31,7 @@ public class DInventoryItem extends Model {
     Integer position;
     @NotNull
     Integer quantity;
-    String owner;
+    String owner = "";
     String gmLog;
     @NotNull
     Integer uniqueId = -1;

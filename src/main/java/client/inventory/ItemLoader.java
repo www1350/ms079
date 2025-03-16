@@ -584,132 +584,133 @@ public enum ItemLoader {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof Item) {
                 DInventoryItem item = ((Item) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleHiredMerchEquip) {
                 DHiredMerchItem item = ((MapleHiredMerchItem) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleHiredMerchItem) {
                 DHiredMerchItem item = ((MapleHiredMerchItem) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleCsEquip) {
                 DCsItem item = ((MapleCsEquip) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleCsItem) {
                 DCsItem item = ((MapleCsItem) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleDueyEquip) {
                 DDueyItem item = ((MapleDueyEquip) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleDueyItem) {
                 DDueyItem item = ((MapleDueyItem) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleMtsEquip) {
                 DMtsItem item = ((MapleMtsEquip) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleMtsItem) {
                 DMtsItem item = ((MapleMtsItem) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleMtsTransferEquip) {
                 DMtsTransfer item = ((MapleMtsTransferEquip) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             } else if (left instanceof MapleMtsTransferItem) {
                 DMtsTransfer item = ((MapleMtsTransferItem) left).item;
                 if (character != null) {
                     item.setCharacter(character);
                 }
                 item.setInventoryType(right.getType());
+                item.save();
                 // todo 级联操作
                 if (item.getEquipment() != null) {
                     item.getEquipment().save();
                 }
-                item.save();
             }
         }
     }
