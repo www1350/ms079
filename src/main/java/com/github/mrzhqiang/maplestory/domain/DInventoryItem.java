@@ -45,6 +45,7 @@ public class DInventoryItem extends Model {
     String sender = "";
 
     @OneToOne(mappedBy = "item")
+//    @JoinColumn(name = "item_id")
     DInventoryEquipment equipment;
 
     public Integer getId() {

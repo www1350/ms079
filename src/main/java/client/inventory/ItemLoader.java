@@ -1,11 +1,6 @@
 package client.inventory;
 
-import com.github.mrzhqiang.maplestory.domain.DCsItem;
-import com.github.mrzhqiang.maplestory.domain.DDueyItem;
-import com.github.mrzhqiang.maplestory.domain.DHiredMerchItem;
-import com.github.mrzhqiang.maplestory.domain.DInventoryItem;
-import com.github.mrzhqiang.maplestory.domain.DMtsItem;
-import com.github.mrzhqiang.maplestory.domain.DMtsTransfer;
+import com.github.mrzhqiang.maplestory.domain.*;
 import com.github.mrzhqiang.maplestory.domain.query.QDCsItem;
 import com.github.mrzhqiang.maplestory.domain.query.QDDueyItem;
 import com.github.mrzhqiang.maplestory.domain.query.QDHiredMerchItem;
@@ -575,7 +570,7 @@ public enum ItemLoader {
         }
     }
 
-    public static void saveItems(List<Pair<IItem, MapleInventoryType>> items) {
+    public static void saveItems(List<Pair<IItem, MapleInventoryType>> items, DCharacter character) {
         if (items == null || items.isEmpty()) {
             return;
         }
@@ -585,6 +580,9 @@ public enum ItemLoader {
             MapleInventoryType right = pair.right;
             if (left instanceof Equip) {
                 DInventoryItem item = ((Equip) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -593,6 +591,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof Item) {
                 DInventoryItem item = ((Item) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -601,6 +602,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleHiredMerchEquip) {
                 DHiredMerchItem item = ((MapleHiredMerchItem) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -609,6 +613,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleHiredMerchItem) {
                 DHiredMerchItem item = ((MapleHiredMerchItem) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -617,6 +624,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleCsEquip) {
                 DCsItem item = ((MapleCsEquip) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -625,6 +635,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleCsItem) {
                 DCsItem item = ((MapleCsItem) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -633,6 +646,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleDueyEquip) {
                 DDueyItem item = ((MapleDueyEquip) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -641,6 +657,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleDueyItem) {
                 DDueyItem item = ((MapleDueyItem) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -649,6 +668,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleMtsEquip) {
                 DMtsItem item = ((MapleMtsEquip) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -657,6 +679,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleMtsItem) {
                 DMtsItem item = ((MapleMtsItem) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -665,6 +690,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleMtsTransferEquip) {
                 DMtsTransfer item = ((MapleMtsTransferEquip) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {
@@ -673,6 +701,9 @@ public enum ItemLoader {
                 item.save();
             } else if (left instanceof MapleMtsTransferItem) {
                 DMtsTransfer item = ((MapleMtsTransferItem) left).item;
+                if (character != null) {
+                    item.setCharacter(character);
+                }
                 item.setInventoryType(right.getType());
                 // todo 级联操作
                 if (item.getEquipment() != null) {

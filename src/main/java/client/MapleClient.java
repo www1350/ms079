@@ -183,6 +183,9 @@ public class MapleClient implements Serializable {
     }
 
     public boolean isLoggedIn() {
+        if (account == null){
+            return false;
+        }
         return LoginState.LOGGED_IN.equals(account.getState());
     }
 
