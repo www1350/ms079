@@ -1073,6 +1073,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
         new QDQuestStatus().character.eq(character).delete();
         for (MapleQuestStatus q : quests.values()) {
+            if (q.getQuest() == null||q.getQuest().getId() < 0){
+                LOGGER.error("保存任務失敗:{}"+q);
+                continue;
+            }
             DQuestStatus questStatus = new DQuestStatus();
             questStatus.setCharacter(character);
             questStatus.setQuest(q.getQuest().getId());
@@ -1164,10 +1168,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
         new QDAccount().id.eq(client.getAccID())
                 .asUpdate()
-                .set("ACash", acash)
+                .set("cash", acash)
                 .set("mPoints", maplepoints)
                 .set("points", points)
-                .set("vpoints", vpoints)
+                .set("vPoints", vpoints)
                 .set("lastGainHM", lastGainHM)
                 .update();
 

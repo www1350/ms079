@@ -43,6 +43,7 @@
     <!-- ERROR 级别日志交给 ERROR_FILE 记录 -->
     <root level="ERROR">
         <appender-ref ref="ASYNC_ERROR_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
     </root>
 
     <logger name="handling" level="DEBUG">
