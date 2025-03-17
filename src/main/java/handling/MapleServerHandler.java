@@ -390,7 +390,7 @@ public final class MapleServerHandler extends IoHandlerAdapter {
                     fw.write(nl);
                     fw.flush();
                 }*/
-                LOGGER.info("session {} closed", client.getSession().getRemoteAddress());
+                LOGGER.info("IoSession session {} closed", client.getSession().getRemoteAddress());
                 client.disconnect(true, cs);
             } finally {
                 session.close();

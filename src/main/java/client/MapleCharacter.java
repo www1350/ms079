@@ -2133,7 +2133,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public int getId() {
-        return character.getId();
+        return id;
     }
 
     public String getName() {
@@ -4055,10 +4055,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public int getGuildId() {
-        if (character.getGuild() ==null){
-            return 0;
-        }
-        return character.getGuild().getId();
+        return this.guildid;
     }
 
     public byte getGuildRank() {
