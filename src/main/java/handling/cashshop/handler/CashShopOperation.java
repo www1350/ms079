@@ -204,6 +204,7 @@ public class CashShopOperation {
         switch (action) {
             case 3: {
                 int useNX = slea.readByte() + 1;
+                // Commodity.img.xml物品
                 int snCS = slea.readInt();
                 CashItemInfo item = CashItemFactory.getInstance().getItem(snCS);
                 if (item == null) {
