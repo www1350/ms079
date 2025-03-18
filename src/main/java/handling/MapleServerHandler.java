@@ -407,6 +407,7 @@ public final class MapleServerHandler extends IoHandlerAdapter {
             if (slea.available() < 2) {
                 return;
             }
+            // opCode
             short header_num = slea.readShort();
             // Console output part
             for (RecvPacketOpcode recv : RecvPacketOpcode.values()) {
@@ -499,6 +500,9 @@ public final class MapleServerHandler extends IoHandlerAdapter {
         switch (header) {
             case PONG:
                 client.pongReceived();
+                break;
+            case ERROR_LOG:
+                client.errorLogReceived(slea);
                 break;
             case STRANGE_DATA:
                 // 现在什么都不做，HackShield 的心跳

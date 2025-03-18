@@ -68,7 +68,9 @@ public final class MaplePacketDecoder extends CumulativeProtocolDecoder {
             out.write(decryptedPacket);
             if (properties.isPacketLogger()) {
                 int packetLen = decryptedPacket.length;
+                // opCode
                 int pHeader = readFirstShort(decryptedPacket);
+                // opCode转16进制
                 String pHeaderStr = Integer.toHexString(pHeader).toUpperCase();
                 String op = lookupSend(pHeader);
                 boolean show = true;
@@ -83,6 +85,7 @@ public final class MaplePacketDecoder extends CumulativeProtocolDecoder {
                     case "HEAL_OVER_TIME":
                     case "BUTTON_PRESSED":
                     case "STRANGE_DATA":
+                    case "ERROR_LOG":
                         show = false;
                 }
                 String Send = "客户端发送 " + op + " [" + pHeaderStr + "] (" + packetLen + ")\r\n";
