@@ -262,6 +262,8 @@ public final class MapleServerHandler extends IoHandlerAdapter {
     public void sessionOpened(IoSession session) {
         // Start of IP checking
         String address = session.getRemoteAddress().toString().split(":")[0];
+        String portStr = session.getLocalAddress().toString().split(":")[1];
+        channel = ChannelServer.getChannelByPort(Integer.valueOf(portStr));
 
         if (BlockedIP.contains(address)) {
 //            System.out.print("自动断开连接A");
@@ -328,7 +330,7 @@ public final class MapleServerHandler extends IoHandlerAdapter {
                 session, Injectors.get(ServerProperties.class));
         LOGGER.debug("channel is " + channel + "");
 
-        client.setChannel(channel+1);
+        client.setChannel(channel);
 
         MaplePacketDecoder.DecoderState decoderState = new MaplePacketDecoder.DecoderState();
         session.setAttribute(MaplePacketDecoder.DECODER_STATE_KEY, decoderState);

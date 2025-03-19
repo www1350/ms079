@@ -8,7 +8,9 @@ import client.inventory.ItemFlag;
 import client.inventory.MapleInventoryIdentifier;
 import client.inventory.MapleInventoryType;
 import client.inventory.MapleRing;
+import com.github.mrzhqiang.maplestory.domain.DCharacter;
 import com.github.mrzhqiang.maplestory.domain.LoginState;
+import com.github.mrzhqiang.maplestory.domain.query.QDCharacter;
 import constants.GameConstants;
 import constants.OtherSettings;
 import constants.ServerConstants;
@@ -113,10 +115,10 @@ public class CashShopOperation {
         c.sendPacket(MTSCSPacket.showCashInventory(c));
         c.getSession().write(MTSCSPacket.sendWishList(c.getPlayer(), false));
         c.getSession().write(MTSCSPacket.showNXMapleTokens(c.getPlayer()));
-        //   c.getSession().write(MTSCSPacket.getCSInventory(c));
+           c.getSession().write(MTSCSPacket.getCSInventory(c));
         c.getSession().write(MTSCSPacket.getCSGifts(c));
         //c.getSession().write(MTSCSPacket.getCSInventory(c));
-        //  doCSPackets(c);
+//          doCSPackets(c);
     }
 
     public static void TouchingCashShop(final MapleClient c) {
@@ -208,6 +210,7 @@ public class CashShopOperation {
                 int snCS = slea.readInt();
                 CashItemInfo item = CashItemFactory.getInstance().getItem(snCS);
                 if (item == null) {
+                    LOGGER.debug("该物品暂未开放!SN:"+snCS);
                     chr.dropMessage(1, "该物品暂未开放！");
                     doCSPackets(c);
                     return;
@@ -281,6 +284,8 @@ public class CashShopOperation {
                                 itemz.setFlag(flag);
                             }
                         }
+
+                        LOGGER.debug("购买!SN:"+snCS+" flag:"+itemz.getFlag());
                         chr.getCashInventory().addToInventory(itemz);
                         //c.getSession().write(MTSCSPacket.confirmToCSInventory(itemz, c.getAccID(), item.getSN()));
                         c.getSession().write(MTSCSPacket.showBoughtCSItem(itemz, item.getSN(), c.getAccID()));
@@ -289,7 +294,8 @@ public class CashShopOperation {
                     }
                 } else {
                     c.getSession().write(MTSCSPacket.sendCSFail(0));
-                }       //  c.getPlayer().saveToDB(true, true);
+                }
+                c.getPlayer().saveToDB(true, true);
                 c.getSession().write(MTSCSPacket.showNXMapleTokens(c.getPlayer())); //显示点卷
                 c.getSession().write(MaplePacketCreator.enableActions()); //能行动
                 break;

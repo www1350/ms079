@@ -455,6 +455,9 @@ public class MapleClient implements Serializable {
     }
 
     public LoginState getLoginState() {
+        if (account == null){
+            return LoginState.NOT_LOGIN;
+        }
         LoginState state = account.getState();
 
         if (LoginState.SERVER_TRANSITION.equals(state) || LoginState.CHANGE_CHANNEL.equals(state)) {

@@ -527,7 +527,7 @@ public enum RecvPacketOpcode implements WritableIntValueHolder {
      */
     SHIP_OBJECT,
     /**
-     * 商场更新？？
+     * 商场更新 0x161
      */
     CS_UPDATE,
     /**

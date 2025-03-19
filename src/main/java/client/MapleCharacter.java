@@ -405,6 +405,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         ret.mount_id = ct.mount_id;
         ret.DebugMessage = ct.DebugMessage;
         ret.id = ct.characterid;
+        ret.setCharacter(new QDCharacter().id.eq(ct.characterid).findOne());
         ret.name = ct.name;
         ret.level = ct.level;
         ret.fame = ct.fame;
