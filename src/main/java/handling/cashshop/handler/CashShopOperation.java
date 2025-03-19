@@ -285,7 +285,7 @@ public class CashShopOperation {
                             }
                         }
 
-                        LOGGER.debug("购买!SN:"+snCS+" flag:"+itemz.getFlag());
+                        LOGGER.debug("购买!SN:"+snCS+"itemId:"+itemz.getItemId()+" flag:"+itemz.getFlag());
                         chr.getCashInventory().addToInventory(itemz);
                         //c.getSession().write(MTSCSPacket.confirmToCSInventory(itemz, c.getAccID(), item.getSN()));
                         c.getSession().write(MTSCSPacket.showBoughtCSItem(itemz, item.getSN(), c.getAccID()));
