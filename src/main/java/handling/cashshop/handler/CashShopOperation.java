@@ -391,8 +391,8 @@ public class CashShopOperation {
                         chr.getInventory(type).addSlot((byte) 8);
                         chr.dropMessage(1, "扩充" + snCS + "成功，当前栏位: " + chr.getInventory(type).getSlotLimit() + " 个。");
                         RefreshCashShop(c);//调用刷新点卷函数
-                        //TODO
-                        chr.getStorage().saveToDB(null);
+                        // 会做DInventorySlot的保存
+                        chr.saveToDB(true,true);
                     } else {
                         chr.dropMessage(1, "扩充" + snCS + "失败，点卷余额不足或者栏位已超过上限。");
                     }
@@ -404,8 +404,8 @@ public class CashShopOperation {
                         chr.getInventory(type).addSlot((byte) 4);
                         chr.dropMessage(1, "背包已增加到 " + chr.getInventory(type).getSlotLimit() + " 个。");
                         RefreshCashShop(c);//调用刷新点卷函数
-                        //TODO
-                        chr.getStorage().saveToDB(null);
+                        // 会做DInventorySlot的保存
+                        chr.saveToDB(true,true);
                     } else {
                         chr.dropMessage(1, "扩充失败，点卷余额不足或者栏位已达到上限。");
                         c.getSession().write(MTSCSPacket.sendCSFail(0xA4));
@@ -431,7 +431,7 @@ public class CashShopOperation {
                 //仓库扩充完毕
                 break;
             case 8: {
-                //...9 = pendant slot expansion
+                // 扩充角色
                 int useNX = slea.readByte() + 1;
                 CashItemInfo item = CashItemFactory.getInstance().getItem(slea.readInt());
                 int slots = c.getCharacterSlots();
@@ -452,6 +452,7 @@ public class CashShopOperation {
                 }
                 break;
             }
+            // 商城=>背包
             case 0x0D: {
                 //get item from csinventory 商城=>包裹
                 //uniqueid, 00 01 01 00, type->position(short)
@@ -461,7 +462,10 @@ public class CashShopOperation {
                 byte type = slea.readByte();
                 byte unknown = slea.readByte();
                 IItem item = c.getPlayer().getCashInventory().findByCashId(uniqueid);
-                if (item != null && item.getQuantity() > 0 && MapleInventoryManipulator.checkSpace(c, item.getItemId(), item.getQuantity(), item.getOwner())) {
+                if (item != null) {
+                    item.setQuantity(item.getQuantity() + 1);
+                }
+                if (item != null  && MapleInventoryManipulator.checkSpace(c, item.getItemId(), item.getQuantity(), item.getOwner())) {
                     IItem item_ = item.copy();
                     byte slot = (byte) MapleInventoryManipulator.addbyItem(c, item_, true);
                     if (slot >= 0) {
@@ -479,6 +483,7 @@ public class CashShopOperation {
                 }
                 break;
             }
+            // 背包=>商城
             case 0x0E: {
                 //put item in cash inventory 包裹=>商城
                 int uniqueid = (int) slea.readLong();

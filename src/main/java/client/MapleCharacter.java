@@ -3769,7 +3769,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (getMessenger() != null) {
             World.Messenger.updateMessenger(getMessenger().getId(), getName(), client.getChannel());
         }
-        //saveToDB(false, false);
+        saveToDB(false, false);
     }
 
     public final MaplePet getPet(final int index) {
