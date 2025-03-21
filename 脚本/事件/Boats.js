@@ -106,7 +106,8 @@ function arrived() {
 function invasion() {
     var numspawn;
     var chance = Math.floor(Math.random() * 10);
-    if(chance <= 4)
+    // 十分之一不出
+    if(chance <= 1)
         numspawn = 0;
 	else if(chance == 5)
 		numspawn = 1;
