@@ -647,7 +647,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             ret.getInventory(MapleInventoryType.ETC).setSlotLimit(slot.getEtc());
             ret.getInventory(MapleInventoryType.CASH).setSlotLimit(slot.getCash());
 
-            for (Pair<IItem, MapleInventoryType> mit : ItemLoader.loadItems(0, true, charid).values()) {
+            for (Pair<IItem, MapleInventoryType> mit : ItemLoader.loadItems(0, false, charid).values()) {
                 ret.getInventory(mit.getRight()).addFromDB(mit.getLeft());
                 if (mit.getLeft().getPet() != null) {
                     ret.pets.add(mit.getLeft().getPet());
@@ -791,7 +791,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     mountData.getFatigue(), mountData.getLevel(), mountData.getExp());
             ret.stats.recalcLocalStats(true);
         } else { // Not channel server
-            for (Pair<IItem, MapleInventoryType> mit : ItemLoader.loadItems(0, true, charid).values()) {
+            for (Pair<IItem, MapleInventoryType> mit : ItemLoader.loadItems(0, false, charid).values()) {
                 ret.getInventory(mit.getRight()).addFromDB(mit.getLeft());
             }
         }

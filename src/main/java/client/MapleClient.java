@@ -643,6 +643,9 @@ public class MapleClient implements Serializable {
                 }
             }
         }
+        if (account == null){
+            return;
+        }
         if (account.getState().equals(LoginState.SERVER_TRANSITION) || isLoggedIn()) {
             updateLoginState(LoginState.NOT_LOGIN, getSessionIPAddress());
         }
