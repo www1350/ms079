@@ -1194,6 +1194,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 DBuddy buddy = new DBuddy();
                 buddy.setBuddies(DB.reference(DCharacter.class, entry.getCharacterId()));
                 buddy.setPending(!entry.isVisible());
+                buddy.setOwner(character);
                 buddy.save();
             }
         }
