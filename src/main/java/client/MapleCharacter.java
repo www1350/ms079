@@ -1026,6 +1026,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             character.setJob(job);
         }
         character.setAp(remainingAp);
+        character.setHair(hair);
+        character.setFace(face);
         character.setSp(Arrays.stream(remainingSp)
                 .mapToObj(String::valueOf)
                 .collect(Collectors.joining(",")));
