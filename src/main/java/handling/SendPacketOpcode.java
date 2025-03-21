@@ -197,7 +197,7 @@ public enum SendPacketOpcode implements WritableIntValueHolder {
      */
     CLOSE_RANGE_ATTACK,
     /**
-     * 0xBD
+     * 遠距离攻击 0xBD
      */
     RANGED_ATTACK,
     /**
