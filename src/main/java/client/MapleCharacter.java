@@ -1149,6 +1149,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 skillCooldown.setSkillId(cooling.skillId);
                 skillCooldown.setStartTime(cooling.startTime);
                 skillCooldown.setLength(cooling.length);
+                skillCooldown.setCharacter(character);
                 skillCooldown.save();
             }
         }
