@@ -204,6 +204,7 @@ public class CashShopOperation {
          * CouponCode(slea.readMapleAsciiString(), c); } else
          */
         switch (action) {
+            // 购买物品
             case 3: {
                 int useNX = slea.readByte() + 1;
                 // Commodity.img.xml物品
@@ -295,13 +296,13 @@ public class CashShopOperation {
                 } else {
                     c.getSession().write(MTSCSPacket.sendCSFail(0));
                 }
-                c.getPlayer().saveToDB(true, true);
                 c.getSession().write(MTSCSPacket.showNXMapleTokens(c.getPlayer())); //显示点卷
                 c.getSession().write(MaplePacketCreator.enableActions()); //能行动
                 break;
             }
             case 4:
-            case 32: {
+            // 送礼物
+            case 0x20: {
                 //gift, package
                 int snCS = slea.readInt();
                 int type = slea.readByte() + 1;
@@ -343,8 +344,8 @@ public class CashShopOperation {
                 }
                 break;
             }
-            case 5:
-                // Wishlist
+            // 加入购物车
+            case 5:{
                 chr.clearWishlist();
                 if (slea.available() < 40) {
                     c.getSession().write(MTSCSPacket.sendCSFail(0));
@@ -358,8 +359,9 @@ public class CashShopOperation {
                 chr.setWishlist(wishlist);
                 c.getSession().write(MTSCSPacket.sendWishList(chr, true));
                 break;
-            case 6: { // 扩充背包栏
-                // 扩充背包栏
+            }
+            // 扩充背包栏
+            case 6: {
                 int 余额 = slea.readByte() + 1;
                 boolean 优惠价 = slea.readByte() > 0;
                 if (优惠价) {
@@ -414,8 +416,9 @@ public class CashShopOperation {
                 //扩充背包各栏位结束
                 break;
             }
-            case 7:
-                // 扩充仓库修复完成
+            // 扩充仓库
+            case 7:{
+
                 int 余额 = slea.readByte() + 1;
                 int 优惠价 = slea.readByte() > 0 ? 2 : 1;
                 if (chr.getCSPoints(余额) >= (优惠价 == 2 ? 1100 : 600) && chr.getStorage().getSlots() < (97 - (4 * 优惠价))) {
@@ -430,8 +433,10 @@ public class CashShopOperation {
                 }
                 //仓库扩充完毕
                 break;
+            }
+            // 扩充角色
             case 8: {
-                // 扩充角色
+
                 int useNX = slea.readByte() + 1;
                 CashItemInfo item = CashItemFactory.getInstance().getItem(slea.readInt());
                 int slots = c.getCharacterSlots();
@@ -462,8 +467,8 @@ public class CashShopOperation {
                 byte type = slea.readByte();
                 byte unknown = slea.readByte();
                 IItem item = c.getPlayer().getCashInventory().findByCashId(uniqueid);
-                if (item != null) {
-                    item.setQuantity(item.getQuantity() + 1);
+                if (item != null && item.getQuantity() == 0) {
+                    item.setQuantity(1);
                 }
                 if (item != null  && MapleInventoryManipulator.checkSpace(c, item.getItemId(), item.getQuantity(), item.getOwner())) {
                     IItem item_ = item.copy();
@@ -506,10 +511,10 @@ public class CashShopOperation {
                 RefreshCashShop(c);
                 break;
             }
-            //36是够买挚友戒指相关 0x24
-            case 36:
-                //29是够买结婚戒指相关 0x1D
-            case 29: {
+            //0x24是够买挚友戒指相关 0x24
+            case 0x24:
+            //0x1D是够买结婚戒指相关
+            case 0x1D: {
                 int sn = slea.readInt();
                 if (sn == 209000310) {
                     sn = 20900026;
@@ -582,8 +587,9 @@ public class CashShopOperation {
                 doCSPackets(c); //刷新下免得卡住
                 break;
             }
+            //购买礼包
             case 0x1F: {
-                //购买礼包
+
                 /*
                  * int 关闭 = 1; if (关闭 == 1) { chr.dropMessage(1, "暂不支持。");
                  * c.getPlayer().saveToDB(true, true);
@@ -688,7 +694,7 @@ public class CashShopOperation {
                 c.getSession().write(MaplePacketCreator.enableActions());
                 break;
             }
-            case 33: {
+            case 0x21: {
                 int 关闭 = 1;
                 if (关闭 == 1) {
                     chr.dropMessage(1, "暂不支持。");
@@ -728,10 +734,15 @@ public class CashShopOperation {
                 c.getSession().write(MTSCSPacket.showBoughtCSQuestItem(item.getPrice(), (short) item.getCount(), pos, item.getId()));
                 break;
             }
+            // 进入商城
+            case 0x2C: {
+                break;
+            }
             default:
                 c.getSession().write(MTSCSPacket.sendCSFail(0));
                 break;
         }
+        c.getPlayer().saveToDB(true, true);
         doCSPackets(c);
     }
 

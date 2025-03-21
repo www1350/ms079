@@ -996,6 +996,21 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (character.getHp() < 1) {
             character.setHp(50);
         }
+        character.setLevel(level);
+        character.setExp(exp);
+        if (stats != null && stats.str > 0) {
+            character.setStr(stats.str);
+        }
+        if (stats != null && stats.dex > 0) {
+            character.setDex(stats.dex);
+        }
+        if (stats != null && stats.luk > 0) {
+            character.setLuk(stats.luk);
+        }
+        if (stats != null && stats.int_ > 0) {
+            character.setIntelligence(stats.int_);
+        }
+
         character.setSp(Arrays.stream(remainingSp)
                 .mapToObj(String::valueOf)
                 .collect(Collectors.joining(",")));
