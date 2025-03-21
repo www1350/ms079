@@ -1,5 +1,6 @@
 //importPackage(Packages.server.life);
 
+var MapleLifeFactory = Java.type("server.life.MapleLifeFactory");
 /**
 	蜈蚣 PQ (上海灘)
 */

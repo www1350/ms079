@@ -6,6 +6,7 @@
 //importPackage(Packages.tools);
 //importPackage(Packages.server.life);
 var MaplePacketCreator = Java.type("tools.MaplePacketCreator");
+var MapleLifeFactory = Java.type("server.life.MapleLifeFactory");
 
 //變數跟時間設定區
 var closeTime = 2 * 60 * 1000; //船關閉搭乘的時間
