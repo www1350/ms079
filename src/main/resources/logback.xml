@@ -1,5 +1,5 @@
 <configuration>
-    <!-- 日常运行日志，包括 ERROR 日志 -->
+    <!-- 日常运行日志（INFO 及以上级别） -->
     <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${application.home:-.}/logs/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -7,11 +7,14 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%level] from [%logger] in %thread - %message%n%xException
-            </pattern>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%level] from [%logger] in %thread - %message%n%xException</pattern>
         </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
     </appender>
-    <!-- ERROR 日志，方便定位生产错误 -->
+
+    <!-- 错误日志（仅 ERROR 级别） -->
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${application.home:-.}/logs/error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -21,10 +24,11 @@
         <encoder>
             <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%logger] in %thread - %message%n%xException</pattern>
         </encoder>
+        <!-- 严格过滤仅 ERROR 级别 -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>ACCEPT</onMatch>
-            <onDismatch>DENY</onDismatch>
+            <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
     <!-- 控制台输出，方便开发调试 -->
@@ -40,42 +44,40 @@
     <appender name="ASYNC_ERROR_FILE" class="ch.qos.logback.classic.AsyncAppender">
         <appender-ref ref="ERROR_FILE"/>
     </appender>
-    <!-- INFO 级别日志交给 INFO_FILE 记录 -->
+
+    <!-- 单一根 Logger 配置 -->
     <root level="INFO">
-        <appender-ref ref="ASYNC_INFO_FILE"/>
+        <!-- 控制台输出 -->
         <appender-ref ref="STDOUT"/>
-    </root>
-    <!-- ERROR 级别日志交给 ERROR_FILE 记录 -->
-    <root level="ERROR">
+        <!-- 异步文件输出 -->
+        <appender-ref ref="ASYNC_INFO_FILE"/>
         <appender-ref ref="ASYNC_ERROR_FILE"/>
-        <appender-ref ref="ERROR_FILE"/>
     </root>
 
-    <logger name="handling" level="DEBUG">
+    <!-- 自定义 Logger（关闭 additivity 避免日志传递到 root） -->
+    <logger name="handling" level="DEBUG" additivity="false">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="client" level="DEBUG">
+    <logger name="client" level="DEBUG" additivity="false">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="KinMS" level="DEBUG">
+    <logger name="KinMS" level="DEBUG" additivity="false">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="com.github.mrzhqiang.maplestory" level="DEBUG">
+    <logger name="com.github.mrzhqiang.maplestory" level="DEBUG" additivity="false">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="gui" level="DEBUG">
+    <logger name="gui" level="DEBUG" additivity="false">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="server" level="DEBUG">
+    <logger name="server" level="DEBUG" additivity="false">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="scripting" level="DEBUG">
+    <logger name="scripting" level="DEBUG" additivity="false">
         <appender-ref ref="INFO_FILE"/>
     </logger>
 
-    <!-- TRACE 为开发初期的日志等级，后续将逐渐降为 DEBUG 甚至 INFO 级别 -->
-    <logger name="io.ebean.DDL" level="TRACE"/>
-
+    <!-- 其他 TRACE 级别配置（如 SQL 日志） -->
     <logger name="io.ebean.SQL" level="TRACE"/>
     <logger name="io.ebean.TXN" level="TRACE"/>
     <logger name="io.ebean.SUM" level="TRACE"/>

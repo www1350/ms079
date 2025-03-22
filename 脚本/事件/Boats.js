@@ -7,6 +7,8 @@
 //importPackage(Packages.server.life);
 var MaplePacketCreator = Java.type("tools.MaplePacketCreator");
 var MapleLifeFactory = Java.type("server.life.MapleLifeFactory");
+var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+
 
 //變數跟時間設定區
 var closeTime = 2 * 60 * 1000; //船關閉搭乘的時間
@@ -115,8 +117,8 @@ function invasion() {
         numspawn = 2;
     if (numspawn == 2) {
         for(var i=0; i < numspawn; i++) {
-            Boat_to_Orbis.spawnMonsterOnGroundBelow(MapleLifeFactory.getMonster(8150000), new java.awt.Point(485, -221));
-            Boat_to_Ellinia.spawnMonsterOnGroundBelow(MapleLifeFactory.getMonster(8150000), new java.awt.Point(-590, -221));
+            Boat_to_Orbis.spawnMonsterOnGroundBelow(MapleLifeFactory.getMonster(8150000), Vector.of(485, -221));
+            Boat_to_Ellinia.spawnMonsterOnGroundBelow(MapleLifeFactory.getMonster(8150000), Vector.of(-590, -221));
         }
         Boat_to_Orbis.setDocked(true);
         Boat_to_Ellinia.setDocked(true);

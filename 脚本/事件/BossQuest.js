@@ -1,6 +1,7 @@
 //importPackage(java.lang);
 var MapleLifeFactory = Java.type("server.life.MapleLifeFactory");
 var MaplePacketCreator = Java.type("tools.MaplePacketCreator");
+var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 
 
 var monster;
@@ -169,7 +170,7 @@ function monsterSpawn(eim) {
     eim.registerMonster(mob);
 
     var map = eim.getMapInstance(mapid, 0);
-    map.spawnMonsterOnGroundBelow(mob, new java.awt.Point(100, 100));
+    map.spawnMonsterOnGroundBelow(mob, Vector.of(100, 100));
     eim.setProperty("monster_start", java.lang.System.currentTimeMillis());
 }
 
