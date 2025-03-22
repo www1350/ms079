@@ -5458,7 +5458,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             }
         }
         client.getSession().write(PetPacket.petStatUpdate(this));
-        petStore = new byte[]{-1, -1, -1};
+//        petStore = new byte[]{-1, -1, -1};
     }
 
     public final byte[] getPetStores() {
