@@ -151,6 +151,10 @@ public class PetHandler {
             }
         }
         MaplePet pet = c.getPlayer().getPet(slot);
+        if (pet == null) {
+            c.getSession().write(MaplePacketCreator.enableActions());
+            return;
+        }
         slea.readInt();
         slea.readShort();
         int itemId = slea.readInt();

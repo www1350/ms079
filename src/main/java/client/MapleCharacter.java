@@ -3813,8 +3813,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 if (count == index) {
                     return pet;
                 }
-                count++;
             }
+            count++;
         }
         return null;
     }
