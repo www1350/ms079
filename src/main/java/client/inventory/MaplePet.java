@@ -85,6 +85,7 @@ public class MaplePet implements Serializable {
     private MaplePet(int petitemid, DPet pet, int inventorypos) {
         this.petitemid = petitemid;
         this.pet = pet;
+        this.uniqueid = pet.getId();
         this.inventorypos = inventorypos;
     }
 
