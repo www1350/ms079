@@ -1,4 +1,4 @@
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 var i = 5;
 var mapId = 270050100;
 var returnMap;

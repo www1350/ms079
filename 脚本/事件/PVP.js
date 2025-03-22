@@ -1,6 +1,6 @@
 //importPackage(Packages.tools);
 var MaplePacketCreator = Java.type("tools.MaplePacketCreator");
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 //importPackage(Packages.tools.packet);
 
 //pvp mode: 12 = "1.5 event", 13 = "2x event"

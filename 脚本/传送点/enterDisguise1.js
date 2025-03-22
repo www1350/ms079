@@ -1,5 +1,5 @@
 
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 function enter(pi) {
     if (pi.getQuestStatus(20301) == 1 ||
 	pi.getQuestStatus(20302) == 1 ||

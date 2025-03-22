@@ -5,7 +5,7 @@ var stg2_combo2 = Array("0", "1", "1", "2", "2");
 var stg6_combo = Array("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16");
 var cx = Array(200, -300, -300, -300, 200, 200, 200, -300, -300, 200, 200, -300, -300, 200); //even = 200 odd = -300
 var cy = Array(-2321, -2114, -2910, -2510, -1526, -2716, -717, -1310, -3357, -1912, -1122, -1736, -915, -3116);
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 function init() {
     em.setProperty("state", "0");
     em.setProperty("leader", "true");

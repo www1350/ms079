@@ -1,4 +1,4 @@
-﻿var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+﻿var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 var eventmapid = 740000000;
 var returnmap = 910000000;
 var monster = Array(8820001,9400300);

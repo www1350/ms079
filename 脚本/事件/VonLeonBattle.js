@@ -1,4 +1,4 @@
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 function init() {
 	em.setProperty("leader", "true");
     em.setProperty("state", "0");

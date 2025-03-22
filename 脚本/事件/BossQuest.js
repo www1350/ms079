@@ -1,7 +1,7 @@
 //importPackage(java.lang);
 var MapleLifeFactory = Java.type("server.life.MapleLifeFactory");
 var MaplePacketCreator = Java.type("tools.MaplePacketCreator");
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 
 
 var monster;

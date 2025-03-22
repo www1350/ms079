@@ -7,7 +7,7 @@
 //importPackage(Packages.server.life);
 var MaplePacketCreator = Java.type("tools.MaplePacketCreator");
 var MapleLifeFactory = Java.type("server.life.MapleLifeFactory");
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 
 
 //變數跟時間設定區

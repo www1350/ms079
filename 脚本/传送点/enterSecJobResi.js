@@ -1,5 +1,5 @@
 
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 function enter(pi) {
     if (pi.getQuestStatus(23120) == 1) {
 	if (pi.getPlayerCount(931000420) == 0) {

@@ -1,4 +1,4 @@
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 function init() {
     // 0 = Not started, 1 = started, 2 = first head defeated, 3 = second head defeated
     em.setProperty("state", "0");

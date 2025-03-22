@@ -1,6 +1,6 @@
 ﻿var eventmapid = 740000000;
 var returnmap = 910000000;
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 
 var monster = new Array(
     9300003, // Slime King

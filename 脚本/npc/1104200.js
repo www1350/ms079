@@ -1,5 +1,5 @@
 
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 function action(mode, type, selection) {
 	if (cm.getPlayerCount(913030000) == 0) {
 		cm.removeNpc(913030000, 1104002);

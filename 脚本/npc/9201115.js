@@ -1,5 +1,5 @@
 
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 var status = -1;
 function action(mode, type, selection) {
     if (mode == 1) {

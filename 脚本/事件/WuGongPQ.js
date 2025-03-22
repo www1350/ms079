@@ -1,5 +1,5 @@
 //importPackage(Packages.server.life);
-var Vector = java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
+var Vector = Java.type("com.github.mrzhqiang.maplestory.wz.element.data.Vector");
 var MapleLifeFactory = Java.type("server.life.MapleLifeFactory");
 /**
 	蜈蚣 PQ (上海灘)
