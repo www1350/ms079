@@ -208,7 +208,7 @@ public class PetHandler {
 
         if (res != null && chr != null && res.size() != 0) { // map crash hack
             final byte slot = chr.getPetIndex(petId);
-            if (slot == -1) {
+            if (slot == -1 || chr.getPet(slot) == null) {
                 return;
             }
             chr.getPet(slot).updatePosition(res);
