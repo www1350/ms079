@@ -4,6 +4,11 @@ import io.ebean.annotation.DbEnumType;
 import io.ebean.annotation.DbEnumValue;
 
 /**
+ * 上线：LOGIN_PASSWORD(0)->CHAR_SELECT(1)->PLAYER_LOGGEDIN(2)
+ * 下线：PLAYER_LOGGEDIN(2)->LOGIN_PASSWORD(0)
+ * 更换频道:PLAYER_LOGGEDIN(2)->LOGIN_PASSWORD(0)->PLAYER_LOGGEDIN(2)
+ * 进入商城:PLAYER_LOGGEDIN(2)->CASH_SHOP_TRANSITION(4)->LOGIN_PASSWORD(0)->PLAYER_LOGGEDIN(2)
+ * 离开商城:
  * 登录状态。
  * <p>
  * 0 -- 默认：未登录

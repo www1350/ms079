@@ -9,6 +9,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+/***
+ * 任务已击杀怪兽数量
+ */
 @Entity
 @Table(name = "queststatusmobs")
 public class DQuestStatusMob extends Model {

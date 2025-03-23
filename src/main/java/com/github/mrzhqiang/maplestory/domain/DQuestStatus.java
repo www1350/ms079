@@ -9,6 +9,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+/***
+ * 任务状态
+ */
 @Entity
 @Table(name = "queststatus")
 public class DQuestStatus extends Model {

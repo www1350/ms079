@@ -187,7 +187,7 @@ public class MapleClient implements Serializable {
         if (account == null){
             return false;
         }
-        return LoginState.LOGGED_IN.equals(account.getState());
+        return LoginState.LOGGED_IN.equals(account.getState()) || LoginState.CS_LOGGED_IN.equals(account.getState());
     }
 
     private Calendar getTempBanCalendar(ResultSet rs) throws SQLException {
@@ -460,7 +460,7 @@ public class MapleClient implements Serializable {
         }
         LoginState state = account.getState();
 
-        if (LoginState.SERVER_TRANSITION.equals(state) || LoginState.CHANGE_CHANNEL.equals(state)) {
+        if (LoginState.SERVER_TRANSITION.equals(state) || LoginState.CASH_SHOP_TRANSITION.equals(state)) {
             // time out > 20
             boolean timeout = LocalDateTime.now().isAfter(account.getLastLogin().plusSeconds(20));
             if (timeout) { // connecting to chanserver timeout
@@ -587,7 +587,7 @@ public class MapleClient implements Serializable {
                         }
                     }
                     if (bl != null) {
-                        if (account.getState().equals(LoginState.SERVER_TRANSITION) && isLoggedIn()) {
+                        if ( isLoggedIn()) {
                             World.Buddy.loggedOff(namez, idz, channel, bl.getBuddiesIds(), gmLevel, hidden);
                         } else { // Change channel
                             World.Buddy.loggedOn(namez, idz, channel, bl.getBuddiesIds(), gmLevel, hidden);
@@ -620,7 +620,7 @@ public class MapleClient implements Serializable {
                         chrp.setOnline(false);
                         World.Party.updateParty(party.getId(), PartyOperation.LOG_ONOFF, chrp);
                     }
-                    if (account.getState().equals(LoginState.SERVER_TRANSITION) && isLoggedIn()) {
+                    if ( isLoggedIn()) {
                         World.Buddy.loggedOff(namez, idz, channel, bl.getBuddiesIds(), gmLevel, hidden);
                     } else { // Change channel
                         World.Buddy.loggedOn(namez, idz, channel, bl.getBuddiesIds(), gmLevel, hidden);
@@ -646,7 +646,7 @@ public class MapleClient implements Serializable {
         if (account == null){
             return;
         }
-        if (account.getState().equals(LoginState.SERVER_TRANSITION) || isLoggedIn()) {
+        if (account.getState().equals(LoginState.SERVER_TRANSITION) || account.getState().equals(LoginState.CASH_SHOP_TRANSITION) || isLoggedIn()) {
             updateLoginState(LoginState.NOT_LOGIN, getSessionIPAddress());
         }
     }

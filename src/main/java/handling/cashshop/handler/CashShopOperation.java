@@ -55,7 +55,7 @@ public class CashShopOperation {
         //开始处理
         World.ChannelChange_Data(new CharacterTransfer(chr), chr.getId(), c.getChannel());
         CashShopServer.getPlayerStorage().deregisterPlayer(chr);
-        c.updateLoginState(LoginState.SERVER_TRANSITION, c.getSessionIPAddress());
+        c.updateLoginState(LoginState.CASH_SHOP_TRANSITION, c.getSessionIPAddress());
         String s = c.getSessionIPAddress();
         LoginServer.addIPAuth(s.substring(s.indexOf('/') + 1, s.length()));
         c.getSession().write(MaplePacketCreator.getChannelChange(c, Integer.parseInt(toch.getIP().split(":")[1]))); //发送更换频道的封包信息
@@ -82,18 +82,20 @@ public class CashShopOperation {
 //        c.setAccID(chr.getAccountID());
 
         if (!c.CheckIPAddress()) { // Remote hack
+            LOGGER.info("无法进入商城session addr:"+c.getSessionIPAddress()+"account addr:");
             c.getSession().close();
             return;
         }
 
         final LoginState state = c.getLoginState();
         boolean allowLogin = false;
-        if (state == LoginState.SERVER_TRANSITION || state == LoginState.CHANGE_CHANNEL) {
+        if (state == LoginState.SERVER_TRANSITION || state == LoginState.CASH_SHOP_TRANSITION|| state == LoginState.NOT_LOGIN) {
             if (!World.isCharacterListConnected(c.loadCharacterNames(c.getWorld()))) {
                 allowLogin = true;
             }
         }
         if (!allowLogin) {
+            LOGGER.info("无法进入商城state:"+state);
             c.setPlayer(null);
             c.getSession().close();
             return;

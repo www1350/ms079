@@ -426,7 +426,7 @@ public final class MapleServerHandler extends IoHandlerAdapter {
                     }
                     // false 表示无需检测是否登录，true 表示要检测登录状态
                     if (recv.checkState()) {
-                        if (!client.isLoggedIn() && client.getLoginState() != LoginState.SERVER_TRANSITION ) {
+                        if (!client.isLoggedIn() && client.getLoginState() != LoginState.SERVER_TRANSITION&& client.getLoginState() != LoginState.CASH_SHOP_TRANSITION ) {
                             return;
                         }
                     }
