@@ -169,7 +169,7 @@ public final class World {
     public static class Party {
 
         private static final Map<Integer, MapleParty> PARTY_MAP = Maps.newConcurrentMap();
-        private static final AtomicInteger RUNNING_PARTY_ID = new AtomicInteger();
+        private static final AtomicInteger RUNNING_PARTY_ID = new AtomicInteger(1);
 
         public static void init() {
             int party = new QVCharacterAggregate()
