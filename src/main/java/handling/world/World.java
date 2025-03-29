@@ -1413,9 +1413,9 @@ public final class World {
                         cservs.setBossDropRate(1);
                     }
                 } else if (rate.equals("宠物经验")) {
-//                    for (ChannelServer cservs : ChannelServer.getAllInstances()) {
-//                        cservs.setPetExpRate(1);
-//                    }
+                    for (ChannelServer cservs : ChannelServer.getAllInstances()) {
+                        cservs.setPetExpRate(1);
+                    }
                 }
                 for (ChannelServer cservs : ChannelServer.getAllInstances()) {
                     cservs.broadcastPacket(MaplePacketCreator.serverNotice(6, " 系统双倍活动已经结束。系统已成功自动切换为正常游戏模式！"));

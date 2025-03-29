@@ -45,7 +45,7 @@ function action(mode, type, selection) {
 						hairnew.push(fhair[i] + parseInt(cm.getChar().getHair() % 10));
 					}
 				}
-				cm.sendStyle("选择一个你想要的。", hairnew);
+				cm.sendStyle("选择一个你想要的。",5150026 , hairnew);
 			} else if (selection == 1) {
 				beauty = 2;
 				haircolor = Array();
@@ -53,7 +53,7 @@ function action(mode, type, selection) {
 				for(var i = 0; i < 8; i++) {
 					haircolor.push(current + i);
 				}
-				cm.sendStyle("选择一个你想要的。", haircolor);
+				cm.sendStyle("选择一个你想要的。", 5150027, haircolor);
 			}
 		}
 		else if (status == 2){

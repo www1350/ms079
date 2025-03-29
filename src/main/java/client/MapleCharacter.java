@@ -406,6 +406,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         ret.DebugMessage = ct.DebugMessage;
         ret.id = ct.characterid;
         if(ret.character == null) {
+            LOGGER.error("Reconstruct chr " + ret.id + " failed character is null");
             ret.setCharacter(new QDCharacter().id.eq(ct.characterid).findOne());
         }
         ret.name = ct.name;

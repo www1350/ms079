@@ -71,6 +71,7 @@ public class CashShopOperation {
             transfer = CashShopServer.getPlayerStorageMTS().getPendingCharacter(playerid);
             mts = true;
             if (transfer == null) {
+                LOGGER.error("无法进入商城session addr:"+c.getSessionIPAddress()+"transfer is null");
                 c.getSession().close();
                 return;
             }
@@ -89,13 +90,13 @@ public class CashShopOperation {
 
         final LoginState state = c.getLoginState();
         boolean allowLogin = false;
-        if (state == LoginState.SERVER_TRANSITION || state == LoginState.CASH_SHOP_TRANSITION|| state == LoginState.NOT_LOGIN) {
+        if (state == LoginState.SERVER_TRANSITION || state == LoginState.CASH_SHOP_TRANSITION || state == LoginState.CHANGE_CHANNEL|| state == LoginState.NOT_LOGIN) {
             if (!World.isCharacterListConnected(c.loadCharacterNames(c.getWorld()))) {
                 allowLogin = true;
             }
         }
         if (!allowLogin) {
-            LOGGER.info("无法进入商城state:"+state);
+            LOGGER.error("无法进入商城state:"+state);
             c.setPlayer(null);
             c.getSession().close();
             return;

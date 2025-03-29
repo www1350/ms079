@@ -53,7 +53,7 @@ function action(mode, type, selection) {
 		    			}
 				}
 			}
-			cm.sendStyle("Pick a hairstyle that you would like.", hairnew);
+			cm.sendStyle("Pick a hairstyle that you would like.", 5150001,hairnew);
 			return;
 		} else if (selection == 3) {
 			selStr = "#rMinigame Items?#k Here's my selection...\r\n\r\n";

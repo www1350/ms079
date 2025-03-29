@@ -39,7 +39,7 @@ function action(mode, type, selection) {
 						facenew.push(fface[i] + cm.getChar().getFace() % 1000 - (cm.getChar().getFace() % 100));
 					}
 				}
-				cm.sendStyle("选择一个你想要的。", facenew);
+				cm.sendStyle("选择一个你想要的。", 5152029, facenew);
 			}
 		else if (status == 1){
 			cm.dispose();

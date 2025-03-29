@@ -1,6 +1,7 @@
 package server;
 
 import client.MapleClient;
+import constants.ServerConstants;
 import handling.world.World;
 import tools.FileoutputUtil;
 import tools.MaplePacketCreator;
@@ -80,7 +81,7 @@ public class AutobanManager implements Runnable {
                 this.reasons.put(acc, reasonList);
             }
 
-            if (this.points.get(acc) >= AUTOBAN_POINTS) { // See if it's sufficient to auto ban
+            if (ServerConstants.properties.isBanSwitch() && this.points.get(acc) >= AUTOBAN_POINTS) { // See if it's sufficient to auto ban
                 if (c.getPlayer().isGM() || c.getPlayer().isClone()) {
                     c.getPlayer().dropMessage(5, "[WARNING] A/b triggled : " + reason);
                     return;

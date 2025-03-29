@@ -59,7 +59,7 @@ public final class ChannelServer implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChannelServer.class);
 
-    private int expRate, mesoRate, dropRate, cashRate, BossdropRate = 1;
+    private int expRate, mesoRate, dropRate, cashRate, BossdropRate = 1, petExpRate;
     private int doubleExp = 1;
     private int doubleMeso = 1;
     private int doubleDrop = 1;
@@ -325,6 +325,14 @@ public final class ChannelServer implements Serializable {
 
     public final void setBossDropRate(final int dropRate) {
         this.BossdropRate = dropRate;
+    }
+
+    public int getPetExpRate() {
+        return petExpRate;
+    }
+
+    public void setPetExpRate(int petExpRate) {
+        this.petExpRate = petExpRate;
     }
 
     public final int getMesoRate() {

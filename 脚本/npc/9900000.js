@@ -134,7 +134,7 @@ function action(mode, type, selection) {
 
 function sendStyle(array) {
    v17 = array;
-   cm.sendStyle("选择你最喜欢的", v17);
+   cm.sendStyle("选择你最喜欢的",5150001, v17);
 }
 
 function hairExists(hair) {

@@ -56,7 +56,6 @@ function action(mode, type, selection) {
             //    colors = Array(current + (i * 100));
             //}
 				colors = Array(current, current + 100, current + 200, current + 300, current + 400, current + 500, current + 600, current + 700);
-				//cm.sendStyle("请选择你喜欢的颜色.", colors,5152001);
 			    cm.askAvatar("请选择你喜欢的颜色", 5152001, colors);
         }
 		}else if (status == 2){		
