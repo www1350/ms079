@@ -102,7 +102,7 @@ public final class ChannelServer implements Serializable {
          * mapFactory.setChannel(channel);
          */
         this.serverHandler = serverHandler;
-        this.serverHandler.setChannel(channel);
+//        this.serverHandler.setChannel(channel);
         this.codecFactory = codecFactory;
     }
 

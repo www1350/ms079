@@ -48,7 +48,7 @@ public class CashShopOperation {
         int channel = c.getChannel(); //角色要更换的频道
         ChannelServer toch = ChannelServer.getInstance(channel); //角色从商城出来更换的频道信息
         if (toch == null) {
-            FileoutputUtil.log("log\\LeaveCashShop.txt", "玩家: " + chr.getName() + " 从商城离开发生错误.找不到频道[" + channel + "]的信息.");
+            LOGGER.error("玩家: " + chr.getName() + " 从商城离开发生错误.找不到频道[" + channel + "]的信息.");
             c.getSession().close(true);
             return;
         }
@@ -82,7 +82,7 @@ public class CashShopOperation {
 //        c.setAccID(chr.getAccountID());
 
         if (!c.CheckIPAddress()) { // Remote hack
-            LOGGER.info("无法进入商城session addr:"+c.getSessionIPAddress()+"account addr:");
+            LOGGER.error("无法进入商城session addr:"+c.getSessionIPAddress()+"account addr:");
             c.getSession().close();
             return;
         }
@@ -117,7 +117,7 @@ public class CashShopOperation {
         c.sendPacket(MTSCSPacket.showCashInventory(c));
         c.getSession().write(MTSCSPacket.sendWishList(c.getPlayer(), false));
         c.getSession().write(MTSCSPacket.showNXMapleTokens(c.getPlayer()));
-           c.getSession().write(MTSCSPacket.getCSInventory(c));
+//           c.getSession().write(MTSCSPacket.getCSInventory(c));
         c.getSession().write(MTSCSPacket.getCSGifts(c));
         //c.getSession().write(MTSCSPacket.getCSInventory(c));
 //          doCSPackets(c);

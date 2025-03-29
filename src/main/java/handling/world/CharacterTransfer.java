@@ -10,6 +10,8 @@ import client.inventory.MaplePet;
 import com.github.mrzhqiang.maplestory.domain.DCharacter;
 import com.github.mrzhqiang.maplestory.domain.Gender;
 import com.github.mrzhqiang.maplestory.domain.query.QDCharacter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.quest.MapleQuest;
 import tools.Pair;
 
@@ -24,6 +26,7 @@ import java.util.Map;
 
 public class CharacterTransfer implements Externalizable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CharacterTransfer.class);
     public long ACash;
     public long MaplePoints;
     public long vpoints;
@@ -171,6 +174,10 @@ public class CharacterTransfer implements Externalizable {
         this.InfoQuest = chr.getInfoQuest_Map();
 
         for (final Map.Entry<MapleQuest, MapleQuestStatus> qs : chr.getQuest_Map().entrySet()) {
+            if (qs.getKey().getId() < 0){
+                LOGGER.error("Invalid quest ID: {} " , qs.getKey().getId());
+                continue;
+            }
             this.Quest.put(qs.getKey().getId(), qs.getValue());
         }
 

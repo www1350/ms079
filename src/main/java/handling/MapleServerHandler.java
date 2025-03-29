@@ -64,6 +64,9 @@ public final class MapleServerHandler extends IoHandlerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MapleServerHandler.class);
 
+    private static final Logger CLIENT_PACKET_LOGGER = LoggerFactory.getLogger("CLIENT_PACKET");
+
+
     //Screw locking. Doesn't matter.
     private static final ReentrantReadWriteLock IPLoggingLock = new ReentrantReadWriteLock();
     private static final String nl = System.lineSeparator();
@@ -176,10 +179,9 @@ public final class MapleServerHandler extends IoHandlerAdapter {
         }
     }
 
-    public void setChannel(int channel) {
-        LOGGER.debug("channel change before" + this.channel + "after" + channel);
-        this.channel = channel;
-    }
+//    public void setChannel(int channel) {
+//        this.channel = channel;
+//    }
 
     private static class LoggedPacket {
 
@@ -233,9 +235,9 @@ public final class MapleServerHandler extends IoHandlerAdapter {
         }
     }
 
-    public void setCs(boolean cs) {
-        this.cs = cs;
-    }
+//    public void setCs(boolean cs) {
+//        this.cs = cs;
+//    }
 
     @Override
     public void messageSent(IoSession session, Object message) throws Exception {
@@ -263,7 +265,8 @@ public final class MapleServerHandler extends IoHandlerAdapter {
         // Start of IP checking
         String address = session.getRemoteAddress().toString().split(":")[0];
         String portStr = session.getLocalAddress().toString().split(":")[1];
-        channel = ChannelServer.getChannelByPort(Integer.valueOf(portStr));
+        this.channel = ChannelServer.getChannelByPort(Integer.valueOf(portStr));
+        this.cs = CashShopServer.getCsByPort(Integer.valueOf(portStr));
 
         if (BlockedIP.contains(address)) {
 //            System.out.print("自动断开连接A");
@@ -352,8 +355,8 @@ public final class MapleServerHandler extends IoHandlerAdapter {
                 LOGGER.debug("侦测到非登录器登录： " + address);
             }*/
         }
-        sb.append("IoSession opened ").append(address);
-        LOGGER.debug(sb.toString());
+        sb.append("IoSession opened ").append(address).append(" cs:").append(this.cs).append(" channel:").append(this.channel);
+        CLIENT_PACKET_LOGGER.debug(sb.toString());
 
         if (channel > -1) {
             LOGGER.info("logged into channel {}", channel);
@@ -392,7 +395,19 @@ public final class MapleServerHandler extends IoHandlerAdapter {
                     fw.write(nl);
                     fw.flush();
                 }*/
-                LOGGER.info("IoSession session {} closed", client.getSession().getRemoteAddress());
+
+                StringBuilder sb = new StringBuilder();
+                if (channel > -1) {
+                    sb.append("[频道服务器] 频道 ").append(channel).append(" : ");
+                } else if (cs) {
+                    sb.append("[商城服务器]");
+                } else {
+                    sb.append("[登录服务器]");
+            /*if (!"/127.0.0.1".equals(address)) {
+                LOGGER.debug("侦测到非登录器登录： " + address);
+            }*/
+                }
+                CLIENT_PACKET_LOGGER.info("{} IoSession session {} cs {} channel {} closed", sb.toString(), client.getSession().getRemoteAddress(), this.cs, this.channel);
                 client.disconnect(true, cs);
             } finally {
                 session.close();
@@ -426,7 +441,8 @@ public final class MapleServerHandler extends IoHandlerAdapter {
                     }
                     // false 表示无需检测是否登录，true 表示要检测登录状态
                     if (recv.checkState()) {
-                        if (!client.isLoggedIn() && client.getLoginState() != LoginState.SERVER_TRANSITION&& client.getLoginState() != LoginState.CASH_SHOP_TRANSITION ) {
+                        if (!client.isLoggedIn() && client.getLoginState() != LoginState.SERVER_TRANSITION&& client.getLoginState() != LoginState.CASH_SHOP_TRANSITION && client.getLoginState() != LoginState.CHANGE_CHANNEL ) {
+                            LOGGER.error("消息接受提前返回{},header{}",client.getLoginState(),recv);
                             return;
                         }
                     }

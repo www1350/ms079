@@ -523,6 +523,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         MapleQuestStatus queststatus_from;
         MapleQuest quest;
         for (final Map.Entry<Integer, Object> qs : ct.Quest.entrySet()) {
+            if (qs.getKey() < 0){
+                LOGGER.error("Invalid quest ID: " + qs.getKey());
+                continue;
+            }
             quest = MapleQuest.getInstance(qs.getKey());
             queststatus_from = (MapleQuestStatus) qs.getValue();
 

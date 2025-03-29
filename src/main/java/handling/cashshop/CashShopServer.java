@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Singleton
 public final class CashShopServer {
@@ -36,7 +38,7 @@ public final class CashShopServer {
         this.properties = properties;
         this.factory = factory;
         this.serverHandler = handler;
-        this.serverHandler.setCs(true);
+//        this.serverHandler.setCs(true);
     }
 
     public void start() {
@@ -57,11 +59,19 @@ public final class CashShopServer {
         try {
             acceptor.setHandler(serverHandler);
             acceptor.bind(new InetSocketAddress(port));
+            PORT_CS_CACHED.put(port,true);
             LOGGER.info("商城服务器绑定端口: {}", port);
         } catch (Exception e) {
             LOGGER.error("Binding to port " + port + " failed", e);
             throw new RuntimeException("Binding failed.", e);
         }
+    }
+
+
+    private static final Map<Integer, Boolean> PORT_CS_CACHED = new ConcurrentHashMap<>();
+
+    public static boolean getCsByPort(Integer port) {
+        return PORT_CS_CACHED.getOrDefault(port,false);
     }
 
     public static String getIP() {

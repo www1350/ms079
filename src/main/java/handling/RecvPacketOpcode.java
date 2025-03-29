@@ -9,19 +9,21 @@ import java.util.Properties;
  * 冒险岛网络协议
  * | Opcode (2B) | Length (2B) | Payload (N Bytes) |
  * 登录过程：
- * 点击分区（sessionOpened）->密码输入（LOGIN_PASSWORD客、LOGIN_STATUS服、SERVERLIST服）->请求频道（SERVERSTATUS_REQUEST客、SERVERSTATUS服）
- * ->点击频道/请求角色列表（CHARLIST_REQUEST客、CHARLIST服）->选择角色（CHAR_SELECT客、SERVER_IP服）->退出大厅(sessionClosed)->进入频道端口(sessionOpened)
+ * 点击分区（sessionOpened/登录器服务器）->密码输入（LOGIN_PASSWORD客、LOGIN_STATUS服、SERVERLIST服）->请求频道（SERVERSTATUS_REQUEST客、SERVERSTATUS服）
+ * ->点击频道/请求角色列表（CHARLIST_REQUEST客、CHARLIST服）->选择角色（CHAR_SELECT客、SERVER_IP服）->退出大厅(sessionClosed/登录器服务器)->进入频道端口(sessionOpened/频道服务器A)
  * ->角色上线(PLAYER_LOGGEDIN客、WARP_TO_MAP服[进入地图]、...、MAP_EFFECT服、...)
- * ->更换频道(CHANGE_CHANNEL客、CHANGE_CHANNEL服)->退出频道(sessionClosed)->进入频道端口(sessionOpened)->角色上线(PLAYER_LOGGEDIN客、WARP_TO_MAP服[进入地图]、...、MAP_EFFECT服、...)
  *
+ * 更换频道:
+ * 更换频道(CHANGE_CHANNEL客、CHANGE_CHANNEL服)->退出频道(sessionClosed/频道服务器A)->进入频道端口(sessionOpened/频道服务器B)->角色上线(PLAYER_LOGGEDIN客、WARP_TO_MAP服[进入地图]、...、MAP_EFFECT服、...)
+ * ->更換地圖（CHANGE_MAP客）
  * 下线过程：
- * 退出频道(sessionClosed)->进入分区大厅（sessionOpened）
+ * 退出频道(sessionClosed/频道服务器B)->进入分区大厅（sessionOpened/登录器服务器）
  *
  *
  * 选角色回到选频道(SERVERLIST_REQUEST客、SERVERLIST服)->请求频道（SERVERSTATUS_REQUEST客、SERVERSTATUS服）
  *
- * 进入商城（ENTER_CASH_SHOP客）->退出频道(sessionClosed)->进入商城端口(sessionOpened)->上线商城（PLAYER_LOGGEDIN客、CS_OPERATION服、CS_UPDATE服）
- * 离开商城()
+ * 进入商城（ENTER_CASH_SHOP客、CHANGE_CHANNEL服）->退出频道(sessionClose/频道服务器A)->进入商城端口(sessionOpened/商城服务器)->上线商城（PLAYER_LOGGEDIN客、CS_OPERATION服、CS_UPDATE服）
+ * 离开商城(CHANGE_MAP客、CHANGE_CHANNEL服)->退出商城端口(sessionClosed/商城服务器)->进入频道端口(sessionOpened/频道服务器A)->角色上线(PLAYER_LOGGEDIN客、WARP_TO_MAP服[进入地图]、...、MAP_EFFECT服、...)
  */
 public enum RecvPacketOpcode implements WritableIntValueHolder {
 
@@ -661,7 +663,7 @@ public enum RecvPacketOpcode implements WritableIntValueHolder {
     /**
      * 未知 0xCB
      */
-    NEW_SX,
+    NEW_SX(false),
     /**
      * 小船
      */

@@ -114,25 +114,25 @@
     </logger>
 
     <!-- 自定义 Logger（关闭 additivity 避免日志传递到 root） -->
-    <logger name="handling" level="DEBUG" additivity="false">
+    <logger name="handling" level="DEBUG" additivity="true">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="client" level="DEBUG" additivity="false">
+    <logger name="client" level="DEBUG" additivity="true">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="KinMS" level="DEBUG" additivity="false">
+    <logger name="KinMS" level="DEBUG" additivity="true">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="com.github.mrzhqiang.maplestory" level="DEBUG" additivity="false">
+    <logger name="com.github.mrzhqiang.maplestory" level="DEBUG" additivity="true">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="gui" level="DEBUG" additivity="false">
+    <logger name="gui" level="DEBUG" additivity="true">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="server" level="DEBUG" additivity="false">
+    <logger name="server" level="DEBUG" additivity="true">
         <appender-ref ref="INFO_FILE"/>
     </logger>
-    <logger name="scripting" level="DEBUG" additivity="false">
+    <logger name="scripting" level="DEBUG" additivity="true">
         <appender-ref ref="INFO_FILE"/>
     </logger>
 

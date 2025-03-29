@@ -61,7 +61,7 @@ public class InterServerHandler {
         World.ChannelChange_Data(new CharacterTransfer(chr), chr.getId(), -10);
         //World.ChannelChange_Data(new CharacterTransfer(chr), chr.getId(), mts ? -20 : -10);
         ch.removePlayer(chr);
-        c.updateLoginState(LoginState.SERVER_TRANSITION, c.getSessionIPAddress());
+        c.updateLoginState(LoginState.CASH_SHOP_TRANSITION, c.getSessionIPAddress());
         //c.getSession().write(MaplePacketCreator.getChannelChange(InetAddress.getByName(socket[0]), Integer.parseInt(CashShopServer.getIP().split(":")[1])));
         chr.saveToDB(false, false);
         chr.getMap().removePlayer(chr);
@@ -148,7 +148,7 @@ public class InterServerHandler {
         boolean allowLogin = false;
         String allowLoginTip = null;
         //进入这里可能是卡角色了
-        if (state == LoginState.SERVER_TRANSITION || state == LoginState.CASH_SHOP_TRANSITION || state == LoginState.NOT_LOGIN) {
+        if (state == LoginState.SERVER_TRANSITION || state == LoginState.CASH_SHOP_TRANSITION || state == LoginState.CHANGE_CHANNEL || state == LoginState.NOT_LOGIN) {
             List<String> charNames = c.loadCharacterNames(c.getWorld());
             allowLogin = !World.isCharacterListConnected(charNames);
             if (!allowLogin) {

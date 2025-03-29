@@ -461,8 +461,8 @@ public class MapleClient implements Serializable {
         LoginState state = account.getState();
 
         if (LoginState.SERVER_TRANSITION.equals(state) || LoginState.CASH_SHOP_TRANSITION.equals(state)) {
-            // time out > 20
-            boolean timeout = LocalDateTime.now().isAfter(account.getLastLogin().plusSeconds(20));
+            // time out > 120
+            boolean timeout = LocalDateTime.now().isAfter(account.getLastLogin().plusSeconds(120));
             if (timeout) { // connecting to chanserver timeout
                 state = LoginState.NOT_LOGIN;
                 updateLoginState(state, getSessionIPAddress());
@@ -646,7 +646,7 @@ public class MapleClient implements Serializable {
         if (account == null){
             return;
         }
-        if (account.getState().equals(LoginState.SERVER_TRANSITION) || account.getState().equals(LoginState.CASH_SHOP_TRANSITION) || isLoggedIn()) {
+        if (account.getState().equals(LoginState.SERVER_TRANSITION) || account.getState().equals(LoginState.CASH_SHOP_TRANSITION) || account.getState().equals(LoginState.CHANGE_CHANNEL) || isLoggedIn()) {
             updateLoginState(LoginState.NOT_LOGIN, getSessionIPAddress());
         }
     }
