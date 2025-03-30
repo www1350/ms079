@@ -340,10 +340,18 @@ public class EventInstanceManager {
         if (disposed) {
             return;
         }
-        byte ret;
+        byte ret = 0;
         try {
-            ret = ((Double) em.getIv().invokeFunction("playerDisconnected", this, chr)).byteValue();
+            Object retObj = em.getIv().invokeFunction("playerDisconnected", this, chr);
+            if (retObj instanceof Integer) {
+                ret = ((Integer) retObj).byteValue();
+            }else if (retObj instanceof Double) {
+                ret = ((Double) retObj).byteValue();
+            }else if (retObj instanceof Byte) {
+                ret = (byte) retObj;
+            }
         } catch (Exception e) {
+            LOGGER.error("playerDisconnected", e);
             ret = 0;
         }
 
