@@ -306,10 +306,10 @@ public class EventManager {
         if (squad.getStatus() == 0) {
             return;
         }
-        if (!squad.getLeader().isGM()) {
+        if (!squad.getLeader().isGM() && ServerConstants.properties.isMapsquadLimit()) {
             int mapid = map.getId();
             int chrSize = 0;
-            for (String chr : squad.getMembers()) {
+            for (String chr : squad.getMembers() ) {
                 MapleCharacter player = squad.getChar(chr);
                 if ((player != null) && (player.getMapId() == mapid)) {
                     chrSize++;
