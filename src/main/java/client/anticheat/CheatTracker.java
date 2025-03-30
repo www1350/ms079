@@ -4,6 +4,7 @@ import client.MapleCharacter;
 import client.MapleCharacterUtil;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
 import constants.GameConstants;
+import constants.ServerConstants;
 import handling.world.World;
 import server.AutobanManager;
 import com.github.mrzhqiang.maplestory.timer.Timer;
@@ -236,7 +237,7 @@ public class CheatTracker {
 
     public void registerOffense(CheatingOffense offense, String param) {
         final MapleCharacter chrhardref = chr.get();
-        if (chrhardref == null || !offense.isEnabled() || chrhardref.isClone() || chrhardref.isGM()) {
+        if (chrhardref == null || !offense.isEnabled() || chrhardref.isClone() || chrhardref.isGM() ||  !ServerConstants.properties.isBanSwitch()) {
             return;
         }
         CheatingOffenseEntry entry = null;
