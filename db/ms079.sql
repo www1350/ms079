@@ -116298,6 +116298,9 @@ INSERT INTO `wz_questdata` VALUES (9143, '和星缘共度新春佳节', 0, 0, 0,
 INSERT INTO `wz_questdata` VALUES (9153, '和星缘共度新春佳节', 0, 0, 0, 0, 0, 0, 0);
 INSERT INTO `wz_questdata` VALUES (9156, '和星缘共度新春佳节', 0, 0, 0, 0, 0, 0, 0);
 INSERT INTO `wz_questdata` VALUES (4778, '王座收藏家勋章', 1, 0, 0, 0, 0, 0, 0);
+INSERT INTO `wz_questdata` VALUES (100200, '扎昆前置任务', 1, 0, 0, 0, 0, 0, 0);
+INSERT INTO `wz_questdata` VALUES (100201, '收集金牙', 0, 0, 0, 0, 0, 0, 0);
+INSERT INTO `wz_questdata` VALUES (100203, '收集金牙-结束', 0, 0, 0, 0, 0, 0, 0);
 
 -- ----------------------------
 -- Table structure for wz_questpartydata

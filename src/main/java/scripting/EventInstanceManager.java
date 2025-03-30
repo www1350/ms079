@@ -388,7 +388,11 @@ public class EventInstanceManager {
         }
         try {
             Integer kc = killCount.get(chr.getId());
-            int inc = ((Double) em.getIv().invokeFunction("monsterValue", this, mob.getId())).intValue();
+            Object incObj = em.getIv().invokeFunction("monsterValue", this, mob.getId());
+            int inc = 0;
+            if (incObj instanceof Integer) {
+                inc = (Integer) incObj;
+            }
             if (disposed) {
                 return;
             }
@@ -402,13 +406,14 @@ public class EventInstanceManager {
                 em.getIv().invokeFunction("monsterKilled", this, chr, mob.getStats().getCP() > 0 ? mob.getStats().getCP() : mob.getStats().getPoint());
             }
         } catch (ScriptException ex) {
-            LOGGER.debug("Event name" + (em == null ? "null" : em.getName()) + ", Instance name : " + name + ", method Name : monsterValue:\n" + ex);
+            LOGGER.error("Event name" + (em == null ? "null" : em.getName()) + ", Instance name : " + name + ", method Name : monsterValue:\n" + ex);
             FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Event name" + (em == null ? "null" : em.getName()) + ", Instance name : " + name + ", method Name : monsterValue:\n" + ex);
         } catch (NoSuchMethodException ex) {
-            LOGGER.debug("Event name" + (em == null ? "null" : em.getName()) + ", Instance name : " + name + ", method Name : monsterValue:\n" + ex);
+            LOGGER.error("Event name" + (em == null ? "null" : em.getName()) + ", Instance name : " + name + ", method Name : monsterValue:\n" + ex);
             FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Event name" + (em == null ? "null" : em.getName()) + ", Instance name : " + name + ", method Name : monsterValue:\n" + ex);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            String errMsg = "Event name" + (em == null ? "null" : em.getName()) + ", Instance name : " + name + ", method Name : monsterValue";
+            LOGGER.error( errMsg, ex);
             FileoutputUtil.outputFileError(FileoutputUtil.ScriptEx_Log, ex);
         }
     }
