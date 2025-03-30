@@ -143,6 +143,12 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         pendingDisposal = true;
     }
 
+    public void warpPlayer(int sourceMapId, int targetMapId) {
+        MapleMap sourceMap = getMap(sourceMapId);
+        MapleMap targetMap = getMap(targetMapId);
+        this.getPlayer().changeMap(targetMap, targetMap.getPortal(0));
+    }
+
     public void dispose() {
         NPCScriptManager.getInstance().dispose(c);
     }
