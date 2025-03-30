@@ -50,6 +50,7 @@ public final class ServerProperties {
     private final boolean knights;
     private final boolean warGod;
     private final boolean banSwitch;
+    private final boolean mapsquadLimit;
 
     private final String[] events;
     private final String[] mallDisabled;
@@ -86,6 +87,8 @@ public final class ServerProperties {
         this.knights = Boolean.parseBoolean(properties.getProperty("server.job.knights", "false"));
         this.warGod = Boolean.parseBoolean(properties.getProperty("server.job.war-god", "false"));
         this.banSwitch = Boolean.parseBoolean(properties.getProperty("server.ban.switch", "false"));
+        this.mapsquadLimit = Boolean.parseBoolean(properties.getProperty("server.mapsquad.limit", "false"));
+
         this.events = properties.getProperty("server.events", "").split(",");
         this.mallDisabled = properties.getProperty("server.mall.disabled", "").split(",");
         this.cashJy = properties.getProperty("server.cashjy", "").split(",");
@@ -218,5 +221,9 @@ public final class ServerProperties {
 
     public boolean isBanSwitch() {
         return banSwitch;
+    }
+
+    public boolean isMapsquadLimit() {
+        return mapsquadLimit;
     }
 }

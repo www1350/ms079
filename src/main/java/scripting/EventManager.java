@@ -3,6 +3,7 @@ package scripting;
 import client.MapleCharacter;
 import com.github.mrzhqiang.maplestory.domain.query.QDAccount;
 import com.github.mrzhqiang.maplestory.domain.LoginState;
+import constants.ServerConstants;
 import handling.channel.ChannelServer;
 import handling.world.MapleParty;
 import org.slf4j.LoggerFactory;
@@ -282,7 +283,7 @@ public class EventManager {
         if (squad.getStatus() == 0) {
             return; //we dont like cleared squads
         }
-        if (!squad.getLeader().isGM()) {
+        if (!squad.getLeader().isGM() && ServerConstants.properties.isMapsquadLimit()) {
             if (squad.getMembers().size() < squad.getType().i) { //less than 3
                 squad.getLeader().dropMessage(5, "这个远征队至少要有 " + squad.getType().i + " 人以上才可以开战.");
                 return;
