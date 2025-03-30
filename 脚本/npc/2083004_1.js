@@ -6,7 +6,7 @@ function start() {
 
 
 function action(mode, type, selection) {
-    cm.dispose();
+    // cm.dispose();
 
     switch (selection) {
         case 0:
@@ -17,7 +17,7 @@ function action(mode, type, selection) {
                 cm.dispose();
             } else {
                 cm.setBossLog('ptheilong');
-                cm.warp(240060200, 0);
+                cm.warp(240060200);
 		cm.deleteboss();
                 cm.getPlayer().bossmap(cm.getPlayer().getId(), 240060200, 3);
                 cm.serverNotice("『挑战黑龙』：【" + cm.getChar().getName() + "】悍不畏死的去挑战黑龙王BOSS(普通难度)去了");

@@ -3,11 +3,7 @@ package com.github.mrzhqiang.maplestory.domain;
 import io.ebean.Model;
 import io.ebean.annotation.NotNull;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,6 +19,7 @@ public class DBossLog extends Model {
     @NotNull
     String bossId;
     @NotNull
+    @Column(name = "lastattempt")
     LocalDateTime lastAttempt;
 
     public Integer getId() {
