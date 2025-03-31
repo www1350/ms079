@@ -976,14 +976,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         mountData.setFatigue(0);
         mountData.save();
 
-        // todo 优化代码
-        List<Pair<IItem, MapleInventoryType>> listing = new ArrayList<>();
-        for (final MapleInventory iv : chr.inventory) {
-            for (final IItem item : iv.list()) {
-                listing.add(new Pair<>(item, iv.getType()));
-            }
-        }
-        ItemLoader.saveItems(listing, character);
+
+        ItemLoader.saveItems(chr.inventory, character);
+
+        ItemLoader.deleteItems(chr.inventory);
 
         for (int i = 0; i < array1.length; i++) {
             DKeyMap keyMap = new DKeyMap();
@@ -1274,13 +1270,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void saveInventory(DCharacter character) {
-        List<Pair<IItem, MapleInventoryType>> listing = Lists.newArrayList();
-        for (MapleInventory iv : inventory) {
-            for (IItem item : iv.list()) {
-                listing.add(new Pair<>(item, iv.getType()));
-            }
-        }
-        ItemLoader.saveItems(listing, character);
+        ItemLoader.saveItems(inventory,character);
+        ItemLoader.deleteItems(inventory);
     }
 
     public final PlayerStats getStat() {

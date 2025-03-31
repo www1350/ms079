@@ -262,13 +262,8 @@ public class CashShop implements Serializable {
     }
 
     public void save(DCharacter character) {
-        List<Pair<IItem, MapleInventoryType>> itemsWithType = new ArrayList<>();
+        ItemLoader.saveItemsByIt(inventory,character);
 
-        for (IItem item : inventory) {
-            itemsWithType.add(new Pair<>(item, GameConstants.getInventoryType(item.getItemId())));
-        }
-
-        ItemLoader.saveItems(itemsWithType, character);
     }
 
     public IItem toItem(CashItemInfo cItem, MapleCharacter chr, int uniqueid, String gift) {

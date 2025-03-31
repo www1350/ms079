@@ -7,9 +7,11 @@ import com.github.mrzhqiang.maplestory.domain.query.QDHiredMerchItem;
 import com.github.mrzhqiang.maplestory.domain.query.QDInventoryItem;
 import com.github.mrzhqiang.maplestory.domain.query.QDMtsItem;
 import com.github.mrzhqiang.maplestory.domain.query.QDMtsTransfer;
+import com.google.common.collect.Lists;
 import constants.GameConstants;
 import tools.Pair;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -569,6 +571,135 @@ public enum ItemLoader {
                 new QDMtsTransfer().type.eq(value).character.id.eq(id[0]).delete();
                 break;
         }
+    }
+
+    public static void deleteItems(MapleInventory[] ivs){
+        List<Pair<IItem, MapleInventoryType>> listing = Lists.newArrayList();
+        for (MapleInventory iv : ivs) {
+            for (IItem item : iv.waitDeleteList()) {
+                listing.add(new Pair<>(item, iv.getType()));
+            }
+        }
+        ItemLoader.deleteItems(listing);
+        for (MapleInventory iv : ivs) {
+            iv.waitDeleteList().clear();
+        }
+    }
+
+    public static void deleteItems(List<Pair<IItem, MapleInventoryType>> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        for (Pair<IItem, MapleInventoryType> pair : items) {
+            IItem left = pair.left;
+            MapleInventoryType right = pair.right;
+            if (left instanceof Equip) {
+                DInventoryItem item = ((Equip) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+
+            } else if (left instanceof Item) {
+                DInventoryItem item = ((Item) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleHiredMerchEquip) {
+                DHiredMerchItem item = ((MapleHiredMerchItem) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleHiredMerchItem) {
+                DHiredMerchItem item = ((MapleHiredMerchItem) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleCsEquip) {
+                DCsItem item = ((MapleCsEquip) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleCsItem) {
+                DCsItem item = ((MapleCsItem) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleDueyEquip) {
+                DDueyItem item = ((MapleDueyEquip) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleDueyItem) {
+                DDueyItem item = ((MapleDueyItem) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleMtsEquip) {
+                DMtsItem item = ((MapleMtsEquip) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleMtsItem) {
+                DMtsItem item = ((MapleMtsItem) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleMtsTransferEquip) {
+                DMtsTransfer item = ((MapleMtsTransferEquip) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            } else if (left instanceof MapleMtsTransferItem) {
+                DMtsTransfer item = ((MapleMtsTransferItem) left).item;
+                item.setInventoryType(right.getType());
+                if (item.getEquipment() != null) {
+                    item.getEquipment().delete();
+                }
+                item.delete();
+            }
+        }
+    }
+
+
+    public static void saveItemsByIt(List<IItem> items, DCharacter character){
+        List<Pair<IItem, MapleInventoryType>> listing = new ArrayList<>();
+        for (IItem item : items) {
+            listing.add(new Pair<>(item, GameConstants.getInventoryType(item.getItemId())));
+        }
+        ItemLoader.saveItems(listing, character);
+    }
+
+    public static void saveItems(MapleInventory[] ivs, DCharacter character){
+        List<Pair<IItem, MapleInventoryType>> listing = Lists.newArrayList();
+        for (MapleInventory iv : ivs) {
+            for (IItem item : iv.list()) {
+                listing.add(new Pair<>(item, iv.getType()));
+            }
+        }
+        ItemLoader.saveItems(listing, character);
     }
 
     public static void saveItems(List<Pair<IItem, MapleInventoryType>> items, DCharacter character) {

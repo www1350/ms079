@@ -15,13 +15,37 @@ public class MaplePet implements Serializable {
 
     public enum PetFlag {
 
+        /***
+         * 1
+         */
         ITEM_PICKUP(0x01, 5190000, 5191000),
+        /***
+         * 10
+         */
         EXPAND_PICKUP(0x02, 5190002, 5191002), //idk
+        /***
+         * 100
+         */
         AUTO_PICKUP(0x04, 5190003, 5191003), //idk
+        /***
+         * 1000
+         */
         UNPICKABLE(0x08, 5190005, -1), //not coded
+        /***
+         * 10000
+         */
         LEFTOVER_PICKUP(0x10, 5190004, 5191004), //idk
+        /***
+         * 100000
+         */
         HP_CHARGE(0x20, 5190001, 5191001),
+        /***
+         * 1000000
+         */
         MP_CHARGE(0x40, 5190006, -1),
+        /***
+         * 10000000
+         */
         PET_BUFF(0x80, -1, -1), //idk
         PET_DRAW(0x100, 5190007, -1), //nfs
         PET_DIALOGUE(0x200, 5190008, -1); //nfs

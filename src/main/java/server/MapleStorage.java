@@ -68,11 +68,7 @@ public class MapleStorage implements Serializable {
 
         storage.save();
 
-        List<Pair<IItem, MapleInventoryType>> listing = new ArrayList<>();
-        for (IItem item : items) {
-            listing.add(new Pair<>(item, GameConstants.getInventoryType(item.getItemId())));
-        }
-        ItemLoader.saveItems(listing,character);
+        ItemLoader.saveItemsByIt(items,character);
     }
 
     public IItem takeOut(byte slot) {

@@ -21,7 +21,7 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     private final MapleInventoryType type;
 
     private final Map<Integer, IItem> inventory = Maps.newLinkedHashMap();
-
+    private final Map<Integer, IItem> removeInventory = Maps.newLinkedHashMap();
     /**
      * Creates a new instance of MapleInventory
      */
@@ -101,6 +101,10 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
         return inventory.values();
     }
 
+    public Collection<IItem> waitDeleteList() {
+        return removeInventory.values();
+    }
+
     /**
      * Adds the item to the inventory and returns the assigned slot id
      */
@@ -111,6 +115,7 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
         }
         inventory.put(slotId, item);
         item.setPosition(slotId);
+        removeInventory.remove(item.getItemId());
         return slotId;
     }
 
@@ -120,6 +125,7 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
             return;
         }
         inventory.put(item.getPosition(), item);
+        removeInventory.remove(item.getItemId());
     }
 
     public boolean move2(int sSlot, int dSlot, int slotMax) {
@@ -223,7 +229,8 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     }
 
     public void removeSlot(int slot) {
-        inventory.remove(slot);
+        IItem rmItem = inventory.remove(slot);
+        removeInventory.put(rmItem.getItemId(), rmItem);
     }
 
     public boolean isFull() {
