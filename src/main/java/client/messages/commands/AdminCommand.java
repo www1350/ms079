@@ -881,14 +881,14 @@ public class AdminCommand {
                 for (MapleInventoryType type : MapleInventoryType.values()) {
                     for (IItem item : c.getPlayer().getInventory(type)) {
                         if (ItemFlag.LOCK.check(item.getFlag())) {
-                            item.setFlag((byte) (item.getFlag() - ItemFlag.LOCK.getValue()));
+                            item.setFlag((byte) (item.getFlag() & ~ItemFlag.LOCK.getValue()));
                             add = true;
                             c.getPlayer().reloadC();
                             c.getPlayer().dropMessage(5, "已经解锁");
                             //c.sendPacket(MaplePacketCreator.updateSpecialItemUse(item, type.getType()));
                         }
                         if (ItemFlag.UNTRADEABLE.check(item.getFlag())) {
-                            item.setFlag((byte) (item.getFlag() - ItemFlag.UNTRADEABLE.getValue()));
+                            item.setFlag((byte) (item.getFlag() & ~ItemFlag.UNTRADEABLE.getValue()));
                             add = true;
                             c.getPlayer().reloadC();
                             c.getPlayer().dropMessage(5, "已经解锁");
@@ -903,14 +903,14 @@ public class AdminCommand {
             } else if (splitted[1].equals("已装备道具")) {
                 for (IItem item : c.getPlayer().getInventory(MapleInventoryType.EQUIPPED)) {
                     if (ItemFlag.LOCK.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.LOCK.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.LOCK.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
                         //c.sendPacket(MaplePacketCreator.updateSpecialItemUse(item, type.getType()));
                     }
                     if (ItemFlag.UNTRADEABLE.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.UNTRADEABLE.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.UNTRADEABLE.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已經解鎖");
@@ -924,14 +924,14 @@ public class AdminCommand {
             } else if (splitted[1].equals("武器")) {
                 for (IItem item : c.getPlayer().getInventory(MapleInventoryType.EQUIP)) {
                     if (ItemFlag.LOCK.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.LOCK.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.LOCK.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
                         //c.sendPacket(MaplePacketCreator.updateSpecialItemUse(item, type.getType()));
                     }
                     if (ItemFlag.UNTRADEABLE.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.UNTRADEABLE.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.UNTRADEABLE.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
@@ -945,14 +945,14 @@ public class AdminCommand {
             } else if (splitted[1].equals("消耗")) {
                 for (IItem item : c.getPlayer().getInventory(MapleInventoryType.USE)) {
                     if (ItemFlag.LOCK.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.LOCK.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.LOCK.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
                         //c.sendPacket(MaplePacketCreator.updateSpecialItemUse(item, type.getType()));
                     }
                     if (ItemFlag.UNTRADEABLE.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.UNTRADEABLE.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.UNTRADEABLE.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
@@ -966,14 +966,14 @@ public class AdminCommand {
             } else if (splitted[1].equals("装饰")) {
                 for (IItem item : c.getPlayer().getInventory(MapleInventoryType.SETUP)) {
                     if (ItemFlag.LOCK.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.LOCK.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.LOCK.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
                         //c.sendPacket(MaplePacketCreator.updateSpecialItemUse(item, type.getType()));
                     }
                     if (ItemFlag.UNTRADEABLE.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.UNTRADEABLE.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.UNTRADEABLE.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
@@ -987,14 +987,14 @@ public class AdminCommand {
             } else if (splitted[1].equals("其他")) {
                 for (IItem item : c.getPlayer().getInventory(MapleInventoryType.ETC)) {
                     if (ItemFlag.LOCK.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.LOCK.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.LOCK.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
                         //c.sendPacket(MaplePacketCreator.updateSpecialItemUse(item, type.getType()));
                     }
                     if (ItemFlag.UNTRADEABLE.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.UNTRADEABLE.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.UNTRADEABLE.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
@@ -1008,14 +1008,14 @@ public class AdminCommand {
             } else if (splitted[1].equals("特殊")) {
                 for (IItem item : c.getPlayer().getInventory(MapleInventoryType.CASH)) {
                     if (ItemFlag.LOCK.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.LOCK.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.LOCK.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");
                         //c.sendPacket(MaplePacketCreator.updateSpecialItemUse(item, type.getType()));
                     }
                     if (ItemFlag.UNTRADEABLE.check(item.getFlag())) {
-                        item.setFlag((byte) (item.getFlag() - ItemFlag.UNTRADEABLE.getValue()));
+                        item.setFlag((byte) (item.getFlag() & ~ItemFlag.UNTRADEABLE.getValue()));
                         add = true;
                         c.getPlayer().reloadC();
                         c.getPlayer().dropMessage(5, "已经解锁");

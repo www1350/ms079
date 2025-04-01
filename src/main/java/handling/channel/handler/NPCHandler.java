@@ -334,9 +334,9 @@ public class NPCHandler {
                     if (item.getItemId() == itemId && (item.getQuantity() >= quantity || GameConstants.isThrowingStar(itemId) || GameConstants.isBullet(itemId))) {
                         if (ii.isDropRestricted(item.getItemId())) {
                             if (ItemFlag.KARMA_EQ.check(flag)) {
-                                item.setFlag((byte) (flag - ItemFlag.KARMA_EQ.getValue()));
+                                item.setFlag((byte) (flag & ~ItemFlag.KARMA_EQ.getValue()));
                             } else if (ItemFlag.KARMA_USE.check(flag)) {
-                                item.setFlag((byte) (flag - ItemFlag.KARMA_USE.getValue()));
+                                item.setFlag((byte) (flag & ~ItemFlag.KARMA_USE.getValue()));
                             } else {
                                 c.getSession().write(MaplePacketCreator.enableActions());
                                 return;

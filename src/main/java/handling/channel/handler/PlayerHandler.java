@@ -504,13 +504,13 @@ public class PlayerHandler {
         byte flag = toUse.getFlag();
         chr.getMap().broadcastMessage(chr, MaplePacketCreator.itemEffects(chr.getId(), itemId), false);
         if (ItemFlag.KARMA_EQ.check(flag)) {
-            toUse.setFlag((byte) (flag - ItemFlag.KARMA_EQ.getValue()));
+            toUse.setFlag((byte) (flag & ~ItemFlag.KARMA_EQ.getValue()));
             c.getSession().write(MaplePacketCreator.getCharInfo(chr));
             chr.getMap().removePlayer(chr);
             chr.getMap().addPlayer(chr);
              c.getSession().write(MaplePacketCreator.updateSpecialItemUse_(toUse, GameConstants.getInventoryType(toUse.getItemId()).getType()));
         } else if (ItemFlag.KARMA_USE.check(flag)) {
-            toUse.setFlag((byte) (flag - ItemFlag.KARMA_USE.getValue()));
+            toUse.setFlag((byte) (flag & ~ItemFlag.KARMA_USE.getValue()));
             c.getSession().write(MaplePacketCreator.getCharInfo(chr));
             chr.getMap().removePlayer(chr);
             chr.getMap().addPlayer(chr);

@@ -79,9 +79,9 @@ public class HiredMerchant extends AbstractPlayerStore {
         int flag = newItem.getFlag();
 
         if (ItemFlag.KARMA_EQ.check(flag)) {
-            newItem.setFlag((byte) (flag - ItemFlag.KARMA_EQ.getValue()));
+            newItem.setFlag((byte) (flag & ~ItemFlag.KARMA_EQ.getValue()));
         } else if (ItemFlag.KARMA_USE.check(flag)) {
-            newItem.setFlag((byte) (flag - ItemFlag.KARMA_USE.getValue()));
+            newItem.setFlag((byte) (flag & ~ItemFlag.KARMA_USE.getValue()));
         }
 
         /*

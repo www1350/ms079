@@ -37,9 +37,9 @@ public class MapleTrade {
                 int flag = item.getFlag();
 
                 if (ItemFlag.KARMA_EQ.check(flag)) {
-                    item.setFlag((byte) (flag - ItemFlag.KARMA_EQ.getValue()));
+                    item.setFlag((byte) (flag & ~ItemFlag.KARMA_EQ.getValue()));
                 } else if (ItemFlag.KARMA_USE.check(flag)) {
-                    item.setFlag((byte) (flag - ItemFlag.KARMA_USE.getValue()));
+                    item.setFlag((byte) (flag & ~ItemFlag.KARMA_USE.getValue()));
                 }
             //   Trade = "[交易] " + (chr.get()).getName() + " 交易获得道具: " + item.getItemId() + " x " + item.getQuantity() + " - " + ii.getName(item.getItemId()) + "\r\n";
                 MapleInventoryManipulator.addFromDrop(chr.get().getClient(), item, false);

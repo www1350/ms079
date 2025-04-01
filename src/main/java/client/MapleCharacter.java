@@ -3177,7 +3177,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         }
         for (final IItem itemz : tobeunlock) {
             itemz.setExpiration(-1);
-            itemz.setFlag((byte) (itemz.getFlag() - ItemFlag.LOCK.getValue()));
+            itemz.setFlag((byte) (itemz.getFlag() & ~ItemFlag.LOCK.getValue()));
         }
 
         this.pendingExpiration = ret;

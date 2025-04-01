@@ -48,9 +48,9 @@ public class MaplePlayerShop extends AbstractPlayerStore {
             int flag = newItem.getFlag();
 
             if (ItemFlag.KARMA_EQ.check(flag)) {
-                newItem.setFlag((byte) (flag - ItemFlag.KARMA_EQ.getValue()));
+                newItem.setFlag((byte) (flag & ~ItemFlag.KARMA_EQ.getValue()));
             } else if (ItemFlag.KARMA_USE.check(flag)) {
-                newItem.setFlag((byte) (flag - ItemFlag.KARMA_USE.getValue()));
+                newItem.setFlag((byte) (flag & ~ItemFlag.KARMA_USE.getValue()));
             }
             final int gainmeso = pItem.price * quantity;
             if (c.getPlayer().getMeso() >= gainmeso) {

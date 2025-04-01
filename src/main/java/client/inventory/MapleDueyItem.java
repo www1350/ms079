@@ -85,7 +85,7 @@ public class MapleDueyItem implements IItem, Serializable {
         if (flag == 1) {
             setFlag(ItemFlag.LOCK.getValue());
         } else if (flag == 0) {
-            setFlag(getFlag() - ItemFlag.LOCK.getValue());
+            setFlag(getFlag() & ~ItemFlag.LOCK.getValue());
         }
     }
 

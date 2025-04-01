@@ -894,10 +894,10 @@ public class MapleInventoryManipulator {
                 c.getSession().write(MaplePacketCreator.updateSpecialItemUse_(source, GameConstants.getInventoryType(source.getItemId()).getType()));
             }
         } else if (ItemFlag.KARMA_EQ.check(flag)) {
-            source.setFlag(flag - ItemFlag.KARMA_EQ.getValue());
+            source.setFlag(flag & ~ItemFlag.KARMA_EQ.getValue());
             c.getSession().write(MaplePacketCreator.updateSpecialItemUse(source, GameConstants.getInventoryType(source.getItemId()).getType()));
         } else if (ItemFlag.KARMA_USE.check(flag)) {
-            source.setFlag(flag - ItemFlag.KARMA_USE.getValue());
+            source.setFlag(flag & ~ItemFlag.KARMA_USE.getValue());
             c.getSession().write(MaplePacketCreator.updateSpecialItemUse(source, GameConstants.getInventoryType(source.getItemId()).getType()));
         }
         chr.getInventory(MapleInventoryType.EQUIP).removeSlot(src);
@@ -1049,10 +1049,10 @@ public class MapleInventoryManipulator {
 
             if (ii.isDropRestricted(target.getItemId()) || ii.isAccountShared(target.getItemId())) {
                 if (ItemFlag.KARMA_EQ.check(flag)) {
-                    target.setFlag(flag - ItemFlag.KARMA_EQ.getValue());
+                    target.setFlag(flag & ~ItemFlag.KARMA_EQ.getValue());
                     c.getPlayer().getMap().spawnItemDrop(c.getPlayer(), c.getPlayer(), target, dropPos, true, true);
                 } else if (ItemFlag.KARMA_USE.check(flag)) {
-                    target.setFlag(flag - ItemFlag.KARMA_USE.getValue());
+                    target.setFlag(flag & ~ItemFlag.KARMA_USE.getValue());
                     c.getPlayer().getMap().spawnItemDrop(c.getPlayer(), c.getPlayer(), target, dropPos, true, true);
                 } else {
                     c.getPlayer().getMap().disappearingItemDrop(c.getPlayer(), c.getPlayer(), target, dropPos);
@@ -1070,10 +1070,10 @@ public class MapleInventoryManipulator {
             }
             if (ii.isDropRestricted(source.getItemId()) || ii.isAccountShared(source.getItemId())) {
                 if (ItemFlag.KARMA_EQ.check(flag)) {
-                    source.setFlag(flag - ItemFlag.KARMA_EQ.getValue());
+                    source.setFlag(flag & ~ItemFlag.KARMA_EQ.getValue());
                     c.getPlayer().getMap().spawnItemDrop(c.getPlayer(), c.getPlayer(), source, dropPos, true, true);
                 } else if (ItemFlag.KARMA_USE.check(flag)) {
-                    source.setFlag(flag - ItemFlag.KARMA_USE.getValue());
+                    source.setFlag(flag & ~ItemFlag.KARMA_USE.getValue());
                     c.getPlayer().getMap().spawnItemDrop(c.getPlayer(), c.getPlayer(), source, dropPos, true, true);
                 } else {
                     c.getPlayer().getMap().disappearingItemDrop(c.getPlayer(), c.getPlayer(), source, dropPos);
