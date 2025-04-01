@@ -2273,7 +2273,7 @@ public class InventoryHandler {
                 }
                 PetFlag zz = PetFlag.getByDelId(itemId);
                 if (zz != null && zz.check(pet.getFlags())) {
-                    pet.setFlags(pet.getFlags() - zz.getValue());
+                    pet.setFlags(pet.getFlags() & ~zz.getValue());
                     c.getSession().write(PetPacket.updatePet(pet, c.getPlayer().getInventory(MapleInventoryType.CASH).getItem((byte) pet.getInventoryPosition()), true));
                     c.getSession().write(MaplePacketCreator.enableActions());
                     c.getSession().write(MTSCSPacket.changePetFlag(uniqueid, false, zz.getValue()));
