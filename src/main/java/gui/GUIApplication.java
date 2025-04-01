@@ -1024,7 +1024,7 @@ public final class GUIApplication extends JFrame {
                                 if (makeTime > 0) {
                                     item.setExpiration(System.currentTimeMillis() + ((long) makeTime * 24 * 60 * 60 * 1000));
                                 }
-                                if (appendCount > 0) {
+                                if (appendCount > 0 && appendCount < 256) {
                                     item.setUpgradeSlots((byte) (appendCount));
                                 }
                                 if (makeName != null) {
