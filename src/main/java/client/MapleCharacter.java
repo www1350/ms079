@@ -977,9 +977,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         mountData.save();
 
 
+        ItemLoader.deleteItems(chr.inventory);
         ItemLoader.saveItems(chr.inventory, character);
 
-        ItemLoader.deleteItems(chr.inventory);
 
         for (int i = 0; i < array1.length; i++) {
             DKeyMap keyMap = new DKeyMap();
@@ -1270,8 +1270,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void saveInventory(DCharacter character) {
-        ItemLoader.saveItems(inventory,character);
         ItemLoader.deleteItems(inventory);
+        ItemLoader.saveItems(inventory,character);
     }
 
     public final PlayerStats getStat() {

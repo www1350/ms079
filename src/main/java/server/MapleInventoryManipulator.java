@@ -1063,7 +1063,7 @@ public class MapleInventoryManipulator {
                 c.getPlayer().getMap().spawnItemDrop(c.getPlayer(), c.getPlayer(), target, dropPos, true, true);
             }
         } else {
-            c.getPlayer().getInventory(type).removeSlot(src);
+            c.getPlayer().getInventory(type).dropSlot(src);
             c.getSession().write(MaplePacketCreator.dropInventoryItem((src < 0 ? MapleInventoryType.EQUIP : type), src));//发送删除道具的封包
             if (src < 0) {
                 c.getPlayer().equipChanged();
