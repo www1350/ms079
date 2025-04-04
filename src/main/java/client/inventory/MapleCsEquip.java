@@ -29,7 +29,7 @@ public class MapleCsEquip extends MapleCsItem implements IEquip, Serializable {
 
     @Override
     public IItem copy() {
-        MapleCsEquip ret = new MapleCsEquip(item);
+        MapleCsEquip ret = new MapleCsEquip(item.clone());
         ret.itemLevel = this.itemLevel;
         return ret;
     }

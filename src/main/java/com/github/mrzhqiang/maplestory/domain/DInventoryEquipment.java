@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "inventoryequipment")
-public class DInventoryEquipment extends Model {
+public class DInventoryEquipment extends Model implements Cloneable {
 
     @Id
     Integer id;
@@ -301,5 +301,17 @@ public class DInventoryEquipment extends Model {
 
     public void setItemLevel(Integer itemLevel) {
         this.itemLevel = itemLevel;
+    }
+
+    @Override
+    public DInventoryEquipment clone(){
+        try {
+            DInventoryEquipment cloned = (DInventoryEquipment) super.clone();
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            // 理论上不会发生（因已实现 Cloneable）
+            throw new IllegalStateException("Clone failed", e);
+        }
+
     }
 }

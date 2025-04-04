@@ -12,7 +12,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "dueyequipment")
-public class DDueyEquipment extends Model {
+public class DDueyEquipment extends Model  implements Cloneable{
 
     @Id
     Integer id;
@@ -296,5 +296,17 @@ public class DDueyEquipment extends Model {
 
     public void setMpR(Integer mpR) {
         this.mpR = mpR;
+    }
+
+    @Override
+    public DDueyEquipment clone() {
+        try {
+            DDueyEquipment cloned = (DDueyEquipment) super.clone();
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            // 理论上不会发生（因已实现 Cloneable）
+            throw new IllegalStateException("Clone failed", e);
+        }
+
     }
 }

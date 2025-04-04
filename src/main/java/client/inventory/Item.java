@@ -45,7 +45,7 @@ public class Item implements IItem, Serializable {
     }
 
     public IItem copy() {
-        Item ret = new Item(item);
+        Item ret = new Item(item.clone());
         ret.pet = pet;
         return ret;
     }

@@ -29,7 +29,7 @@ public class MapleMtsEquip extends MapleMtsItem implements IEquip, Serializable 
 
     @Override
     public IItem copy() {
-        MapleMtsEquip ret = new MapleMtsEquip(item);
+        MapleMtsEquip ret = new MapleMtsEquip(item.clone());
         ret.itemLevel = this.itemLevel;
         return ret;
     }

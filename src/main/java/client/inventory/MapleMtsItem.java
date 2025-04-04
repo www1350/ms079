@@ -22,7 +22,7 @@ public class MapleMtsItem implements IItem, Serializable {
     }
 
     public IItem copy() {
-        MapleMtsItem ret = new MapleMtsItem(item);
+        MapleMtsItem ret = new MapleMtsItem(item.clone());
         ret.pet = pet;
         return ret;
     }

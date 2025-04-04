@@ -29,7 +29,7 @@ public class MapleDueyEquip extends MapleDueyItem implements IEquip, Serializabl
 
     @Override
     public IItem copy() {
-        MapleDueyEquip ret = new MapleDueyEquip(item);
+        MapleDueyEquip ret = new MapleDueyEquip(item.clone());
         ret.itemLevel = this.itemLevel;
         return ret;
     }

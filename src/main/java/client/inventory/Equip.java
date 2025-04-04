@@ -44,7 +44,7 @@ public class Equip extends Item implements IEquip, Serializable {
 
     @Override
     public IItem copy() {
-        Equip ret = new Equip(item);
+        Equip ret = new Equip(item.clone());
         ret.itemLevel = this.itemLevel;
         return ret;
     }

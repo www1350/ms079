@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "hiredmerchitems")
-public class DHiredMerchItem extends Model {
+public class DHiredMerchItem extends Model implements Cloneable{
 
     @Id
     Integer id;
@@ -177,5 +177,17 @@ public class DHiredMerchItem extends Model {
 
     public void setEquipment(DHiredMerchEquipment equipment) {
         this.equipment = equipment;
+    }
+
+    @Override
+    public DHiredMerchItem clone() {
+        try {
+            DHiredMerchItem cloned = (DHiredMerchItem) super.clone();
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            // 理论上不会发生（因已实现 Cloneable）
+            throw new IllegalStateException("Clone failed", e);
+        }
+
     }
 }

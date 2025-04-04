@@ -29,7 +29,7 @@ public class MapleMtsTransferEquip extends MapleMtsTransferItem implements IEqui
 
     @Override
     public IItem copy() {
-        MapleMtsTransferEquip ret = new MapleMtsTransferEquip(item);
+        MapleMtsTransferEquip ret = new MapleMtsTransferEquip(item.clone());
         ret.itemLevel = this.itemLevel;
         return ret;
     }

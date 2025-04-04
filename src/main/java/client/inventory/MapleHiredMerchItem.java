@@ -21,7 +21,7 @@ public class MapleHiredMerchItem implements IItem, Serializable {
     }
 
     public IItem copy() {
-        MapleHiredMerchItem merchItem = new MapleHiredMerchItem(this.item);
+        MapleHiredMerchItem merchItem = new MapleHiredMerchItem(this.item.clone());
         merchItem.pet = pet;
         return merchItem;
     }
