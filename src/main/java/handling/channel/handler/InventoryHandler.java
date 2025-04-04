@@ -82,8 +82,10 @@ public class InventoryHandler {
         final short src = slea.readShort();                                            //01 00
         final short dst = slea.readShort();                                            //00 00
         final short quantity = slea.readShort();
+        // 卸下裝備
         if (src < 0 && dst > 0) {
             MapleInventoryManipulator.unequip(c, src, dst);
+        //帶上裝備
         } else if (dst < 0) {
             if (dst == -128) {
                 c.getPlayer().dropMessage(5, "dst:-128现金戒指位暂停开放(待修复)！");
@@ -91,6 +93,7 @@ public class InventoryHandler {
                 return;
             }
             MapleInventoryManipulator.equip(c, src, dst);
+        // 丟棄
         } else if (dst == 0) {
             MapleInventoryManipulator.drop(c, type, src, quantity);
         } else {

@@ -1001,6 +1001,7 @@ public class MapleInventoryManipulator {
 
     public static boolean drop(final MapleClient c, MapleInventoryType type, final int src, int quantity, final boolean npcInduced) {
         final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
+        // 丟棄已裝備的
         if (src < 0) {
             type = MapleInventoryType.EQUIPPED;
         }
@@ -1008,6 +1009,7 @@ public class MapleInventoryManipulator {
             return false;
         }
         final IItem source = c.getPlayer().getInventory(type).getItem(src);
+        // 不能丟寵物
         if (source == null || (!npcInduced && GameConstants.isPet(source.getItemId()))) {
             c.getSession().write(MaplePacketCreator.enableActions());
             return false;
@@ -1020,10 +1022,12 @@ public class MapleInventoryManipulator {
             return false;
         }
         final int flag = source.getFlag();
+        // 不能丟超過已擁有數量
         if (quantity > source.getQuantity()) {
             c.getSession().write(MaplePacketCreator.enableActions());
             return false;
         }
+        // 不能丟棄鎖定的、不能丟棄數量不為1的裝備
         if (ItemFlag.LOCK.check(flag) || (quantity != 1 && type == MapleInventoryType.EQUIP)) { // hack
             c.getSession().write(MaplePacketCreator.enableActions());
             return false;
@@ -1037,6 +1041,7 @@ public class MapleInventoryManipulator {
         c.getPlayer().setLasttime(System.currentTimeMillis());
         final Vector dropPos = Vector.of(c.getPlayer().getPosition());
         c.getPlayer().getCheatTracker().checkDrop();
+        // 丟棄部分
         if (quantity < source.getQuantity() && !GameConstants.isRechargable(source.getItemId())) {
             final IItem target = source.copy();
             target.setQuantity(quantity);
