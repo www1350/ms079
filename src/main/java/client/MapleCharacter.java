@@ -297,7 +297,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private int touzhuNum;
     private int touzhuType;
     private int touzhuNX;
-    private long 防止复制时间 = 2000L;
+    private long 防止复制时间 = 100L;
 
     private List<String> blockedPortals = new ArrayList<>();//传送点
     // private int linkMid;
