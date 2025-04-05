@@ -20,60 +20,60 @@ public class DCsEquipment extends Model implements Cloneable{
     @JoinColumn(name = "inventory_item_id")
     DCsItem item;
     @NotNull
-    Integer upgradeSlots;
+    Integer upgradeSlots = 0;
     @NotNull
-    Integer level;
+    Integer level = 0;
     @NotNull
-    Integer str;
+    Integer str = 0;
     @NotNull
-    Integer dex;
+    Integer dex = 0;
     @NotNull
     @Column(name = "intelligence")
-    Integer intelligence;
+    Integer intelligence = 0;
     @NotNull
-    Integer luk;
+    Integer luk = 0;
     @NotNull
-    Integer hp;
+    Integer hp = 0;
     @NotNull
-    Integer mp;
+    Integer mp = 0;
 
-    Integer watk;
+    Integer watk = 0;
     @NotNull
-    Integer matk;
+    Integer matk = 0;
     @NotNull
-    Integer wdef;
+    Integer wdef = 0;
     @NotNull
-    Integer mdef;
+    Integer mdef = 0;
     @NotNull
-    Integer acc;
+    Integer acc = 0;
     @NotNull
-    Integer avoid;
+    Integer avoid = 0;
     @NotNull
-    Integer hands;
+    Integer hands = 0;
     @NotNull
-    Integer speed;
+    Integer speed = 0;
     @NotNull
-    Integer jump;
+    Integer jump = 0;
     @NotNull
-    Integer viciousHammer;
+    Integer viciousHammer = 0;
     @NotNull
-    Integer itemExp;
+    Integer itemExp = 0;
     @NotNull
-    Integer durability;
+    Integer durability = 0;
     @NotNull
-    Integer enhance;
+    Integer enhance = 0;
     @NotNull
-    Integer potential1;
+    Integer potential1 = 0;
     @NotNull
-    Integer potential2;
+    Integer potential2 = 0;
     @NotNull
-    Integer potential3;
+    Integer potential3 = 0;
     @NotNull
-    Integer hpR;
+    Integer hpR = 0;
     @NotNull
-    Integer mpR;
+    Integer mpR = 0;
     @NotNull
-    Integer itemLevel;
+    Integer itemLevel = 0;
 
     public Integer getId() {
         return id;
