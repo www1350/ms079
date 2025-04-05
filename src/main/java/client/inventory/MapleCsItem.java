@@ -28,6 +28,15 @@ public class MapleCsItem implements IItem, Serializable {
         this.item.setFlag(flag);
     }
 
+    public MapleCsItem(int id, int position, int quantity, int flag, int uniqueid) {
+        this.item = new DCsItem();
+        this.item.setItemId(id);
+        this.item.setPosition(position);
+        this.item.setQuantity(quantity);
+        this.item.setFlag(flag);
+        this.item.setUniqueId(uniqueid);
+    }
+
     public IItem copy() {
         MapleCsItem ret = new MapleCsItem(item.clone());
         ret.pet = pet;
