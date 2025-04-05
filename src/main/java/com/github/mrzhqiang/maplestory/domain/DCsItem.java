@@ -45,7 +45,7 @@ public class DCsItem extends Model  implements Cloneable{
     @NotNull
     Long expireDate = -1L;
     @NotNull
-    Integer type;
+    Integer type = 0;
     @NotNull
     String sender;
     @NotNull
