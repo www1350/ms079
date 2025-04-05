@@ -6425,7 +6425,7 @@ CREATE TABLE `csitems`  (
   `gm_Log` tinytext CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
   `unique_id` int(11) NOT NULL DEFAULT -1,
   `flag` int(2) NOT NULL DEFAULT 0,
-  `expire_date` datetime(0) NOT NULL DEFAULT -1,
+  `expire_date` bigint(20) NOT NULL DEFAULT -1,
   `type` tinyint(1) NOT NULL DEFAULT 0,
   `sender` varchar(13) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
   `item_level` int(3) NOT NULL DEFAULT 0,

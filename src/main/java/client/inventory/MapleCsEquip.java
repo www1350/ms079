@@ -25,6 +25,14 @@ public class MapleCsEquip extends MapleCsItem implements IEquip, Serializable {
     public MapleCsEquip(DCsItem item) {
         super(item);
         this.equipment = item.getEquipment();
+        this.equipment.setItem(item);
+    }
+
+    public MapleCsEquip(int id, int position, int quantity, int flag) {
+        super(id, position, quantity, flag);
+        this.item.setEquipment(new DCsEquipment());
+        this.equipment = this.item.getEquipment();
+        this.equipment.setItem(item);
     }
 
     @Override

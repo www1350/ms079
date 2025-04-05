@@ -43,7 +43,7 @@ public class DCsItem extends Model  implements Cloneable{
     @NotNull
     Integer flag;
     @NotNull
-    LocalDateTime expireDate;
+    Long expireDate = -1L;
     @NotNull
     Integer type;
     @NotNull
@@ -150,11 +150,11 @@ public class DCsItem extends Model  implements Cloneable{
         this.flag = flag;
     }
 
-    public LocalDateTime getExpireDate() {
+    public Long getExpireDate() {
         return expireDate;
     }
 
-    public void setExpireDate(LocalDateTime expireDate) {
+    public void setExpireDate(Long expireDate) {
         this.expireDate = expireDate;
     }
 

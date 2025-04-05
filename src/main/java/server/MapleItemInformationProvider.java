@@ -2,14 +2,8 @@ package server;
 
 import client.MapleCharacter;
 import client.MapleClient;
-import client.inventory.Equip;
-import client.inventory.IItem;
-import client.inventory.ItemFlag;
-import client.inventory.MapleInventoryType;
-import com.github.mrzhqiang.maplestory.domain.DWzItemAddData;
-import com.github.mrzhqiang.maplestory.domain.DWzItemData;
-import com.github.mrzhqiang.maplestory.domain.DWzItemEquipData;
-import com.github.mrzhqiang.maplestory.domain.DWzItemRewardData;
+import client.inventory.*;
+import com.github.mrzhqiang.maplestory.domain.*;
 import com.github.mrzhqiang.maplestory.domain.query.QDWzItemAddData;
 import com.github.mrzhqiang.maplestory.domain.query.QDWzItemData;
 import com.github.mrzhqiang.maplestory.domain.query.QDWzItemEquipData;
@@ -1062,12 +1056,84 @@ public class MapleItemInformationProvider {
         return equip;
     }
 
-    public IItem getEquipById(int equipId) {
-        return getEquipById(equipId, -1);
+    public IItem getCsEquipById(int equipId) {
+        return convertToCsEquip((Equip) getEquipById(equipId));
     }
 
-    public IItem getEquipById(int equipId, int ringId) {
-        Equip nEquip = new Equip(equipId, (byte) 0, ringId, (byte) 0);
+    private IItem convertToCsEquip(Equip equip) {
+        MapleCsEquip csEquip = new MapleCsEquip(equip.getItemId(), (byte) 0, equip.getQuantity(), (byte) 0);
+        csEquip.setQuantity((short) 1);
+        Map<String, Integer> stats = getEquipStats(equip.getItemId());
+        if (!stats.isEmpty()) {
+            for (Entry<String, Integer> stat : stats.entrySet()) {
+                final String key = stat.getKey();
+                switch (key) {
+                    case "STR":
+                        csEquip.setStr((short) stat.getValue().intValue());
+                        break;
+                    case "DEX":
+                        csEquip.setDex((short) stat.getValue().intValue());
+                        break;
+                    case "INT":
+                        csEquip.setInt((short) stat.getValue().intValue());
+                        break;
+                    case "LUK":
+                        csEquip.setLuk((short) stat.getValue().intValue());
+                        break;
+                    case "PAD":
+                        csEquip.setWatk((short) stat.getValue().intValue());
+                        break;
+                    case "PDD":
+                        csEquip.setWdef((short) stat.getValue().intValue());
+                        break;
+                    case "MAD":
+                        csEquip.setMatk((short) stat.getValue().intValue());
+                        break;
+                    case "MDD":
+                        csEquip.setMdef((short) stat.getValue().intValue());
+                        break;
+                    case "ACC":
+                        csEquip.setAcc((short) stat.getValue().intValue());
+                        break;
+                    case "EVA":
+                        csEquip.setAvoid((short) stat.getValue().intValue());
+                        break;
+                    case "Speed":
+                        csEquip.setSpeed((short) stat.getValue().intValue());
+                        break;
+                    case "Jump":
+                        csEquip.setJump((short) stat.getValue().intValue());
+                        break;
+                    case "MHP":
+                        csEquip.setHp((short) stat.getValue().intValue());
+                        break;
+                    case "MMP":
+                        csEquip.setMp((short) stat.getValue().intValue());
+                        break;
+                    case "MHPr":
+                        csEquip.setHpR((short) stat.getValue().intValue());
+                        break;
+                    case "MMPr":
+                        csEquip.setMpR((short) stat.getValue().intValue());
+                        break;
+                    case "tuc":
+                        csEquip.setUpgradeSlots(stat.getValue().byteValue());
+                        break;
+                    case "Craft":
+                        csEquip.setHands(stat.getValue().shortValue());
+                        break;
+                    case "durability":
+                        csEquip.setDurability(stat.getValue());
+//                } else if (key.equals("afterImage")) {
+                        break;
+                }
+            }
+        }
+        return csEquip.copy();
+    }
+
+    public IItem getEquipById(int equipId) {
+        Equip nEquip = new Equip(equipId, (byte) 0, -1, (byte) 0);
         nEquip.setQuantity((short) 1);
         Map<String, Integer> stats = getEquipStats(equipId);
         if (!stats.isEmpty()) {

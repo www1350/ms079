@@ -4,7 +4,6 @@ import com.github.mrzhqiang.maplestory.domain.DCsItem;
 import constants.GameConstants;
 
 import java.io.Serializable;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -19,6 +18,14 @@ public class MapleCsItem implements IItem, Serializable {
     public MapleCsItem(DCsItem item) {
         this.item = item;
         this.itemLevel = 1;
+    }
+
+    public MapleCsItem(int id, int position, int quantity, int flag) {
+        this.item = new DCsItem();
+        this.item.setItemId(id);
+        this.item.setPosition(position);
+        this.item.setQuantity(quantity);
+        this.item.setFlag(flag);
     }
 
     public IItem copy() {
@@ -89,17 +96,18 @@ public class MapleCsItem implements IItem, Serializable {
         }
     }
 
+
     @Override
     public long getExpiration() {
-        return item.getExpireDate().toInstant(ZoneOffset.UTC).toEpochMilli();
+        return item.getExpireDate();
     }
 
     public void setExpiration(long expire) {
-        this.item.setExpireDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(expire), ZoneOffset.UTC));
+        this.item.setExpireDate(expire);
     }
 
     public void setExpiration(LocalDateTime expiration) {
-        this.item.setExpireDate(expiration);
+        this.item.setExpireDate(expiration != null ? expiration.toInstant(ZoneOffset.UTC).toEpochMilli() : -1);
     }
 
     @Override
