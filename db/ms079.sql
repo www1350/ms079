@@ -6428,7 +6428,6 @@ CREATE TABLE `csitems`  (
   `expire_date` bigint(20) NOT NULL DEFAULT -1,
   `type` tinyint(1) NOT NULL DEFAULT 0,
   `sender` varchar(13) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `item_level` int(3) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `inventoryitems_ibfk_1`(`character_id`) USING BTREE,
   INDEX `characterid`(`character_id`) USING BTREE,

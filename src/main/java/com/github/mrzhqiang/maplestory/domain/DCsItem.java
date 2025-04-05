@@ -48,8 +48,6 @@ public class DCsItem extends Model  implements Cloneable{
     Integer type = 0;
     @NotNull
     String sender;
-    @NotNull
-    Integer itemLevel;
 
     @OneToOne(mappedBy = "item")
     DCsEquipment equipment;
@@ -172,14 +170,6 @@ public class DCsItem extends Model  implements Cloneable{
 
     public void setSender(String sender) {
         this.sender = sender;
-    }
-
-    public Integer getItemLevel() {
-        return itemLevel;
-    }
-
-    public void setItemLevel(Integer itemLevel) {
-        this.itemLevel = itemLevel;
     }
 
     public DCsEquipment getEquipment() {
