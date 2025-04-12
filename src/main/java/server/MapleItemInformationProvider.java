@@ -551,9 +551,9 @@ public class MapleItemInformationProvider {
         }
 
         double pEntry = item.findByName("info")
-                .map(element -> Elements.findDouble(element, "unitPrice"))
+                .map(element -> Elements.findDouble(element, "unitPrice", null))
                 .orElseGet(() -> item.findByName("info")
-                        .map(element -> Elements.findDouble(element, "price"))
+                        .map(element -> Elements.findDouble(element, "price", -1D))
                         .orElse((double) -1));
         if (itemId == 2070019 || itemId == 2330007) {
             pEntry = 1.0;

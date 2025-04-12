@@ -1707,6 +1707,13 @@ public class NPCConversationManager extends AbstractPlayerInteraction {
         c.getSession().write(MaplePacketCreator.enableActions());
     }
 
+    /**
+     * TODO
+     */
+    public void deleteboss(){
+
+    }
+
     public void 刷新地图() {
         boolean custMap = true;
         int mapid = c.getPlayer().getMapId();

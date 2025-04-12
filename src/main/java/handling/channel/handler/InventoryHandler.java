@@ -1205,10 +1205,18 @@ public class InventoryHandler {
                     final int mapId = MapleLifeFactory.getNPCLocation(npcid);
                     if (mapId != -1) {
                         final MapleMap map = c.getChannelServer().getMapFactory().getMap(mapId);
-                        if (map.containsNPC(npcid) && !FieldLimitType.VipRock.check(c.getPlayer().getMap().getFieldLimit()) && !FieldLimitType.VipRock.check(map.getFieldLimit()) && c.getPlayer().getEventInstance() == null) {
-                            c.getPlayer().changeMap(map, map.getPortal(0));
+                        if (!map.containsNPC(npcid) || FieldLimitType.VipRock.check(map.getFieldLimit())){
+                            c.getPlayer().dropMessage(1, "无法传送到该位置.");
                         }
-                        used = true;
+                        if (FieldLimitType.VipRock.check(c.getPlayer().getMap().getFieldLimit())){
+                            c.getPlayer().dropMessage(1, "您当前所在位置无法传送到别处.");
+                        }
+                        if (c.getPlayer().getEventInstance() == null) {
+                            c.getPlayer().changeMap(map, map.getPortal(0));
+                            used = true;
+                        }else {
+                            c.getPlayer().dropMessage(1, "发生未知错误.");
+                        }
                     } else {
                         c.getPlayer().dropMessage(1, "发生未知错误.");
                     }
