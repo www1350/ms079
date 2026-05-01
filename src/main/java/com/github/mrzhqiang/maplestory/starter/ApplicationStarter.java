@@ -73,7 +73,7 @@ public final class ApplicationStarter {
     }
 
     public void startServer() {
-        WzResource.load().subscribe(new WzLoadSubscriber() {
+        WzResource.load().blockingSubscribe(new WzLoadSubscriber() {
             @Override
             public void onError(Throwable t) {
                 LOGGER.error(">>> 错误",t);
