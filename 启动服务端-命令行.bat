@@ -20,7 +20,7 @@ timeout /t 1 /nobreak >nul
 echo [2/2] 启动服务端...
 set PATH=%PATH%;%JAVA_HOME%\bin
 set JRE_HOME=%JAVA_HOME%\jre
-set CLASSPATH=%CLASSPATH%;./*;./lib/*
+set CLASSPATH=%CLASSPATH%;target/ms079.jar;lib/*
 
 java -server -Dwzpath=wz com.github.mrzhqiang.maplestory.MapleStoryApplication
 pause

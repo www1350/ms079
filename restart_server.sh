@@ -28,7 +28,6 @@ echo "========================================"
 echo ""
 echo ">>> [1/4] 停止旧进程..."
 
-# 先尝试通过 PID 文件杀掉
 if [ -f "$PID_FILE" ]; then
     OLD_PID=$(cat "$PID_FILE")
     if [ -n "$OLD_PID" ]; then
@@ -38,13 +37,12 @@ if [ -f "$PID_FILE" ]; then
     rm -f "$PID_FILE"
 fi
 
-# 再用 jps 查找所有 Java 进程，杀掉本项目相关的
 if command -v jps &>/dev/null; then
     JPS_RESULT=$(jps -l 2>/dev/null || true)
     echo "$JPS_RESULT" | while read -r pid name; do
         case "$name" in
             *MapleStoryApplication*|*GUIApplication*)
-                echo "  发现残留进程: $pid ($name)，正在杀掉..."
+                echo "  发现残留进程: $pid ($name)，正在终止..."
                 taskkill //F //PID "$pid" 2>/dev/null || true
                 ;;
         esac
@@ -53,19 +51,18 @@ else
     echo "  警告: jps 不可用，跳过进程扫描"
 fi
 
-# 兜底：杀掉所有标题为 MapleStory 的窗口进程
 taskkill //FI "WINDOWTITLE eq MapleStory_079" //F 2>/dev/null || true
 
 sleep 1
 echo "  旧进程已清理"
 
 # ============================================================
-# [2/4] 编译
+# [2/4] 编译打包（含 EBean 增强）
 # ============================================================
 echo ""
-echo ">>> [2/4] 编译项目..."
-mvn clean compile -DskipTests -q
-echo "  编译完成"
+echo ">>> [2/4] 编译打包..."
+mvn clean package -DskipTests -q
+echo "  打包完成"
 
 # ============================================================
 # [3/4] 准备运行环境
@@ -81,7 +78,7 @@ echo ""
 echo ">>> [4/4] 启动服务端 ($MODE 模式)..."
 
 JAVA_OPTS="-server -Dwzpath=wz"
-nohup java $JAVA_OPTS -cp "$HOME/*:$HOME/lib/*" $MAIN_CLASS \
+nohup java $JAVA_OPTS -cp "target/ms079.jar;lib/*" $MAIN_CLASS \
     > "$LOG_DIR/server.log" 2>&1 &
 
 NEW_PID=$!
@@ -97,11 +94,10 @@ echo -n "  等待启动"
 for i in $(seq 1 30); do
     sleep 2
     echo -n "."
-    # 进程挂了就是启动失败
     if ! kill -0 "$NEW_PID" 2>/dev/null; then
         echo ""
         echo "  ✗ 进程异常退出！查看日志:"
-        tail -20 "$LOG_DIR/server.log"
+        tail -30 "$LOG_DIR/server.log"
         rm -f "$PID_FILE"
         exit 1
     fi
