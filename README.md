@@ -42,10 +42,13 @@ ms079
 
 ### 2.2 Maven 插件
 
-在项目根目录下打开 CMD 工具（需要安装 Maven 插件）：
+在项目根目录下打开终端（需要安装 Maven）：
 
-- 编译命令：`mvn clean compile`
-- 打包命令：`mvn clean package`
+- 编译：`mvn clean compile -DskipTests`
+- 打包：`mvn clean package -DskipTests`
+- 跳过测试可大幅加快构建速度
+
+> JDK 版本：项目基于 JDK 8，实测 JDK 17 也可正常运行。
 
 ## 三、初始化数据库
 
