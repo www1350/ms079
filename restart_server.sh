@@ -1,50 +1,115 @@
 #!/bin/bash
-# MapleStory v079 服务端重启脚本
-# 用法: ./restart_server.sh
+# MapleStory v079 服务端 —— 编译 & 重启脚本
+# 用法: ./restart_server.sh        (命令行模式)
+#       ./restart_server.sh gui    (GUI 模式)
 set -e
 
-SERVER_DIR="/tmp/ms079-server"
-PROJECT_DIR="F:/code/ms079"
-LOG_DIR="$SERVER_DIR/logs"
+cd "$(dirname "$0")"
+HOME="$(pwd)"
+PID_FILE="$HOME/ms079.pid"
+LOG_DIR="$HOME/logs"
 
-echo "=== [1/4] 编译项目 ==="
-cd "$PROJECT_DIR"
-mvn clean package -DskipTests -q
-echo "编译完成"
-
-echo "=== [2/4] 停止旧服务端 ==="
-cmd //c "taskkill /F /IM java.exe" 2>/dev/null
-sleep 2
-# 确认已停止
-if tasklist 2>/dev/null | grep -qi java; then
-    echo "警告: Java 进程仍在运行，再次尝试终止..."
-    cmd //c "taskkill /F /IM java.exe" 2>/dev/null
-    sleep 2
+MAIN_CLASS="com.github.mrzhqiang.maplestory.MapleStoryApplication"
+MODE="命令行"
+if [ "$1" = "gui" ]; then
+    MAIN_CLASS="gui.GUIApplication"
+    MODE="GUI"
 fi
-echo "旧服务端已停止"
 
-echo "=== [3/4] 部署新 jar ==="
-cp "$PROJECT_DIR/target/ms079.jar" "$SERVER_DIR/ms079.jar"
-echo "jar 已部署"
+echo "========================================"
+echo "  MapleStory v079 服务端重启脚本"
+echo "  模式: $MODE"
+echo "  时间: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "========================================"
 
-echo "=== [4/4] 启动服务端 ==="
-cd "$SERVER_DIR"
-rm -f "$LOG_DIR"/*.log 2>/dev/null
-nohup java -server -Dwzpath=wz -cp "ms079.jar;lib/*" com.github.mrzhqiang.maplestory.MapleStoryApplication > /dev/null 2>&1 &
-PID=$!
-echo "服务端已启动 (PID: $PID)"
+# ============================================================
+# [1/4] 停止旧进程
+# ============================================================
+echo ""
+echo ">>> [1/4] 停止旧进程..."
 
-# 等待启动完成
-echo -n "等待启动"
-for i in {1..60}; do
+# 先尝试通过 PID 文件杀掉
+if [ -f "$PID_FILE" ]; then
+    OLD_PID=$(cat "$PID_FILE")
+    if [ -n "$OLD_PID" ]; then
+        echo "  发现 PID 文件: $OLD_PID"
+        taskkill //F //PID "$OLD_PID" 2>/dev/null || true
+    fi
+    rm -f "$PID_FILE"
+fi
+
+# 再用 jps 查找所有 Java 进程，杀掉本项目相关的
+if command -v jps &>/dev/null; then
+    JPS_RESULT=$(jps -l 2>/dev/null || true)
+    echo "$JPS_RESULT" | while read -r pid name; do
+        case "$name" in
+            *MapleStoryApplication*|*GUIApplication*)
+                echo "  发现残留进程: $pid ($name)，正在杀掉..."
+                taskkill //F //PID "$pid" 2>/dev/null || true
+                ;;
+        esac
+    done
+else
+    echo "  警告: jps 不可用，跳过进程扫描"
+fi
+
+# 兜底：杀掉所有标题为 MapleStory 的窗口进程
+taskkill //FI "WINDOWTITLE eq MapleStory_079" //F 2>/dev/null || true
+
+sleep 1
+echo "  旧进程已清理"
+
+# ============================================================
+# [2/4] 编译
+# ============================================================
+echo ""
+echo ">>> [2/4] 编译项目..."
+mvn clean compile -DskipTests -q
+echo "  编译完成"
+
+# ============================================================
+# [3/4] 准备运行环境
+# ============================================================
+echo ""
+echo ">>> [3/4] 准备运行环境..."
+mkdir -p "$LOG_DIR"
+
+# ============================================================
+# [4/4] 启动服务端
+# ============================================================
+echo ""
+echo ">>> [4/4] 启动服务端 ($MODE 模式)..."
+
+JAVA_OPTS="-server -Dwzpath=wz"
+nohup java $JAVA_OPTS -cp "$HOME/*:$HOME/lib/*" $MAIN_CLASS \
+    > "$LOG_DIR/server.log" 2>&1 &
+
+NEW_PID=$!
+echo "$NEW_PID" > "$PID_FILE"
+echo "  进程已启动 (PID: $NEW_PID)"
+echo "  日志: $LOG_DIR/server.log"
+
+# ============================================================
+# 等待确认
+# ============================================================
+echo ""
+echo -n "  等待启动"
+for i in $(seq 1 30); do
     sleep 2
     echo -n "."
-    if grep -q "游戏" "$LOG_DIR/application.log" 2>/dev/null; then
+    # 进程挂了就是启动失败
+    if ! kill -0 "$NEW_PID" 2>/dev/null; then
         echo ""
-        echo "=== 启动成功！==="
-        tail -3 "$LOG_DIR/application.log" | grep -i "启动\|成功\|游戏"
-        exit 0
+        echo "  ✗ 进程异常退出！查看日志:"
+        tail -20 "$LOG_DIR/server.log"
+        rm -f "$PID_FILE"
+        exit 1
     fi
 done
+
 echo ""
-echo "启动超时，请检查日志: tail -f $LOG_DIR/application.log"
+echo ""
+echo "========================================"
+echo "  服务端启动完成 (PID: $NEW_PID)"
+echo "  查看日志: tail -f $LOG_DIR/server.log"
+echo "========================================"
