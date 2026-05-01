@@ -80,13 +80,21 @@ public class MapleGuildRanking {
     private void showMesoRank() {
         ranks2.clear();
 
-        List<mesoRankingInfo> infos = DB.findNative(mesoRankingInfo.class,
-                        "SELECT chr.name,chr.str,chr.dex,chr,int_ as intelligence,chr.luk, ( chr.meso + s.meso ) as money " +
+        List<io.ebean.SqlRow> rows = DB.sqlQuery(
+                        "SELECT chr.name,chr.str,chr.dex,chr.int_ as intelligence,chr.luk, ( chr.meso + s.meso ) as money " +
                                 "FROM `characters` as chr , `storages` as s " +
                                 "WHERE chr.gm < 1 AND s.account_id = chr.account_id " +
                                 "ORDER BY money DESC LIMIT 20")
                 .findList();
-        ranks2.addAll(infos);
+        for (io.ebean.SqlRow row : rows) {
+            ranks2.add(new mesoRankingInfo(
+                    row.getString("name"),
+                    row.getLong("money"),
+                    row.getInteger("str"),
+                    row.getInteger("dex"),
+                    row.getInteger("intelligence"),
+                    row.getInteger("luk")));
+        }
     }
 
     public static class mesoRankingInfo {

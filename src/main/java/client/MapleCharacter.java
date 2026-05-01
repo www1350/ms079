@@ -167,6 +167,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -627,6 +628,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 compensate_previousEvans = true;
             }
             MapleQuest q = MapleQuest.getInstance(id);
+            if (q.getId() < 0) {
+                continue;
+            }
             MapleQuestStatus questStatus = new MapleQuestStatus(q, status.getStatus());
             long cTime = status.getTime();
             if (cTime > -1) {
@@ -1108,9 +1112,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         }
 
         new QDQuestStatus().character.eq(character).delete();
-        for (MapleQuestStatus q : quests.values()) {
-            if (q.getQuest() == null||q.getQuest().getId() < 0){
-                LOGGER.error("保存任務失敗:{}"+q);
+        Iterator<MapleQuestStatus> questsIt = quests.values().iterator();
+        while (questsIt.hasNext()) {
+            MapleQuestStatus q = questsIt.next();
+            if (q.getQuest() == null || q.getQuest().getId() < 0) {
+                LOGGER.error("保存任務失敗:{}", q);
+                questsIt.remove();
                 continue;
             }
             DQuestStatus questStatus = new DQuestStatus();

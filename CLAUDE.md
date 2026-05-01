@@ -84,3 +84,67 @@ All share the same MINA codec filter (`MapleCodecFactory`) for the custom MapleS
 - **Logback** — Logging
 - **JSoup** — HTML parsing (for MapleStory API data)
 - **Guava** — Utilities
+
+## Running the Server
+
+### Startup
+
+```bash
+mvn clean compile -DskipTests
+mvn exec:java -Dexec.mainClass="com.github.mrzhqiang.maplestory.MapleStoryApplication"
+```
+
+The server reads config from `服务端配置.ini` in the working directory. This file is NOT in git.
+
+### JVM System Properties
+
+System properties can be used to toggle features or debug flags at runtime:
+
+```bash
+mvn exec:java -Dexec.mainClass="..." -Dkingmin.allow=true -Dcsopen.maxitems=0
+```
+
+**Important:** The server must be fully restarted for JVM property changes to take effect. A hot-reload is NOT sufficient.
+
+### Packet Hex Dump
+
+To dump raw hex of a specific packet for analysis, add temporary logging code at the packet send site:
+
+```java
+byte[] bytes = packet.getBytes();
+System.out.println("Packet hex: " + HexTool.toString(bytes));
+// or write to a file for large packets
+FileOutputStream fos = new FileOutputStream("/tmp/packet_dump.txt", true);
+fos.write(HexTool.toString(bytes).getBytes());
+fos.close();
+```
+
+The `HexTool.toString(byte[])` method in `tools/HexTool.java` formats bytes as space-separated uppercase hex.
+
+### MySQL Access
+
+Database `ms079` on localhost:3306. Credentials in `服务端配置.ini` (datasource.* properties).
+
+Useful queries:
+- `SELECT id, name, level, job, str, dex, int_, luk, hp, max_hp, mp, max_mp, exp, map FROM characters WHERE name='<char>';`
+- Skills: `SELECT s.* FROM skills s JOIN characters c ON s.character_id = c.id WHERE c.name='<char>';`
+- Items: `SELECT i.* FROM inventory_items i JOIN characters c ON i.character_id = c.id WHERE c.name='<char>';`
+
+## Client Crash Debugging
+
+### ACCESS_VIOLATION
+
+MapleStory v079 client crashes with ACCESS_VIOLATION when it reads memory that hasn't been allocated. Common causes:
+
+1. **Malformed packet** — client reads past the end of the received buffer, or interprets a value incorrectly causing wrong-sized allocations
+2. **Invalid data reference** — an ID in the packet (item, skill, map, etc.) doesn't exist in the client's WZ data, causing null pointer dereference
+3. **Type/length mismatch** — server writes a different number of bytes than the client expects for a field (e.g., writing 4 bytes where client reads 2)
+4. **Missing or extra fields** — packet structure doesn't match what the client expects (missing a required section, or extra data before expected fields)
+
+### Key Packet Files for CS_OPEN
+
+- `tools/packet/MTSCSPacket.java` — `warpCS()` method builds the CS_OPEN packet (~30KB)
+- `tools/packet/PacketHelper.java` — `addCharStats()` (line 263), `addItemInfo()` shared helpers
+- `client/PlayerStats.java` — `connectData()` writes STR/DEX/INT/LUK/HP/MP as shorts
+- `handling/cashshop/handler/CashShopOperation.java` — calls `warpCS()` then `CSUpdate()` (4 follow-up packets)
+- `sendops.properties` — opcode 0x83 = CS_OPEN

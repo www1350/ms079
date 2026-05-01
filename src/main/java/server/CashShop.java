@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class CashShop implements Serializable {
@@ -228,6 +229,9 @@ public class CashShop implements Serializable {
         List<Pair<IItem, String>> gifts = new QDGift().recipient.eq(characterId).findStream()
                 .map(it -> {
                     CashItemInfo cItem = CashItemFactory.getInstance().getItem(it.getSn());
+                    if (cItem == null) {
+                        return null;
+                    }
                     IItem item = toItem(cItem, it.getUniqueId(), it.getFrom());
                     uniqueids.add(item.getUniqueId());
                     List<CashItemInfo> packages = CashItemFactory.getInstance().getPackageItems(cItem.getId());
@@ -240,6 +244,7 @@ public class CashShop implements Serializable {
                     }
                     return new Pair<>(item, it.getMessage());
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         new QDGift().recipient.eq(characterId).delete();

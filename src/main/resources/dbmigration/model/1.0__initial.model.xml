@@ -1,0 +1,1117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="aclog" pkName="pk_aclog">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="account_id" type="integer" notnull="true" uniqueOneToOne="uq_aclog_account_id" references="accounts.id" foreignKeyName="fk_aclog_account_id"/>
+            <column name="boss_id" type="varchar" notnull="true"/>
+            <column name="last_attempt" type="localdatetime" notnull="true"/>
+        </createTable>
+        <createTable name="accounts" pkName="pk_accounts">
+            <column name="id" type="integer" primaryKey="true" comment="账户ID"/>
+            <column name="name" type="varchar(16)" notnull="true" comment="账户名"/>
+            <column name="password" type="varchar" notnull="true" comment="密码"/>
+            <column name="salt" type="varchar" comment="密码盐"/>
+            <column name="second_password" type="varchar" comment="二级密码"/>
+            <column name="second_salt" type="varchar" comment="二级密码盐"/>
+            <column name="state" type="integer" notnull="true" checkConstraint="check ( state in (0,1,2,3,4,5,6))" checkConstraintName="ck_accounts_state" comment="登录状态：0-未登录(默认)，1-服务过渡，2-已登录，3-等待，4-商城过渡，5-商城已登录，6-切换频道。"/>
+            <column name="last_login" type="localdatetime" comment="上次登录的时间戳"/>
+            <column name="last_logon" type="localdatetime" comment="上次离线的时间戳"/>
+            <column name="expiration" type="localdatetime"/>
+            <column name="gender" type="integer" notnull="true" checkConstraint="check ( gender in (0,1,10))" checkConstraintName="ck_accounts_gender" comment="性别：0-男，1-女，10-未知"/>
+            <column name="birthday" type="date" comment="生日"/>
+            <column name="email" type="varchar" comment="电子邮箱地址"/>
+            <column name="mac" type="varchar" comment="网卡地址"/>
+            <column name="session_ip" type="varchar" comment="会话IP地址"/>
+            <column name="gm" type="integer" notnull="true" comment="GM 等级：0-非GM-普通用户，1-1级GM，2-2级GM，..."/>
+            <column name="vip" type="integer"/>
+            <column name="cash" type="bigint"/>
+            <column name="m_points" type="bigint"/>
+            <column name="points" type="bigint" notnull="true"/>
+            <column name="v_points" type="bigint" notnull="true"/>
+            <column name="money" type="bigint" notnull="true"/>
+            <column name="money_b" type="bigint" notnull="true"/>
+            <column name="last_gain_hm" type="bigint" notnull="true"/>
+            <column name="paypal_nx" type="integer"/>
+            <column name="banned" type="boolean" notnull="true" comment="是否禁用：0-false-未禁用，!0-true-禁用"/>
+            <column name="ban_reason" type="varchar" comment="禁用原因"/>
+            <column name="temp_ban" type="localdatetime" comment="临时禁用时间"/>
+            <column name="g_Reason" type="integer"/>
+            <column name="created" type="localdatetime" notnull="true" comment="创建时间"/>
+            <column name="modified" type="localdatetime" notnull="true" comment="修改时间"/>
+            <uniqueConstraint name="uq_accounts_name" columnNames="name" oneToOne="false" nullableColumns=""/>
+        </createTable>
+        <createTable name="accounts_info" pkName="pk_accounts_info">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="account_id" type="integer" notnull="true" uniqueOneToOne="uq_accounts_info_account_id" references="accounts.id" foreignKeyName="fk_accounts_info_account_id"/>
+            <column name="world_id" type="integer" notnull="true"/>
+            <column name="card_slots" type="integer" notnull="true"/>
+            <column name="game_points" type="integer" notnull="true"/>
+            <column name="updated" type="localdatetime"/>
+            <column name="game_points_pd" type="integer" notnull="true"/>
+            <column name="game_points_ps" type="integer" notnull="true"/>
+            <column name="sjrw" type="integer" notnull="true"/>
+            <column name="sgrw" type="integer" notnull="true"/>
+            <column name="fbrw" type="integer"/>
+            <column name="sbossrw" type="integer"/>
+            <column name="sgrwa" type="integer"/>
+            <column name="fbrwa" type="integer"/>
+            <column name="sbossrwa" type="integer"/>
+            <column name="lb" type="integer"/>
+        </createTable>
+        <createTable name="achievements" pkName="pk_achievements">
+            <column name="achievement_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="char_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="account_id" type="integer" notnull="true" uniqueOneToOne="uq_achievements_account_id" references="accounts.id" foreignKeyName="fk_achievements_account_id"/>
+        </createTable>
+        <createTable name="alliances" pkName="pk_alliances">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="leader_id" type="integer" notnull="true" uniqueOneToOne="uq_alliances_leader_id" references="characters.id" foreignKeyName="fk_alliances_leader_id"/>
+            <column name="guild1" type="integer" notnull="true" uniqueOneToOne="uq_alliances_guild1" references="guilds.id" foreignKeyName="fk_alliances_guild1"/>
+            <column name="guild2" type="integer" notnull="true" uniqueOneToOne="uq_alliances_guild2" references="guilds.id" foreignKeyName="fk_alliances_guild2"/>
+            <column name="guild3" type="integer" uniqueOneToOne="uq_alliances_guild3" references="guilds.id" foreignKeyName="fk_alliances_guild3"/>
+            <column name="guild4" type="integer" uniqueOneToOne="uq_alliances_guild4" references="guilds.id" foreignKeyName="fk_alliances_guild4"/>
+            <column name="guild5" type="integer" uniqueOneToOne="uq_alliances_guild5" references="guilds.id" foreignKeyName="fk_alliances_guild5"/>
+            <column name="rank1" type="varchar" notnull="true"/>
+            <column name="rank2" type="varchar" notnull="true"/>
+            <column name="rank3" type="varchar" notnull="true"/>
+            <column name="rank4" type="varchar" notnull="true"/>
+            <column name="rank5" type="varchar" notnull="true"/>
+            <column name="capacity" type="integer" notnull="true"/>
+            <column name="notice" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="bbs_replies" pkName="pk_bbs_replies">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="thread_id" type="integer" notnull="true" references="bbs_threads.id" foreignKeyName="fk_bbs_replies_thread_id" foreignKeyIndex="ix_bbs_replies_thread_id"/>
+            <column name="poster_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_bbs_replies_poster_id" foreignKeyIndex="ix_bbs_replies_poster_id"/>
+            <column name="timestamp" type="localdatetime" notnull="true"/>
+            <column name="content" type="varchar" notnull="true"/>
+            <column name="guild_id" type="integer" references="guilds.id" foreignKeyName="fk_bbs_replies_guild_id" foreignKeyIndex="ix_bbs_replies_guild_id"/>
+        </createTable>
+        <createTable name="bbs_threads" pkName="pk_bbs_threads">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="poster_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_bbs_threads_poster_id" foreignKeyIndex="ix_bbs_threads_poster_id"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="timestamp" type="localdatetime" notnull="true"/>
+            <column name="icon" type="integer" notnull="true"/>
+            <column name="start_post" type="varchar" notnull="true"/>
+            <column name="guild_id" type="integer" references="guilds.id" foreignKeyName="fk_bbs_threads_guild_id" foreignKeyIndex="ix_bbs_threads_guild_id"/>
+            <column name="local_thread_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="bosslog" pkName="pk_bosslog">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_bosslog_character_id" foreignKeyIndex="ix_bosslog_character_id"/>
+            <column name="boss_id" type="varchar" notnull="true"/>
+            <column name="last_attempt" type="localdatetime" notnull="true"/>
+        </createTable>
+        <createTable name="buddies" pkName="pk_buddies">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" uniqueOneToOne="uq_buddies_character_id"/>
+            <column name="buddy_id" type="integer" notnull="true"/>
+            <column name="pending" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="group_name" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="cashshop_modified_items" pkName="pk_cashshop_modified_items">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="discount_price" type="integer" notnull="true"/>
+            <column name="mark" type="integer" notnull="true"/>
+            <column name="show_up" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="priority" type="integer" notnull="true"/>
+            <column name="package_field" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="period" type="integer" notnull="true"/>
+            <column name="gender" type="integer" notnull="true"/>
+            <column name="count" type="integer" notnull="true"/>
+            <column name="meso" type="integer" notnull="true"/>
+            <column name="unk_1" type="integer" notnull="true"/>
+            <column name="unk_2" type="integer" notnull="true"/>
+            <column name="unk_3" type="integer" notnull="true"/>
+            <column name="extra_flags" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="characters" pkName="pk_characters">
+            <column name="id" type="integer" primaryKey="true" comment="角色ID"/>
+            <column name="name" type="varchar" notnull="true" comment="角色名字"/>
+            <column name="account_id" type="integer" notnull="true" references="accounts.id" foreignKeyName="fk_characters_account_id" foreignKeyIndex="ix_characters_account_id"/>
+            <column name="world" type="integer" notnull="true" comment="所在世界：官方版本有四个大区，公益服则没有世界的划分，所以此字段没有使用"/>
+            <column name="level" type="integer" notnull="true" comment="等级：目前是 1-255 级"/>
+            <column name="exp" type="integer" notnull="true" comment="当前经验值"/>
+            <column name="str" type="integer" notnull="true" comment="力量"/>
+            <column name="dex" type="integer" notnull="true" comment="敏捷"/>
+            <column name="luk" type="integer" notnull="true" comment="运气"/>
+            <column name="int_" type="integer" notnull="true" comment="智力"/>
+            <column name="hp" type="integer" notnull="true" comment="当前生命值"/>
+            <column name="mp" type="integer" notnull="true" comment="当前魔法值"/>
+            <column name="max_hp" type="integer" notnull="true" comment="最大生命值"/>
+            <column name="max_mp" type="integer" notnull="true" comment="最大魔法值"/>
+            <column name="meso" type="integer" notnull="true"/>
+            <column name="hp_ap_used" type="integer" notnull="true"/>
+            <column name="job" type="integer" notnull="true" comment="职业"/>
+            <column name="skin_color" type="integer" notnull="true" comment="皮肤颜色"/>
+            <column name="gender" type="integer" notnull="true" checkConstraint="check ( gender in (0,1,10))" checkConstraintName="ck_characters_gender" comment="性别"/>
+            <column name="fame" type="integer" notnull="true" comment="人气"/>
+            <column name="hair" type="integer" notnull="true" comment="发型"/>
+            <column name="face" type="integer" notnull="true" comment="脸型"/>
+            <column name="ap" type="integer" notnull="true" comment="魔法力？"/>
+            <column name="map" type="integer" notnull="true" comment="地图"/>
+            <column name="spawn_point" type="integer" notnull="true" comment="出生点"/>
+            <column name="gm" type="integer" notnull="true"/>
+            <column name="party" type="integer" notnull="true"/>
+            <column name="buddy_capacity" type="integer" notnull="true" comment="好友数量上限"/>
+            <column name="guild_id" type="integer"/>
+            <column name="guild_rank" type="integer" notnull="true"/>
+            <column name="alliance_rank" type="integer" notnull="true"/>
+            <column name="monster_book_cover" type="integer" notnull="true" comment="怪物书封面"/>
+            <column name="dojo_pts" type="integer" notnull="true" comment="道场积分"/>
+            <column name="dojo_record" type="integer" notnull="true" comment="道场记录"/>
+            <column name="pets" type="varchar" notnull="true" comment="宠物"/>
+            <column name="sp" type="varchar" notnull="true"/>
+            <column name="subcategory" type="integer" notnull="true"/>
+            <column name="jaguar" type="integer" notnull="true"/>
+            <column name="rank_" type="integer" notnull="true"/>
+            <column name="move_rank" type="integer" notnull="true"/>
+            <column name="job_rank" type="integer" notnull="true"/>
+            <column name="job_move_rank" type="integer" notnull="true"/>
+            <column name="marriage_id" type="integer" uniqueOneToOne="uq_characters_marriage_id"/>
+            <column name="family_id" type="integer"/>
+            <column name="senior_id" type="integer" uniqueOneToOne="uq_characters_senior_id"/>
+            <column name="junior1" type="integer" uniqueOneToOne="uq_characters_junior1"/>
+            <column name="junior2" type="integer" uniqueOneToOne="uq_characters_junior2"/>
+            <column name="current_rep" type="integer" notnull="true"/>
+            <column name="total_rep" type="integer" notnull="true"/>
+            <column name="char_message" type="varchar" notnull="true"/>
+            <column name="expression" type="integer" notnull="true"/>
+            <column name="constellation" type="integer" notnull="true"/>
+            <column name="blood" type="integer" notnull="true"/>
+            <column name="month" type="integer" notnull="true"/>
+            <column name="day" type="integer" notnull="true"/>
+            <column name="beans" type="integer" notnull="true"/>
+            <column name="prefix" type="decimal" notnull="true"/>
+            <column name="skillzq" type="integer" notnull="true"/>
+            <column name="grname" type="integer" notnull="true"/>
+            <column name="jzname" type="integer" notnull="true"/>
+            <column name="mrfbrw" type="integer" notnull="true"/>
+            <column name="mrsjrw" type="integer" notnull="true"/>
+            <column name="mrsgrw" type="integer" notnull="true"/>
+            <column name="mrsbossrw" type="integer" notnull="true"/>
+            <column name="hythd" type="integer" notnull="true"/>
+            <column name="mrsgrwa" type="integer" notnull="true"/>
+            <column name="mrfbrwa" type="integer" notnull="true"/>
+            <column name="mrsbossrwa" type="integer" notnull="true"/>
+            <column name="mrsgrws" type="integer" notnull="true"/>
+            <column name="mrsbossrws" type="integer" notnull="true"/>
+            <column name="mrfbrws" type="integer" notnull="true"/>
+            <column name="mrsgrwas" type="integer" notnull="true"/>
+            <column name="mrsbossrwas" type="integer" notnull="true"/>
+            <column name="mrfbrwas" type="integer" notnull="true"/>
+            <column name="ddj" type="integer"/>
+            <column name="vip" type="integer"/>
+            <column name="bosslog" type="integer"/>
+            <column name="djjl" type="integer" notnull="true"/>
+            <column name="qiandao" type="integer" notnull="true"/>
+            <column name="mountid" type="integer" notnull="true"/>
+            <column name="sg" type="integer" notnull="true"/>
+            <column name="created" type="localdatetime" notnull="true" comment="创建时间"/>
+        </createTable>
+        <createTable name="character_slots" pkName="pk_character_slots">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="acc_id" type="integer" notnull="true" references="accounts.id" foreignKeyName="fk_character_slots_acc_id" foreignKeyIndex="ix_character_slots_acc_id"/>
+            <column name="world_id" type="integer" notnull="true"/>
+            <column name="char_slots" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="cheatlog" pkName="pk_cheatlog">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_cheatlog_character_id" foreignKeyIndex="ix_cheatlog_character_id"/>
+            <column name="offense" type="varchar" notnull="true"/>
+            <column name="count" type="integer" notnull="true"/>
+            <column name="last_offense_time" type="localdatetime" notnull="true"/>
+            <column name="param" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="csequipment" pkName="pk_csequipment">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="inventory_item_id" type="integer" uniqueOneToOne="uq_csequipment_inventory_item_id" references="csitems.id" foreignKeyName="fk_csequipment_inventory_item_id"/>
+            <column name="upgrade_slots" type="integer" notnull="true"/>
+            <column name="level" type="integer" notnull="true"/>
+            <column name="str" type="integer" notnull="true"/>
+            <column name="dex" type="integer" notnull="true"/>
+            <column name="intelligence" type="integer" notnull="true"/>
+            <column name="luk" type="integer" notnull="true"/>
+            <column name="hp" type="integer" notnull="true"/>
+            <column name="mp" type="integer" notnull="true"/>
+            <column name="watk" type="integer"/>
+            <column name="matk" type="integer" notnull="true"/>
+            <column name="wdef" type="integer" notnull="true"/>
+            <column name="mdef" type="integer" notnull="true"/>
+            <column name="acc" type="integer" notnull="true"/>
+            <column name="avoid" type="integer" notnull="true"/>
+            <column name="hands" type="integer" notnull="true"/>
+            <column name="speed" type="integer" notnull="true"/>
+            <column name="jump" type="integer" notnull="true"/>
+            <column name="vicious_hammer" type="integer" notnull="true"/>
+            <column name="item_exp" type="integer" notnull="true"/>
+            <column name="durability" type="integer" notnull="true"/>
+            <column name="enhance" type="integer" notnull="true"/>
+            <column name="potential1" type="integer" notnull="true"/>
+            <column name="potential2" type="integer" notnull="true"/>
+            <column name="potential3" type="integer" notnull="true"/>
+            <column name="hp_r" type="integer" notnull="true"/>
+            <column name="mp_r" type="integer" notnull="true"/>
+            <column name="item_level" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="csitems" pkName="pk_csitems">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" references="characters.id" foreignKeyName="fk_csitems_character_id" foreignKeyIndex="ix_csitems_character_id"/>
+            <column name="account_id" type="integer" references="accounts.id" foreignKeyName="fk_csitems_account_id" foreignKeyIndex="ix_csitems_account_id"/>
+            <column name="package_id" type="integer"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="inventory_type" type="integer" notnull="true"/>
+            <column name="position" type="integer" notnull="true"/>
+            <column name="quantity" type="integer" notnull="true"/>
+            <column name="owner" type="varchar"/>
+            <column name="gm_log" type="varchar"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+            <column name="flag" type="integer" notnull="true"/>
+            <column name="expire_date" type="localdatetime" notnull="true"/>
+            <column name="type" type="integer" notnull="true"/>
+            <column name="sender" type="varchar" notnull="true"/>
+            <column name="item_level" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="drop_data" pkName="pk_drop_data">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="dropper_id" type="integer" notnull="true"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="min_quantity" type="integer" notnull="true"/>
+            <column name="max_quantity" type="integer" notnull="true"/>
+            <column name="quest_id" type="integer" notnull="true"/>
+            <column name="chance" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="drop_data_global" pkName="pk_drop_data_global">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="continent" type="integer" notnull="true"/>
+            <column name="drop_type" type="integer" notnull="true"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="min_quantity" type="integer" notnull="true"/>
+            <column name="max_quantity" type="integer" notnull="true"/>
+            <column name="quest_id" type="integer" notnull="true"/>
+            <column name="chance" type="integer" notnull="true"/>
+            <column name="comments" type="varchar"/>
+        </createTable>
+        <createTable name="drop_data_vana" pkName="pk_drop_data_vana">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="dropper_id" type="integer" notnull="true"/>
+            <column name="flags" type="varchar" notnull="true"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="min_quantity" type="integer" notnull="true"/>
+            <column name="max_quantity" type="integer" notnull="true"/>
+            <column name="quest_id" type="integer" notnull="true"/>
+            <column name="chance" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="dueyequipment" pkName="pk_dueyequipment">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="inventoryitemid" type="integer" notnull="true" uniqueOneToOne="uq_dueyequipment_inventoryitemid" references="dueyitems.id" foreignKeyName="fk_dueyequipment_inventoryitemid"/>
+            <column name="upgrade_slots" type="integer" notnull="true"/>
+            <column name="level" type="integer" notnull="true"/>
+            <column name="str" type="integer" notnull="true"/>
+            <column name="dex" type="integer" notnull="true"/>
+            <column name="intelligence" type="integer" notnull="true"/>
+            <column name="luk" type="integer" notnull="true"/>
+            <column name="hp" type="integer" notnull="true"/>
+            <column name="mp" type="integer" notnull="true"/>
+            <column name="watk" type="integer" notnull="true"/>
+            <column name="matk" type="integer" notnull="true"/>
+            <column name="wdef" type="integer" notnull="true"/>
+            <column name="mdef" type="integer" notnull="true"/>
+            <column name="acc" type="integer" notnull="true"/>
+            <column name="avoid" type="integer" notnull="true"/>
+            <column name="hands" type="integer" notnull="true"/>
+            <column name="speed" type="integer" notnull="true"/>
+            <column name="jump" type="integer" notnull="true"/>
+            <column name="vicious_hammer" type="integer" notnull="true"/>
+            <column name="item_exp" type="integer" notnull="true"/>
+            <column name="durability" type="integer" notnull="true"/>
+            <column name="enhance" type="integer" notnull="true"/>
+            <column name="potential1" type="integer" notnull="true"/>
+            <column name="potential2" type="integer" notnull="true"/>
+            <column name="potential3" type="integer" notnull="true"/>
+            <column name="hp_r" type="integer" notnull="true"/>
+            <column name="mp_r" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="dueyitems" pkName="pk_dueyitems">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" references="characters.id" foreignKeyName="fk_dueyitems_character_id" foreignKeyIndex="ix_dueyitems_character_id"/>
+            <column name="account_id" type="integer" references="accounts.id" foreignKeyName="fk_dueyitems_account_id" foreignKeyIndex="ix_dueyitems_account_id"/>
+            <column name="package_id" type="integer" uniqueOneToOne="uq_dueyitems_package_id" references="dueypackages.id" foreignKeyName="fk_dueyitems_package_id"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="inventory_type" type="integer" notnull="true"/>
+            <column name="position" type="integer" notnull="true"/>
+            <column name="quantity" type="integer" notnull="true"/>
+            <column name="owner" type="varchar"/>
+            <column name="gm_log" type="varchar"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+            <column name="flag" type="integer" notnull="true"/>
+            <column name="expire_date" type="localdatetime" notnull="true"/>
+            <column name="type" type="integer" notnull="true"/>
+            <column name="sender" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="dueypackages" pkName="pk_dueypackages">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="receiver_id" type="integer" notnull="true"/>
+            <column name="sender_name" type="varchar" notnull="true"/>
+            <column name="mesos" type="integer"/>
+            <column name="timestamp" type="localdatetime"/>
+            <column name="checked" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="type" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="eventstats" pkName="pk_eventstats">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="event" type="varchar" notnull="true"/>
+            <column name="instance" type="varchar" notnull="true"/>
+            <column name="character_id" type="integer" notnull="true"/>
+            <column name="channel" type="integer" notnull="true"/>
+            <column name="time" type="localdatetime" notnull="true"/>
+        </createTable>
+        <createTable name="famelog" pkName="pk_famelog">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" uniqueOneToOne="uq_famelog_character_id" references="characters.id" foreignKeyName="fk_famelog_character_id"/>
+            <column name="characterid_to" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_famelog_characterid_to" foreignKeyIndex="ix_famelog_characterid_to"/>
+            <column name="when" type="localdatetime" notnull="true"/>
+        </createTable>
+        <createTable name="families" pkName="pk_families">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="leader_id" type="integer" notnull="true" uniqueOneToOne="uq_families_leader_id" references="characters.id" foreignKeyName="fk_families_leader_id"/>
+            <column name="notice" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="fishingjf" pkName="pk_fishingjf">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="accname" type="varchar" notnull="true"/>
+            <column name="fishing" type="integer" notnull="true"/>
+            <column name="xx" type="integer" notnull="true"/>
+            <column name="xxx" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="fishing_rewards" pkName="pk_fishing_rewards">
+            <column name="id" type="integer" notnull="true"/>
+            <column name="chance" type="integer" notnull="true"/>
+            <column name="expiration" type="localdatetime"/>
+            <column name="name" type="varchar"/>
+        </createTable>
+        <createTable name="game_poll_reply" pkName="pk_game_poll_reply">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="account_id" type="integer" notnull="true" references="accounts.id" foreignKeyName="fk_game_poll_reply_account_id" foreignKeyIndex="ix_game_poll_reply_account_id"/>
+            <column name="select_ans" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="gifts" pkName="pk_gifts">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="recipient" type="integer" notnull="true"/>
+            <column name="from_" type="varchar" notnull="true"/>
+            <column name="message" type="varchar" notnull="true"/>
+            <column name="sn" type="integer" notnull="true"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="gmlog" pkName="pk_gmlog">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="cid" type="integer" notnull="true"/>
+            <column name="command" type="varchar" notnull="true"/>
+            <column name="map_id" type="integer" notnull="true"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="ip" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="guilds" pkName="pk_guilds">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="leader" type="integer" notnull="true" uniqueOneToOne="uq_guilds_leader"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="gp" type="integer" notnull="true"/>
+            <column name="logo" type="integer"/>
+            <column name="logo_color" type="integer" notnull="true"/>
+            <column name="logo_bg" type="integer" notnull="true"/>
+            <column name="logo_bg_color" type="integer" notnull="true"/>
+            <column name="rank1title" type="varchar" notnull="true"/>
+            <column name="rank2title" type="varchar" notnull="true"/>
+            <column name="rank3title" type="varchar" notnull="true"/>
+            <column name="rank4title" type="varchar" notnull="true"/>
+            <column name="rank5title" type="varchar" notnull="true"/>
+            <column name="capacity" type="integer" notnull="true"/>
+            <column name="notice" type="varchar"/>
+            <column name="signature" type="integer" notnull="true"/>
+            <column name="alliance" type="integer" uniqueOneToOne="uq_guilds_alliance" references="alliances.id" foreignKeyName="fk_guilds_alliance"/>
+        </createTable>
+        <createTable name="hiredmerch" pkName="pk_hiredmerch">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" references="characters.id" foreignKeyName="fk_hiredmerch_character_id" foreignKeyIndex="ix_hiredmerch_character_id"/>
+            <column name="account_id" type="integer" references="accounts.id" foreignKeyName="fk_hiredmerch_account_id" foreignKeyIndex="ix_hiredmerch_account_id"/>
+            <column name="map" type="integer" notnull="true"/>
+            <column name="channel" type="integer"/>
+            <column name="mesos" type="integer"/>
+            <column name="time" type="localdatetime"/>
+        </createTable>
+        <createTable name="hiredmerchequipment" pkName="pk_hiredmerchequipment">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="inventory_item_id" type="integer" notnull="true" uniqueOneToOne="uq_hiredmerchequipment_inventory_item_id" references="hiredmerchitems.id" foreignKeyName="fk_hiredmerchequipment_inventory_item_id"/>
+            <column name="upgrade_slots" type="integer" notnull="true"/>
+            <column name="level" type="integer" notnull="true"/>
+            <column name="str" type="integer" notnull="true"/>
+            <column name="dex" type="integer" notnull="true"/>
+            <column name="intelligence" type="integer" notnull="true"/>
+            <column name="luk" type="integer" notnull="true"/>
+            <column name="hp" type="integer" notnull="true"/>
+            <column name="mp" type="integer" notnull="true"/>
+            <column name="watk" type="integer" notnull="true"/>
+            <column name="matk" type="integer" notnull="true"/>
+            <column name="wdef" type="integer" notnull="true"/>
+            <column name="mdef" type="integer" notnull="true"/>
+            <column name="acc" type="integer" notnull="true"/>
+            <column name="avoid" type="integer" notnull="true"/>
+            <column name="hands" type="integer" notnull="true"/>
+            <column name="speed" type="integer" notnull="true"/>
+            <column name="jump" type="integer" notnull="true"/>
+            <column name="vicious_hammer" type="integer" notnull="true"/>
+            <column name="item_exp" type="integer" notnull="true"/>
+            <column name="durability" type="integer" notnull="true"/>
+            <column name="enhance" type="integer" notnull="true"/>
+            <column name="potential1" type="integer" notnull="true"/>
+            <column name="potential2" type="integer" notnull="true"/>
+            <column name="potential3" type="integer" notnull="true"/>
+            <column name="hp_r" type="integer" notnull="true"/>
+            <column name="mp_r" type="integer" notnull="true"/>
+            <column name="item_level" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="hiredmerchitems" pkName="pk_hiredmerchitems">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" references="characters.id" foreignKeyName="fk_hiredmerchitems_character_id" foreignKeyIndex="ix_hiredmerchitems_character_id"/>
+            <column name="account_id" type="integer" references="accounts.id" foreignKeyName="fk_hiredmerchitems_account_id" foreignKeyIndex="ix_hiredmerchitems_account_id"/>
+            <column name="package_id" type="integer"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="inventory_type" type="integer" notnull="true"/>
+            <column name="position" type="integer" notnull="true"/>
+            <column name="quantity" type="integer" notnull="true"/>
+            <column name="owner" type="varchar"/>
+            <column name="gm_log" type="varchar"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+            <column name="flag" type="integer" notnull="true"/>
+            <column name="expire_date" type="localdatetime" notnull="true"/>
+            <column name="type" type="integer" notnull="true"/>
+            <column name="sender" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="htsquads" pkName="pk_htsquads">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="channel" type="integer" notnull="true"/>
+            <column name="leader_id" type="integer" notnull="true"/>
+            <column name="status" type="integer" notnull="true"/>
+            <column name="members" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="hypay" pkName="pk_hypay">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="acc_name" type="varchar"/>
+            <column name="pay_used" type="integer" notnull="true"/>
+            <column name="pay" type="integer" notnull="true"/>
+            <column name="pay_reward" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="ipbans" pkName="pk_ipbans">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="ip" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="inventoryequipment" pkName="pk_inventoryequipment">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="inventory_item_id" type="integer" notnull="true" uniqueOneToOne="uq_inventoryequipment_inventory_item_id" references="inventoryitems.id" foreignKeyName="fk_inventoryequipment_inventory_item_id"/>
+            <column name="upgrade_slots" type="integer" notnull="true"/>
+            <column name="level" type="integer" notnull="true"/>
+            <column name="str" type="integer" notnull="true"/>
+            <column name="dex" type="integer" notnull="true"/>
+            <column name="intelligence" type="integer" notnull="true"/>
+            <column name="luk" type="integer" notnull="true"/>
+            <column name="hp" type="integer" notnull="true"/>
+            <column name="mp" type="integer" notnull="true"/>
+            <column name="watk" type="integer" notnull="true"/>
+            <column name="matk" type="integer" notnull="true"/>
+            <column name="wdef" type="integer" notnull="true"/>
+            <column name="mdef" type="integer" notnull="true"/>
+            <column name="acc" type="integer" notnull="true"/>
+            <column name="avoid" type="integer" notnull="true"/>
+            <column name="hands" type="integer" notnull="true"/>
+            <column name="speed" type="integer" notnull="true"/>
+            <column name="jump" type="integer" notnull="true"/>
+            <column name="vicious_hammer" type="integer" notnull="true"/>
+            <column name="item_exp" type="integer" notnull="true"/>
+            <column name="durability" type="integer" notnull="true"/>
+            <column name="enhance" type="integer" notnull="true"/>
+            <column name="potential1" type="integer" notnull="true"/>
+            <column name="potential2" type="integer" notnull="true"/>
+            <column name="potential3" type="integer" notnull="true"/>
+            <column name="hp_r" type="integer" notnull="true"/>
+            <column name="mp_r" type="integer" notnull="true"/>
+            <column name="item_level" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="inventoryitems" pkName="pk_inventoryitems">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" references="characters.id" foreignKeyName="fk_inventoryitems_character_id" foreignKeyIndex="ix_inventoryitems_character_id"/>
+            <column name="account_id" type="integer" references="accounts.id" foreignKeyName="fk_inventoryitems_account_id" foreignKeyIndex="ix_inventoryitems_account_id"/>
+            <column name="package_id" type="integer"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="inventory_type" type="integer" notnull="true"/>
+            <column name="position" type="integer" notnull="true"/>
+            <column name="quantity" type="integer" notnull="true"/>
+            <column name="owner" type="varchar"/>
+            <column name="gm_log" type="varchar"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+            <column name="flag" type="integer" notnull="true"/>
+            <column name="expire_date" type="bigint" notnull="true"/>
+            <column name="type" type="integer" notnull="true"/>
+            <column name="sender" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="inventorylog" pkName="pk_inventorylog">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="inventory_item_id" type="integer" notnull="true"/>
+            <column name="msg" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="inventoryslot" pkName="pk_inventoryslot">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" uniqueOneToOne="uq_inventoryslot_character_id" references="characters.id" foreignKeyName="fk_inventoryslot_character_id"/>
+            <column name="equip" type="integer"/>
+            <column name="use_" type="integer"/>
+            <column name="setup" type="integer"/>
+            <column name="etc" type="integer"/>
+            <column name="cash" type="integer"/>
+        </createTable>
+        <createTable name="invitecodedata" pkName="pk_invitecodedata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="code" type="varchar" notnull="true"/>
+            <column name="user" type="varchar"/>
+            <column name="time" type="varchar"/>
+            <column name="ip" type="varchar"/>
+            <column name="active" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="ipvotelog" pkName="pk_ipvotelog">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="acc_id" type="varchar" notnull="true"/>
+            <column name="ip_address" type="varchar" notnull="true"/>
+            <column name="vote_time" type="varchar" notnull="true"/>
+            <column name="vote_type" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="keymap" pkName="pk_keymap">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_keymap_character_id" foreignKeyIndex="ix_keymap_character_id"/>
+            <column name="key_" type="integer" notnull="true"/>
+            <column name="type_" type="integer" notnull="true"/>
+            <column name="action" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="loginlog" pkName="pk_loginlog">
+            <column name="account" type="varchar"/>
+            <column name="password" type="varchar"/>
+            <column name="login_type" type="varchar"/>
+            <column name="ip" type="varchar"/>
+            <column name="time" type="varchar"/>
+            <column name="active" type="varchar"/>
+        </createTable>
+        <createTable name="macbans" pkName="pk_macbans">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="mac" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="macfilters" pkName="pk_macfilters">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="filter" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="monsterbook" pkName="pk_monsterbook">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="char_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_monsterbook_char_id" foreignKeyIndex="ix_monsterbook_char_id"/>
+            <column name="card_id" type="integer" notnull="true"/>
+            <column name="level" type="integer"/>
+        </createTable>
+        <createTable name="mountdata" pkName="pk_mountdata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" uniqueOneToOne="uq_mountdata_character_id" references="characters.id" foreignKeyName="fk_mountdata_character_id"/>
+            <column name="level" type="integer" notnull="true"/>
+            <column name="exp" type="integer" notnull="true"/>
+            <column name="fatigue" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="mts_cart" pkName="pk_mts_cart">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true"/>
+            <column name="item_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="mtsequipment" pkName="pk_mtsequipment">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="inventory_item_id" type="integer" notnull="true" uniqueOneToOne="uq_mtsequipment_inventory_item_id" references="mtsitems.id" foreignKeyName="fk_mtsequipment_inventory_item_id"/>
+            <column name="upgrade_slots" type="integer" notnull="true"/>
+            <column name="level" type="integer" notnull="true"/>
+            <column name="str" type="integer" notnull="true"/>
+            <column name="dex" type="integer" notnull="true"/>
+            <column name="int_" type="integer" notnull="true"/>
+            <column name="luk" type="integer" notnull="true"/>
+            <column name="hp" type="integer" notnull="true"/>
+            <column name="mp" type="integer" notnull="true"/>
+            <column name="watk" type="integer" notnull="true"/>
+            <column name="matk" type="integer" notnull="true"/>
+            <column name="wdef" type="integer" notnull="true"/>
+            <column name="mdef" type="integer" notnull="true"/>
+            <column name="acc" type="integer" notnull="true"/>
+            <column name="avoid" type="integer" notnull="true"/>
+            <column name="hands" type="integer" notnull="true"/>
+            <column name="speed" type="integer" notnull="true"/>
+            <column name="jump" type="integer" notnull="true"/>
+            <column name="vicious_hammer" type="integer" notnull="true"/>
+            <column name="item_exp" type="integer" notnull="true"/>
+            <column name="durability" type="integer" notnull="true"/>
+            <column name="enhance" type="integer" notnull="true"/>
+            <column name="potential1" type="integer" notnull="true"/>
+            <column name="potential2" type="integer" notnull="true"/>
+            <column name="potential3" type="integer" notnull="true"/>
+            <column name="hp_r" type="integer" notnull="true"/>
+            <column name="mp_r" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="mtsitems" pkName="pk_mtsitems">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_mtsitems_character_id" foreignKeyIndex="ix_mtsitems_character_id"/>
+            <column name="account_id" type="integer" references="accounts.id" foreignKeyName="fk_mtsitems_account_id" foreignKeyIndex="ix_mtsitems_account_id"/>
+            <column name="package_id" type="integer"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="inventory_type" type="integer" notnull="true"/>
+            <column name="position" type="integer" notnull="true"/>
+            <column name="quantity" type="integer" notnull="true"/>
+            <column name="owner" type="varchar"/>
+            <column name="gm_log" type="varchar"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+            <column name="flag" type="integer" notnull="true"/>
+            <column name="expire_date" type="localdatetime" notnull="true"/>
+            <column name="type" type="integer" notnull="true"/>
+            <column name="sender" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="mts_items" pkName="pk_mts_items">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="tab" type="integer" notnull="true"/>
+            <column name="price" type="integer" notnull="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_mts_items_character_id" foreignKeyIndex="ix_mts_items_character_id"/>
+            <column name="seller" type="varchar" notnull="true"/>
+            <column name="expiration" type="localdatetime" notnull="true"/>
+        </createTable>
+        <createTable name="mtstransfer" pkName="pk_mtstransfer">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" references="characters.id" foreignKeyName="fk_mtstransfer_character_id" foreignKeyIndex="ix_mtstransfer_character_id"/>
+            <column name="account_id" type="integer" references="accounts.id" foreignKeyName="fk_mtstransfer_account_id" foreignKeyIndex="ix_mtstransfer_account_id"/>
+            <column name="package_id" type="integer"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="inventory_type" type="integer" notnull="true"/>
+            <column name="position" type="integer" notnull="true"/>
+            <column name="quantity" type="integer" notnull="true"/>
+            <column name="owner" type="varchar"/>
+            <column name="gm_log" type="varchar"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+            <column name="flag" type="integer" notnull="true"/>
+            <column name="expire_date" type="localdatetime" notnull="true"/>
+            <column name="type" type="integer" notnull="true"/>
+            <column name="sender" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="mtstransferequipment" pkName="pk_mtstransferequipment">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="inventory_item_id" type="integer" notnull="true" uniqueOneToOne="uq_mtstransferequipment_inventory_item_id" references="inventoryitems.id" foreignKeyName="fk_mtstransferequipment_inventory_item_id"/>
+            <column name="upgrade_slots" type="integer" notnull="true"/>
+            <column name="level" type="integer" notnull="true"/>
+            <column name="str" type="integer" notnull="true"/>
+            <column name="dex" type="integer" notnull="true"/>
+            <column name="int_" type="integer" notnull="true"/>
+            <column name="luk" type="integer" notnull="true"/>
+            <column name="hp" type="integer" notnull="true"/>
+            <column name="mp" type="integer" notnull="true"/>
+            <column name="watk" type="integer" notnull="true"/>
+            <column name="matk" type="integer" notnull="true"/>
+            <column name="wdef" type="integer" notnull="true"/>
+            <column name="mdef" type="integer" notnull="true"/>
+            <column name="acc" type="integer" notnull="true"/>
+            <column name="avoid" type="integer" notnull="true"/>
+            <column name="hands" type="integer" notnull="true"/>
+            <column name="speed" type="integer" notnull="true"/>
+            <column name="jump" type="integer" notnull="true"/>
+            <column name="vicious_hammer" type="integer" notnull="true"/>
+            <column name="item_exp" type="integer" notnull="true"/>
+            <column name="durability" type="integer" notnull="true"/>
+            <column name="enhance" type="integer" notnull="true"/>
+            <column name="potential1" type="integer" notnull="true"/>
+            <column name="potential2" type="integer" notnull="true"/>
+            <column name="potential3" type="integer" notnull="true"/>
+            <column name="hp_r" type="integer" notnull="true"/>
+            <column name="mp_r" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="mulungdojo" pkName="pk_mulungdojo">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="char_id" type="integer" notnull="true"/>
+            <column name="stage" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="notes" pkName="pk_notes">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="to_" type="varchar" notnull="true"/>
+            <column name="from_" type="varchar" notnull="true"/>
+            <column name="message" type="varchar" notnull="true"/>
+            <column name="timestamp" type="bigint" notnull="true"/>
+            <column name="gift" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="nxcode" identityType="external" pkName="pk_nxcode">
+            <column name="code" type="varchar" primaryKey="true"/>
+            <column name="valid" type="integer" notnull="true"/>
+            <column name="user" type="varchar"/>
+            <column name="type" type="integer" notnull="true"/>
+            <column name="item" type="integer" notnull="true"/>
+            <column name="size" type="integer"/>
+        </createTable>
+        <createTable name="onetimelog" pkName="pk_onetimelog">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_onetimelog_character_id" foreignKeyIndex="ix_onetimelog_character_id"/>
+            <column name="log" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="pets" pkName="pk_pets">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar"/>
+            <column name="level" type="integer" notnull="true"/>
+            <column name="closeness" type="integer" notnull="true"/>
+            <column name="fullness" type="integer" notnull="true"/>
+            <column name="seconds" type="integer" notnull="true"/>
+            <column name="flags" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="playernpcs" pkName="pk_playernpcs">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="hair" type="integer" notnull="true"/>
+            <column name="face" type="integer" notnull="true"/>
+            <column name="skin" type="integer" notnull="true"/>
+            <column name="x" type="integer" notnull="true"/>
+            <column name="y" type="integer" notnull="true"/>
+            <column name="map" type="integer" notnull="true"/>
+            <column name="char_id" type="integer" notnull="true"/>
+            <column name="script_id" type="integer" notnull="true"/>
+            <column name="foothold" type="integer" notnull="true"/>
+            <column name="dir" type="integer" notnull="true"/>
+            <column name="gender" type="integer" notnull="true" checkConstraint="check ( gender in (0,1,10))" checkConstraintName="ck_playernpcs_gender"/>
+            <column name="pets" type="varchar"/>
+        </createTable>
+        <createTable name="playernpcs_equip" pkName="pk_playernpcs_equip">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="npc_id" type="integer" notnull="true"/>
+            <column name="equip_id" type="integer" notnull="true"/>
+            <column name="equip_pos" type="integer" notnull="true"/>
+            <column name="char_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="prizelog" pkName="pk_prizelog">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="accid" type="integer" notnull="true"/>
+            <column name="boss_id" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="questactions" pkName="pk_questactions">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="quest_id" type="integer" notnull="true"/>
+            <column name="status" type="integer" notnull="true"/>
+            <column name="data" type="varbinary" notnull="true"/>
+        </createTable>
+        <createTable name="questinfo" pkName="pk_questinfo">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_questinfo_character_id" foreignKeyIndex="ix_questinfo_character_id"/>
+            <column name="quest" type="integer" notnull="true"/>
+            <column name="custom_data" type="varchar"/>
+        </createTable>
+        <createTable name="questmonster" pkName="pk_questmonster">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="quest_id" type="integer"/>
+            <column name="monster_id" type="integer"/>
+            <column name="zt" type="integer" notnull="true"/>
+            <column name="char_id" type="integer"/>
+            <column name="name" type="varchar"/>
+        </createTable>
+        <createTable name="questnpc" pkName="pk_questnpc">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="npcid" type="integer"/>
+            <column name="item_id" type="integer"/>
+            <column name="sl" type="integer"/>
+            <column name="zt" type="integer"/>
+            <column name="name" type="varchar"/>
+            <column name="item" type="integer"/>
+            <column name="item_sl" type="integer"/>
+            <column name="money" type="integer"/>
+        </createTable>
+        <createTable name="questrequirements" pkName="pk_questrequirements">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="quest_id" type="integer" notnull="true"/>
+            <column name="status" type="integer" notnull="true"/>
+            <column name="data" type="varbinary" notnull="true"/>
+        </createTable>
+        <createTable name="queststatus" pkName="pk_queststatus">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_queststatus_character_id" foreignKeyIndex="ix_queststatus_character_id"/>
+            <column name="quest" type="integer" notnull="true"/>
+            <column name="status" type="integer" notnull="true"/>
+            <column name="time" type="integer" notnull="true"/>
+            <column name="forfeited" type="integer" notnull="true"/>
+            <column name="custom_data" type="varchar"/>
+        </createTable>
+        <createTable name="queststatusmobs" pkName="pk_queststatusmobs">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="quest_status_id" type="integer" notnull="true" references="queststatus.id" foreignKeyName="fk_queststatusmobs_quest_status_id" foreignKeyIndex="ix_queststatusmobs_quest_status_id"/>
+            <column name="mob" type="integer" notnull="true"/>
+            <column name="count" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="reactordrops" pkName="pk_reactordrops">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="reactor_id" type="integer" notnull="true"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="chance" type="integer" notnull="true"/>
+            <column name="quest_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="regrocklocations" pkName="pk_regrocklocations">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" references="characters.id" foreignKeyName="fk_regrocklocations_character_id" foreignKeyIndex="ix_regrocklocations_character_id"/>
+            <column name="map_id" type="integer"/>
+        </createTable>
+        <createTable name="reports" pkName="pk_reports">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="report_time" type="localdatetime" notnull="true"/>
+            <column name="reporter_id" type="integer" notnull="true"/>
+            <column name="victimid" type="integer" notnull="true"/>
+            <column name="reason" type="integer" notnull="true"/>
+            <column name="chat_log" type="varchar" notnull="true"/>
+            <column name="status" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="rings" pkName="pk_rings">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="partner_ring_id" type="integer" notnull="true"/>
+            <column name="partner_chr_id" type="integer" notnull="true"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="partner_name" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="savedlocations" pkName="pk_savedlocations">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" uniqueOneToOne="uq_savedlocations_character_id" references="characters.id" foreignKeyName="fk_savedlocations_character_id"/>
+            <column name="location_type" type="integer" notnull="true"/>
+            <column name="map" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="shops" pkName="pk_shops">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="npc_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="shopitems" pkName="pk_shopitems">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="shop_id" type="integer" notnull="true"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="price" type="integer" notnull="true"/>
+            <column name="pitch" type="integer" notnull="true"/>
+            <column name="position" type="integer" notnull="true"/>
+            <column name="req_item" type="integer"/>
+            <column name="req_item_q" type="integer"/>
+        </createTable>
+        <createTable name="skills" pkName="pk_skills">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="skill_id" type="integer" notnull="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_skills_character_id" foreignKeyIndex="ix_skills_character_id"/>
+            <column name="skill_level" type="integer" notnull="true"/>
+            <column name="master_level" type="integer" notnull="true"/>
+            <column name="expiration" type="bigint" notnull="true"/>
+        </createTable>
+        <createTable name="skills_cooldowns" pkName="pk_skills_cooldowns">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="char_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_skills_cooldowns_char_id" foreignKeyIndex="ix_skills_cooldowns_char_id"/>
+            <column name="skill_id" type="integer" notnull="true"/>
+            <column name="length" type="bigint" notnull="true"/>
+            <column name="start_time" type="bigint" notnull="true"/>
+        </createTable>
+        <createTable name="skillmacros" pkName="pk_skillmacros">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_skillmacros_character_id" foreignKeyIndex="ix_skillmacros_character_id"/>
+            <column name="position" type="integer" notnull="true"/>
+            <column name="skill1" type="integer" notnull="true"/>
+            <column name="skill2" type="integer" notnull="true"/>
+            <column name="skill3" type="integer" notnull="true"/>
+            <column name="name" type="varchar"/>
+            <column name="shout" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="speedruns" pkName="pk_speedruns">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="type" type="varchar" notnull="true"/>
+            <column name="leader" type="varchar" notnull="true"/>
+            <column name="time_string" type="varchar" notnull="true"/>
+            <column name="time" type="bigint" notnull="true"/>
+            <column name="members" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="storages" pkName="pk_storages">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="account_id" type="integer" uniqueOneToOne="uq_storages_account_id" references="accounts.id" foreignKeyName="fk_storages_account_id"/>
+            <column name="slots" type="integer"/>
+            <column name="meso" type="integer"/>
+        </createTable>
+        <createTable name="trocklocations" pkName="pk_trocklocations">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="character_id" type="integer" references="characters.id" foreignKeyName="fk_trocklocations_character_id" foreignKeyIndex="ix_trocklocations_character_id"/>
+            <column name="map_id" type="integer"/>
+        </createTable>
+        <createTable name="uselog" pkName="pk_uselog">
+            <column name="account" type="varchar"/>
+            <column name="ip" type="varchar"/>
+            <column name="time" type="varchar"/>
+            <column name="use_type" type="varchar"/>
+            <column name="active" type="varchar"/>
+            <column name="new_password" type="varchar"/>
+            <column name="old_password" type="varchar"/>
+        </createTable>
+        <createTable name="wishlist" pkName="pk_wishlist">
+            <column name="character_id" type="integer" notnull="true" references="characters.id" foreignKeyName="fk_wishlist_character_id" foreignKeyIndex="ix_wishlist_character_id"/>
+            <column name="sn" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="wz_customlife" pkName="pk_wz_customlife">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="data_id" type="integer" notnull="true"/>
+            <column name="f" type="integer" notnull="true"/>
+            <column name="hide" type="integer" notnull="true"/>
+            <column name="fh" type="integer" notnull="true"/>
+            <column name="type" type="varchar" notnull="true"/>
+            <column name="cy" type="integer" notnull="true"/>
+            <column name="rx0" type="integer" notnull="true"/>
+            <column name="rx1" type="integer" notnull="true"/>
+            <column name="x" type="integer" notnull="true"/>
+            <column name="y" type="integer" notnull="true"/>
+            <column name="mob_time" type="integer"/>
+            <column name="mid" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="wz_itemadddata" pkName="pk_wz_itemadddata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="item_id" type="integer" notnull="true" references="wz_itemdata.id" foreignKeyName="fk_wz_itemadddata_item_id" foreignKeyIndex="ix_wz_itemadddata_item_id"/>
+            <column name="key" type="varchar" notnull="true"/>
+            <column name="sub_key" type="varchar" notnull="true"/>
+            <column name="value" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="wz_itemdata" pkName="pk_wz_itemdata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar"/>
+            <column name="msg" type="varchar"/>
+            <column name="desc" type="varchar"/>
+            <column name="slot_max" type="integer" notnull="true"/>
+            <column name="price" type="varchar" notnull="true"/>
+            <column name="whole_price" type="integer" notnull="true"/>
+            <column name="state_change" type="integer" notnull="true"/>
+            <column name="flags" type="integer" notnull="true"/>
+            <column name="karma" type="integer" notnull="true"/>
+            <column name="meso" type="integer" notnull="true"/>
+            <column name="monster_book" type="integer" notnull="true"/>
+            <column name="item_make_level" type="integer" notnull="true"/>
+            <column name="quest_id" type="integer" notnull="true"/>
+            <column name="scroll_reqs" type="varchar"/>
+            <column name="consume_item" type="varchar"/>
+            <column name="total_prob" type="integer" notnull="true"/>
+            <column name="inc_skill" type="varchar" notnull="true"/>
+            <column name="replace_id" type="integer" notnull="true"/>
+            <column name="replace_msg" type="varchar" notnull="true"/>
+            <column name="create" type="integer" notnull="true"/>
+            <column name="after_image" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="wz_itemequipdata" pkName="pk_wz_itemequipdata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="item_id" type="integer" notnull="true" references="wz_itemdata.id" foreignKeyName="fk_wz_itemequipdata_item_id" foreignKeyIndex="ix_wz_itemequipdata_item_id"/>
+            <column name="item_level" type="integer" notnull="true"/>
+            <column name="key" type="varchar" notnull="true"/>
+            <column name="value" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="wz_itemrewarddata" pkName="pk_wz_itemrewarddata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="item_id" type="integer" notnull="true" references="wz_itemdata.id" foreignKeyName="fk_wz_itemrewarddata_item_id" foreignKeyIndex="ix_wz_itemrewarddata_item_id"/>
+            <column name="item" type="integer" notnull="true"/>
+            <column name="prob" type="integer" notnull="true"/>
+            <column name="quantity" type="integer" notnull="true"/>
+            <column name="period" type="integer" notnull="true"/>
+            <column name="world_msg" type="varchar" notnull="true"/>
+            <column name="effect" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="wz_mobskilldata" pkName="pk_wz_mobskilldata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="skill_id" type="integer" notnull="true"/>
+            <column name="level" type="integer" notnull="true"/>
+            <column name="hp" type="integer" notnull="true"/>
+            <column name="mp_con" type="integer" notnull="true"/>
+            <column name="x" type="integer" notnull="true"/>
+            <column name="y" type="integer" notnull="true"/>
+            <column name="time" type="integer" notnull="true"/>
+            <column name="prop" type="integer" notnull="true"/>
+            <column name="limit_" type="integer" notnull="true"/>
+            <column name="spawn_effect" type="integer" notnull="true"/>
+            <column name="interval_" type="integer" notnull="true"/>
+            <column name="summons" type="varchar" notnull="true"/>
+            <column name="ltx" type="integer" notnull="true"/>
+            <column name="lty" type="integer" notnull="true"/>
+            <column name="rbx" type="integer" notnull="true"/>
+            <column name="rby" type="integer" notnull="true"/>
+            <column name="once" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="wz_npcnamedata" pkName="pk_wz_npcnamedata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="npc" type="integer" notnull="true"/>
+            <column name="name" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="wz_oxdata" pkName="pk_wz_oxdata">
+            <column name="question_set" type="integer" notnull="true" primaryKey="true"/>
+            <column name="question_id" type="integer" notnull="true" primaryKey="true"/>
+            <column name="question" type="varchar" notnull="true"/>
+            <column name="display" type="varchar" notnull="true"/>
+            <column name="answer" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="wz_questactdata" pkName="pk_wz_questactdata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="quest_id" type="integer" notnull="true" references="wz_questdata.id" foreignKeyName="fk_wz_questactdata_quest_id" foreignKeyIndex="ix_wz_questactdata_quest_id"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="type" type="integer" notnull="true"/>
+            <column name="int_store" type="integer" notnull="true"/>
+            <column name="applicable_jobs" type="varchar" notnull="true"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="wz_questactitemdata" pkName="pk_wz_questactitemdata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="item_id" type="integer" notnull="true"/>
+            <column name="count" type="integer" notnull="true"/>
+            <column name="period" type="integer" notnull="true"/>
+            <column name="gender" type="integer" notnull="true"/>
+            <column name="job" type="integer" notnull="true"/>
+            <column name="job_ex" type="integer" notnull="true"/>
+            <column name="prop" type="integer" notnull="true"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="wz_questactquestdata" pkName="pk_wz_questactquestdata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="quest" type="integer" notnull="true"/>
+            <column name="state" type="integer" notnull="true"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="wz_questactskilldata" pkName="pk_wz_questactskilldata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="skill_id" type="integer" notnull="true"/>
+            <column name="skill_level" type="integer" notnull="true"/>
+            <column name="master_level" type="integer" notnull="true"/>
+            <column name="unique_id" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="wz_questdata" pkName="pk_wz_questdata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="auto_start" type="boolean" notnull="true"/>
+            <column name="auto_pre_complete" type="boolean" notnull="true"/>
+            <column name="view_medal_item" type="integer" notnull="true"/>
+            <column name="selected_skill_id" type="integer" notnull="true"/>
+            <column name="blocked" type="boolean" notnull="true"/>
+            <column name="auto_accept" type="boolean" notnull="true"/>
+            <column name="auto_complete" type="boolean" notnull="true"/>
+        </createTable>
+        <createTable name="wz_questpartydata" pkName="pk_wz_questpartydata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="quest_id" type="integer" notnull="true" references="wz_questdata.id" foreignKeyName="fk_wz_questpartydata_quest_id" foreignKeyIndex="ix_wz_questpartydata_quest_id"/>
+            <column name="rank" type="varchar" notnull="true"/>
+            <column name="mode" type="varchar" notnull="true"/>
+            <column name="property" type="varchar" notnull="true"/>
+            <column name="value" type="integer" notnull="true"/>
+        </createTable>
+        <createTable name="wz_questreqdata" pkName="pk_wz_questreqdata">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="quest_id" type="integer" notnull="true" references="wz_questdata.id" foreignKeyName="fk_wz_questreqdata_quest_id" foreignKeyIndex="ix_wz_questreqdata_quest_id"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="type" type="integer" notnull="true"/>
+            <column name="string_store" type="varchar" notnull="true"/>
+            <column name="int_stores_first" type="varchar" notnull="true"/>
+            <column name="int_stores_second" type="varchar" notnull="true"/>
+        </createTable>
+        <createTable name="zaksquads" pkName="pk_zaksquads">
+            <column name="id" type="integer" primaryKey="true"/>
+            <column name="channel" type="integer" notnull="true"/>
+            <column name="leader_id" type="integer" notnull="true"/>
+            <column name="status" type="integer" notnull="true"/>
+            <column name="members" type="integer" notnull="true"/>
+        </createTable>
+    </changeSet>
+</migration>
