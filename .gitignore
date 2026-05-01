@@ -9,3 +9,4 @@ build
 
 /logs
 /日志
+/.claude/settings.local.json

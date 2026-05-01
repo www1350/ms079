@@ -90,12 +90,39 @@ IDEA 旗舰版可以连接数据库。
 
 ### 4.2 客户端登录
 
+**Windows 10/11 推荐方案（绕过 HShield）：**
+
+旧版 HShield 替换方案在 Windows 11 Canary 及部分 Win10 版本上无法工作（内核驱动拦截导致白屏）。推荐使用 CMS v79-v104 登入器，直接绕过 HShield：
+
 1. 安装 [冒险岛v079客户端][6]
-2. 删除客户端中的 HShield 目录，下载 [079 私服过 HS 文件][7] （提取码：`7i0u`）进行替换
-4. 拷贝 `V079登录器.bat` 到客户端下，双击运行
-    - 如需联网：请编辑 `服务端配置.ini` 和 `V079登录器.bat` 中的相关 IP 地址和端口
-    - 简单起见：仅将所有的 `127.0.0.1` 修改为服务器 IP 地址，端口保持原样
-    - **云服务器还需要在安全组中，打开对应的端口授权，切记切记**
+2. 下载 [CMSLauncher][7] 最新 Release（`Launcher.exe` + `Hook.dll`）
+3. 将 `Launcher.exe` 和 `Hook.dll` 放到客户端根目录
+4. 运行 `Launcher.exe` 即可连接
+
+**端口说明：** 登入器 Hook 将 CMS 官方域名重定向到 `127.0.0.1`，默认连接 **8484** 端口（CMS 标准登录端口）。服务端配置中 `server.login.port` 需设为 `8484`。
+
+**V079登录器.bat：**
+```bat
+taskkill /im MapleStory.exe /f
+Launcher.exe
+```
+
+如需联网：编辑 `服务端配置.ini` 中的 IP 地址，并在云服务器安全组开放 8484 及频道端口（7575+）。
+
+---
+
+**旧方案（仅限 Win7/Win8，不推荐）：**
+
+<details>
+<summary>HS 文件替换方案（点击展开）</summary>
+
+1. 删除客户端中的 HShield 目录
+2. 下载 079 私服过 HS 文件进行替换
+3. 编辑 `HShield/ehsvc.ini`，设置 `GamePath=` 为 MapleStory.exe 完整路径
+4. 运行 `MapleStory.exe 127.0.0.1 9595`
+
+此方案在 Windows 10 及以上版本可能因 HShield 驱动加载失败导致白屏。
+</details>
 
 ---
 
@@ -111,4 +138,4 @@ IDEA 旗舰版可以连接数据库。
 [4]:https://maven.apache.org/download.cgi
 [5]:https://pan.baidu.com/s/1kZwb2ZdOjf5ZG_HPkWtwWQ
 [6]:https://alywp.net/2bBtbJ
-[7]:https://pan.baidu.com/s/1gAOhxhwxd1T4bqX8HSoFNQ
+[7]:https://github.com/zhyonc/CMSLauncher/releases
