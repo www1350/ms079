@@ -10,3 +10,5 @@ build
 /logs
 /日志
 /.claude/settings.local.json
+/ms079.jar
+/.github/
