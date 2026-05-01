@@ -132,6 +132,10 @@ public final class WzDirectory {
                 dirs.put(fileName, directory);
             } else {
                 Elements data = Jsoup.parse(path.toFile(), StandardCharsets.UTF_8.name()).body().children();
+                if (data.isEmpty()) {
+                    LOGGER.warn("忽略空的 wz 文件：{}", path);
+                    return;
+                }
                 WzFile file = new WzFile(fileName, data);
                 files.put(fileName, file);
             }
