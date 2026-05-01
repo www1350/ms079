@@ -49,20 +49,26 @@ ms079
 
 ## 三、初始化数据库
 
-~~IDEA 社区版不支持数据库操作。~~
+推荐使用免费工具连接 MySQL：
 
-社区版可以找到 Database Navigator 插件，也可以很舒服的操作数据库。
+- [HeidiSQL][5] — 免费、免安装、超轻量（推荐）
+- [DBeaver][8] — 免费、功能全面
 
-IDEA 旗舰版可以连接数据库。
+数据库连接信息参见 `服务端配置.ini`，默认如下：
 
-找到 `db/ms079.sql` 文件，右键运行。记得先连接数据库，选好默认的 schema 实例。
+| 配置 | 值 |
+|------|-----|
+| Host | `localhost` |
+| Port | `3306` |
+| 用户名 | `root` |
+| 密码 | `123456` |
+| 数据库 | `maplestory` |
 
-另外，还可以下载 [Navicat Permium 15][5] 工具（提取码：`j6lt`），来执行操作：
+连接后执行以下步骤：
 
-1. 连接本地 MySQL 数据库
-2. 创建名为 ms079 的数据库实例，编码为 `utf-8`
-3. 在数据库上右键，选择 Execute SQL File...
-4. 找到 `db/ms079.sql` 文件，点击开始执行
+1. 创建名为 `maplestory` 的数据库，字符集选 `utf8`
+2. 在数据库上右键 → Execute SQL File...
+3. 选择项目中的 `db/ms079.sql` 文件执行
 
 ## 四、如何运行？
 
@@ -136,6 +142,7 @@ Launcher.exe
 [2]:https://www.jetbrains.com/idea/
 [3]:https://pan.baidu.com/s/1v-2jXg9xqNmo5ww5YjUhQQ
 [4]:https://maven.apache.org/download.cgi
-[5]:https://pan.baidu.com/s/1kZwb2ZdOjf5ZG_HPkWtwWQ
+[5]:https://www.heidisql.com/download.php
 [6]:https://alywp.net/2bBtbJ
 [7]:https://github.com/zhyonc/CMSLauncher/releases
+[8]:https://dbeaver.io/download/
