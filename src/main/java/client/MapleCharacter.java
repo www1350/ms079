@@ -3099,7 +3099,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void forceReAddItem_NoUpdate(IItem item, MapleInventoryType type) {
-        getInventory(type).removeSlot(item.getPosition());
+        getInventory(type).moveSlot(item.getPosition());
         getInventory(type).addFromDB(item);
     }
 
@@ -3833,7 +3833,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (getMessenger() != null) {
             World.Messenger.updateMessenger(getMessenger().getId(), getName(), client.getChannel());
         }
-        saveToDB(false, false);
     }
 
     public final MaplePet getPet(final int index) {

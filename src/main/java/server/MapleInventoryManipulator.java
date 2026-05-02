@@ -900,9 +900,9 @@ public class MapleInventoryManipulator {
             source.setFlag(flag & ~ItemFlag.KARMA_USE.getValue());
             c.getSession().write(MaplePacketCreator.updateSpecialItemUse(source, GameConstants.getInventoryType(source.getItemId()).getType()));
         }
-        chr.getInventory(MapleInventoryType.EQUIP).removeSlot(src);
+        chr.getInventory(MapleInventoryType.EQUIP).moveSlot(src);
         if (target != null) {
-            chr.getInventory(MapleInventoryType.EQUIPPED).removeSlot(dst);
+            chr.getInventory(MapleInventoryType.EQUIPPED).moveSlot(dst);
         }
         final List<ModifyInventory> mods = new ArrayList<>();
         if (itemChanged) {
@@ -963,9 +963,9 @@ public class MapleInventoryManipulator {
             c.getSession().write(MaplePacketCreator.getInventoryFull());
             return;
         }
-        c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).removeSlot(src);
+        c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).moveSlot(src);
         if (target != null) {
-            c.getPlayer().getInventory(MapleInventoryType.EQUIP).removeSlot(dst);
+            c.getPlayer().getInventory(MapleInventoryType.EQUIP).moveSlot(dst);
         }
         source.setPosition(dst);
         c.getPlayer().getInventory(MapleInventoryType.EQUIP).addFromDB(source);

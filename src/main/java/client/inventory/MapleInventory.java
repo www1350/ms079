@@ -235,6 +235,14 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
         }
     }
 
+    /**
+     * Moves an item out of this inventory without tracking for DB deletion.
+     * Use this for equip/unequip/move operations where the item is relocated, not deleted.
+     */
+    public void moveSlot(int slot) {
+        inventory.remove(slot);
+    }
+
     public void dropSlot(int slot) {
         IItem rmItem = inventory.remove(slot);
         removeInventory.put(rmItem.getItemId(), rmItem);
