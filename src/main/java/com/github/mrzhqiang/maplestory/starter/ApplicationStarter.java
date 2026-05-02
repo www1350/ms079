@@ -178,16 +178,12 @@ public final class ApplicationStarter {
                         if (chr == null) {
                             continue;
                         }
-                        if (chr.getLock().tryLock()) {
-                            try {
-                                chr.gainGamePoints(1);
-                                if (chr.getGamePoints() < 5) {
-                                    chr.resetGamePointsPD();
-                                }
-                            } finally {
-                                chr.getLock().unlock();
+                        chr.getActor().submit(() -> {
+                            chr.gainGamePoints(1);
+                            if (chr.getGamePoints() < 5) {
+                                chr.resetGamePointsPD();
                             }
-                        }
+                        });
                     }
                 }
             } catch (Exception ignore) {
@@ -233,13 +229,7 @@ public final class ApplicationStarter {
                             continue;
                         }
                         ppl++;
-                        if (chr.getLock().tryLock()) {
-                            try {
-                                chr.saveToDB(false, false);
-                            } finally {
-                                chr.getLock().unlock();
-                            }
-                        }
+                        chr.getActor().submit(() -> chr.saveToDB(false, false));
                     }
                 }
             } catch (Exception e) {

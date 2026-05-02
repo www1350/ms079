@@ -3428,20 +3428,16 @@ public final class MapleMap {
                 return;
             }
             for (MapleCharacter chr : getCharactersThreadsafe()) {
-                if (!chr.isAlive() || !chr.getLock().tryLock()) {
+                if (!chr.isAlive()) {
                     continue;
                 }
-                try {
-                    if (chr.getInventory(MapleInventoryType.EQUIPPED).findById(protectItem) != null) {
-                        continue;
-                    }
-                    if (mapid == 749040100 && chr.getInventory(MapleInventoryType.CASH).findById(5451000) != null) {
-                        continue;
-                    }
-                    chr.addHP(-decHP);
-                } finally {
-                    chr.getLock().unlock();
+                if (chr.getInventory(MapleInventoryType.EQUIPPED).findById(protectItem) != null) {
+                    continue;
                 }
+                if (mapid == 749040100 && chr.getInventory(MapleInventoryType.CASH).findById(5451000) != null) {
+                    continue;
+                }
+                chr.getActor().submit(() -> chr.addHP(-decHP));
             }
         }, interval, interval);
     }

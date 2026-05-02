@@ -8,18 +8,16 @@ import client.inventory.MapleInventoryType;
 import client.inventory.MaplePet;
 import client.inventory.PetDataFactory;
 import com.github.mrzhqiang.maplestory.timer.Timer;
+import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
 import constants.GameConstants;
 import server.MapleInventoryManipulator;
 import tools.MaplePacketCreator;
 import tools.packet.PetPacket;
 
-import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.locks.ReentrantLock;
 
 public final class CharacterPets {
 
@@ -42,12 +40,14 @@ public final class CharacterPets {
     }
 
     public void spawnSavedPets() {
-        for (int i = 0; i < petStore.length; i++) {
-            if (petStore[i] > -1) {
-                spawnPet(petStore[i], false, false);
+        owner.getActor().execute(() -> {
+            for (int i = 0; i < petStore.length; i++) {
+                if (petStore[i] > -1) {
+                    spawnPet(petStore[i], false, false);
+                }
             }
-        }
-        owner.getClient().getSession().write(PetPacket.petStatUpdate(owner));
+            owner.getClient().getSession().write(PetPacket.petStatUpdate(owner));
+        });
     }
 
     // --- Pet list accessors ---
@@ -149,9 +149,7 @@ public final class CharacterPets {
     }
 
     public void unequipPet(MaplePet pet, boolean shiftLeft, boolean hunger) {
-        ReentrantLock playerLock = owner.getLock();
-        playerLock.lock();
-        try {
+        owner.getActor().execute(() -> {
             if (pet.getSummoned()) {
                 pet.saveToDb();
                 owner.getClient().getSession().write(PetPacket.updatePet(pet,
@@ -174,9 +172,7 @@ public final class CharacterPets {
                     cancelPetHungerTask();
                 }
             }
-        } finally {
-            playerLock.unlock();
-        }
+        });
     }
 
     // --- Spawn pet ---
@@ -190,9 +186,7 @@ public final class CharacterPets {
     }
 
     public void spawnPet(byte slot, boolean lead, boolean broadcast) {
-        ReentrantLock playerLock = owner.getLock();
-        playerLock.lock();
-        try {
+        owner.getActor().execute(() -> {
             final IItem item = owner.getInventory(MapleInventoryType.CASH).getItem(slot);
             if (item == null || item.getItemId() > 5001000 || item.getItemId() < 5000000) {
                 return;
@@ -253,9 +247,7 @@ public final class CharacterPets {
                 }
             }
             owner.getClient().getSession().write(PetPacket.emptyStatUpdate());
-        } finally {
-            playerLock.unlock();
-        }
+        });
     }
 
     // --- Pet hunger task ---
@@ -269,9 +261,7 @@ public final class CharacterPets {
                 cancelPetHungerTask();
                 return;
             }
-            ReentrantLock playerLock = owner.getLock();
-            playerLock.lock();
-            try {
+            owner.getActor().submit(() -> {
                 boolean anySummoned = false;
                 for (MaplePet pet : getPets()) {
                     if (pet.getSummoned()) {
@@ -299,9 +289,7 @@ public final class CharacterPets {
                 if (!anySummoned) {
                     cancelPetHungerTask();
                 }
-            } finally {
-                playerLock.unlock();
-            }
+            });
         }, 60000, 60000);
     }
 

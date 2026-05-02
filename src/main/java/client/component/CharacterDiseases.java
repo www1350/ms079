@@ -11,13 +11,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
 public final class CharacterDiseases {
 
     private final MapleCharacter owner;
     private final Map<MapleDisease, MapleDiseaseValueHolder> diseases = new ConcurrentEnumMap<>(MapleDisease.class);
-    // diseases2 is unused dead code kept for compatibility
 
     public CharacterDiseases(MapleCharacter owner) {
         this.owner = owner;
@@ -32,9 +30,7 @@ public final class CharacterDiseases {
     }
 
     public void giveDebuff(final MapleDisease disease, int x, long duration, int skillid, int level) {
-        ReentrantLock playerLock = owner.getLock();
-        playerLock.lock();
-        try {
+        owner.getActor().execute(() -> {
             final List<tools.Pair<MapleDisease, Integer>> debuff = Collections.singletonList(
                     new tools.Pair<>(disease, Integer.valueOf(x)));
 
@@ -51,20 +47,15 @@ public final class CharacterDiseases {
 
                 if (duration > 0) {
                     Timer.BUFF.schedule(() -> {
-                        playerLock.lock();
-                        try {
+                        owner.getActor().submit(() -> {
                             if (hasDisease(disease)) {
                                 dispelDebuff(disease);
                             }
-                        } finally {
-                            playerLock.unlock();
-                        }
+                        });
                     }, duration);
                 }
             }
-        } finally {
-            playerLock.unlock();
-        }
+        });
     }
 
     public void giveSilentDebuff(final List<MapleDiseaseValueHolder> ld) {
@@ -76,9 +67,7 @@ public final class CharacterDiseases {
     }
 
     public void dispelDebuff(MapleDisease debuff) {
-        ReentrantLock playerLock = owner.getLock();
-        playerLock.lock();
-        try {
+        owner.getActor().execute(() -> {
             if (hasDisease(debuff)) {
                 long mask = debuff.getValue();
                 boolean first = debuff.isFirst();
@@ -87,33 +76,23 @@ public final class CharacterDiseases {
 
                 diseases.remove(debuff);
             }
-        } finally {
-            playerLock.unlock();
-        }
+        });
     }
 
     public void dispelDebuffs() {
-        ReentrantLock playerLock = owner.getLock();
-        playerLock.lock();
-        try {
+        owner.getActor().execute(() -> {
             dispelDebuff(MapleDisease.CURSE);
             dispelDebuff(MapleDisease.DARKNESS);
             dispelDebuff(MapleDisease.POISON);
             dispelDebuff(MapleDisease.SEAL);
             dispelDebuff(MapleDisease.WEAKEN);
-        } finally {
-            playerLock.unlock();
-        }
+        });
     }
 
     public void cancelAllDebuffs() {
-        ReentrantLock playerLock = owner.getLock();
-        playerLock.lock();
-        try {
+        owner.getActor().execute(() -> {
             diseases.clear();
-        } finally {
-            playerLock.unlock();
-        }
+        });
     }
 
     public int size() {
