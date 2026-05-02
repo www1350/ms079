@@ -1,8 +1,10 @@
 package tools;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -30,7 +32,12 @@ public final class ConcurrentEnumMap<K extends Enum<K>, V> extends EnumMap<K, V>
 
     @Override
     public EnumMap<K, V> clone() {
-        return super.clone();
+        rL.lock();
+        try {
+            return super.clone();
+        } finally {
+            rL.unlock();
+        }
     }
 
     @Override
@@ -62,7 +69,7 @@ public final class ConcurrentEnumMap<K extends Enum<K>, V> extends EnumMap<K, V>
     public Set<Entry<K, V>> entrySet() {
         rL.lock();
         try {
-            return super.entrySet();
+            return new HashSet<>(super.entrySet());
         } finally {
             rL.unlock();
         }
@@ -82,7 +89,7 @@ public final class ConcurrentEnumMap<K extends Enum<K>, V> extends EnumMap<K, V>
     public Set<K> keySet() {
         rL.lock();
         try {
-            return super.keySet();
+            return new HashSet<>(super.keySet());
         } finally {
             rL.unlock();
         }
@@ -132,7 +139,7 @@ public final class ConcurrentEnumMap<K extends Enum<K>, V> extends EnumMap<K, V>
     public Collection<V> values() {
         rL.lock();
         try {
-            return super.values();
+            return new ArrayList<>(super.values());
         } finally {
             rL.unlock();
         }

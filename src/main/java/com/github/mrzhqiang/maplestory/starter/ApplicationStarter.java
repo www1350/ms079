@@ -178,9 +178,15 @@ public final class ApplicationStarter {
                         if (chr == null) {
                             continue;
                         }
-                        chr.gainGamePoints(1);
-                        if (chr.getGamePoints() < 5) {
-                            chr.resetGamePointsPD();
+                        if (chr.getLock().tryLock()) {
+                            try {
+                                chr.gainGamePoints(1);
+                                if (chr.getGamePoints() < 5) {
+                                    chr.resetGamePointsPD();
+                                }
+                            } finally {
+                                chr.getLock().unlock();
+                            }
                         }
                     }
                 }
@@ -227,7 +233,13 @@ public final class ApplicationStarter {
                             continue;
                         }
                         ppl++;
-                        chr.saveToDB(false, false);
+                        if (chr.getLock().tryLock()) {
+                            try {
+                                chr.saveToDB(false, false);
+                            } finally {
+                                chr.getLock().unlock();
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {

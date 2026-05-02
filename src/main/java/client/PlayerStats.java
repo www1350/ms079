@@ -57,7 +57,7 @@ public class PlayerStats implements Serializable {
     private Map<Integer, Integer> setHandling = new HashMap<Integer, Integer>();
     private List<Equip> durabilityHandling = new ArrayList<Equip>(), equipLevelHandling = new ArrayList<Equip>();
     private transient float shouldHealHP, shouldHealMP;
-    public int str, dex, luk, int_, hp, maxhp, mp, maxmp;
+    public volatile int str, dex, luk, int_, hp, maxhp, mp, maxmp;
     private transient short passive_sharpeye_percent, localmaxhp, localmaxmp;
     private transient byte passive_mastery, passive_sharpeye_rate;
     private transient int localstr, localdex, localluk, localint_;
