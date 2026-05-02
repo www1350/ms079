@@ -19,12 +19,12 @@ public class DInventorySlot extends Model {
     @OneToOne
     @JoinColumn(name = "character_id")
     DCharacter character;
-    Integer equip;
+    Integer equip = 32;
     @Column(name = "use_")
-    Integer use;
-    Integer setup;
-    Integer etc;
-    Integer cash;
+    Integer use = 32;
+    Integer setup = 32;
+    Integer etc = 32;
+    Integer cash = 60;
 
     public Integer getId() {
         return id;

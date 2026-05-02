@@ -38271,13 +38271,14 @@ CREATE TABLE `inventorylog`  (
 DROP TABLE IF EXISTS `inventoryslot`;
 CREATE TABLE `inventoryslot`  (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `character_id` int(10) UNSIGNED NULL DEFAULT NULL,
-  `equip` tinyint(3) UNSIGNED NULL DEFAULT NULL,
-  `use_` tinyint(3) UNSIGNED NULL DEFAULT NULL,
-  `setup` tinyint(3) UNSIGNED NULL DEFAULT NULL,
-  `etc` tinyint(3) UNSIGNED NULL DEFAULT NULL,
-  `cash` tinyint(3) UNSIGNED NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
+  `character_id` int(10) UNSIGNED NOT NULL,
+  `equip` int(11) NOT NULL DEFAULT 32,
+  `use_` int(11) NOT NULL DEFAULT 32,
+  `setup` int(11) NOT NULL DEFAULT 32,
+  `etc` int(11) NOT NULL DEFAULT 32,
+  `cash` int(11) NOT NULL DEFAULT 60,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uq_character_id` (`character_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 206 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------
