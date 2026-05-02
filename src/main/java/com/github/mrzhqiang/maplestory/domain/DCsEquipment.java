@@ -37,6 +37,7 @@ public class DCsEquipment extends Model implements Cloneable{
     @NotNull
     Integer mp = 0;
 
+    @NotNull
     Integer watk = 0;
     @NotNull
     Integer matk = 0;
@@ -59,7 +60,7 @@ public class DCsEquipment extends Model implements Cloneable{
     @NotNull
     Integer itemExp = 0;
     @NotNull
-    Integer durability = 0;
+    Integer durability = -1;
     @NotNull
     Integer enhance = 0;
     @NotNull

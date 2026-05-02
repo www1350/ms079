@@ -231,7 +231,7 @@
         </createTable>
         <createTable name="csequipment" pkName="pk_csequipment">
             <column name="id" type="integer" primaryKey="true"/>
-            <column name="inventory_item_id" type="integer" uniqueOneToOne="uq_csequipment_inventory_item_id" references="csitems.id" foreignKeyName="fk_csequipment_inventory_item_id"/>
+            <column name="inventory_item_id" type="integer" notnull="true" uniqueOneToOne="uq_csequipment_inventory_item_id" references="csitems.id" foreignKeyName="fk_csequipment_inventory_item_id"/>
             <column name="upgrade_slots" type="integer" notnull="true"/>
             <column name="level" type="integer" notnull="true"/>
             <column name="str" type="integer" notnull="true"/>
@@ -240,7 +240,7 @@
             <column name="luk" type="integer" notnull="true"/>
             <column name="hp" type="integer" notnull="true"/>
             <column name="mp" type="integer" notnull="true"/>
-            <column name="watk" type="integer"/>
+            <column name="watk" type="integer" notnull="true"/>
             <column name="matk" type="integer" notnull="true"/>
             <column name="wdef" type="integer" notnull="true"/>
             <column name="mdef" type="integer" notnull="true"/>

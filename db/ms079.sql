@@ -6385,7 +6385,7 @@ CREATE TABLE `csequipment`  (
   `luk` int(11) NOT NULL DEFAULT 0,
   `hp` int(11) NOT NULL DEFAULT 0,
   `mp` int(11) NOT NULL DEFAULT 0,
-  `watk` int(11) NULL DEFAULT 0,
+  `watk` int(11) NOT NULL DEFAULT 0,
   `matk` int(11) NOT NULL DEFAULT 0,
   `wdef` int(11) NOT NULL DEFAULT 0,
   `mdef` int(11) NOT NULL DEFAULT 0,
@@ -6405,8 +6405,8 @@ CREATE TABLE `csequipment`  (
   `mp_r` smallint(5) NOT NULL DEFAULT 0,
   `item_level` smallint(5) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `inventoryitemid`(`inventory_item_id`) USING BTREE,
-  CONSTRAINT `csequiptment_ibfk_1` FOREIGN KEY (`inventory_item_id`) REFERENCES `csitems` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+  UNIQUE KEY `uq_inventory_item_id` (`inventory_item_id`) USING BTREE,
+  CONSTRAINT `csequipment_ibfk_1` FOREIGN KEY (`inventory_item_id`) REFERENCES `csitems` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------

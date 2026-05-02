@@ -269,7 +269,7 @@ create table cheatlog (
 
 create table csequipment (
   id                            integer auto_increment not null,
-  inventory_item_id             integer,
+  inventory_item_id             integer not null,
   upgrade_slots                 integer not null,
   level                         integer not null,
   str                           integer not null,
@@ -278,7 +278,7 @@ create table csequipment (
   luk                           integer not null,
   hp                            integer not null,
   mp                            integer not null,
-  watk                          integer,
+  watk                          integer not null,
   matk                          integer not null,
   wdef                          integer not null,
   mdef                          integer not null,
