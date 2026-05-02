@@ -6244,7 +6244,8 @@ CREATE TABLE `character_slots`  (
   `acc_id` int(11) NOT NULL DEFAULT 0,
   `world_id` int(11) NOT NULL DEFAULT 0,
   `char_slots` int(11) NOT NULL DEFAULT 6,
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uk_acc_world` (`acc_id`, `world_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------

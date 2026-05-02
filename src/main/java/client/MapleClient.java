@@ -937,9 +937,14 @@ public class MapleClient implements Serializable {
         if (one != null) {
             one.setCharSlots(charslots);
             one.save();
-            return true;
+        } else {
+            one = new DCharacterSlot();
+            one.setAccount(account);
+            one.setWorldId(world);
+            one.setCharSlots(charslots);
+            one.save();
         }
-        return false;
+        return true;
     }
 
     public static int unbanIPMacs(String charname) {

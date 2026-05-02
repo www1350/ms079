@@ -9,9 +9,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "character_slots")
+@Table(name = "character_slots",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"acc_id", "world_id"}))
 public class DCharacterSlot extends Model {
 
     @Id

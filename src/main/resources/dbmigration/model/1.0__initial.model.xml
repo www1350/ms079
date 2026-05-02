@@ -219,6 +219,7 @@
             <column name="acc_id" type="integer" notnull="true" references="accounts.id" foreignKeyName="fk_character_slots_acc_id" foreignKeyIndex="ix_character_slots_acc_id"/>
             <column name="world_id" type="integer" notnull="true"/>
             <column name="char_slots" type="integer" notnull="true"/>
+            <uniqueConstraint name="uq_character_slots_acc_id_world_id" columnNames="acc_id,world_id" oneToOne="false" nullableColumns=""/>
         </createTable>
         <createTable name="cheatlog" pkName="pk_cheatlog">
             <column name="id" type="integer" primaryKey="true"/>

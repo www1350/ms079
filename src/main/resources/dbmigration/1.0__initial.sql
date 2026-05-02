@@ -253,7 +253,8 @@ create table character_slots (
   acc_id                        integer not null,
   world_id                      integer not null,
   char_slots                    integer not null,
-  constraint pk_character_slots primary key (id)
+  constraint pk_character_slots primary key (id),
+  constraint uq_character_slots_acc_id_world_id unique (acc_id, world_id)
 );
 
 create table cheatlog (
