@@ -1156,6 +1156,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
         List<MapleCoolDownValueHolder> cd = getCooldowns();
         if (dc && cd.size() > 0) {
+            new QDSkillCooldown().character.eq(character).delete();
             for (final MapleCoolDownValueHolder cooling : cd) {
                 DSkillCooldown skillCooldown = new DSkillCooldown();
                 skillCooldown.setSkillId(cooling.skillId);
@@ -1225,16 +1226,16 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         }
 
         if (cs != null) {
-            try {
-                cs.save(character);
-                PlayerNPC.updateByCharId(this);
-                keylayout.saveKeys(id);
-                mount.saveMount(id);
-                monsterbook.saveCards(id);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            cs.save(character);
         }
+        PlayerNPC.updateByCharId(this);
+        keylayout.saveKeys(id);
+        try {
+            mount.saveMount(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        monsterbook.saveCards(id);
 
         new QDWishList().character.eq(character).delete();
         for (int i = 0; i < getWishlistSize(); i++) {
@@ -1257,10 +1258,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         new QDRegrockLocation().character.eq(character).delete();
         for (int regrock : regrocks) {
             if (regrock != 999999999) {
-                DTrockLocation trockLocation = new DTrockLocation();
-                trockLocation.setCharacter(character);
-                trockLocation.setMapId(regrock);
-                trockLocation.save();
+                DRegrockLocation regrockLocation = new DRegrockLocation();
+                regrockLocation.setCharacter(character);
+                regrockLocation.setMapId(regrock);
+                regrockLocation.save();
             }
         }
     }
