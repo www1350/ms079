@@ -100,6 +100,7 @@ import handling.world.family.MapleFamilyCharacter;
 import handling.world.guild.MapleGuild;
 import handling.world.guild.MapleGuildCharacter;
 import io.ebean.DB;
+import io.ebean.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scripting.EventInstanceManager;
@@ -1000,7 +1001,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             return;
         }
 
-        if (character.getHp() < 1) {
+        Transaction transaction = DB.beginTransaction();
+        try {
+            if (character.getHp() < 1) {
             character.setHp(50);
         }
         character.setLevel(level);
@@ -1263,6 +1266,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 regrockLocation.setMapId(regrock);
                 regrockLocation.save();
             }
+        }
+            transaction.commit();
+        } finally {
+            transaction.end();
         }
     }
 
