@@ -55,6 +55,15 @@ public class BuddyList implements Serializable {
     private final Deque<BuddyEntry> pendingReqs = new LinkedList<>();
 
     /**
+     * Dirty tracker for incremental saves. Set by the owning MapleCharacter.
+     */
+    private transient DirtyTracker dirtyTracker;
+
+    public void setDirtyTracker(DirtyTracker dirtyTracker) {
+        this.dirtyTracker = dirtyTracker;
+    }
+
+    /**
      * 好友清單建構子
      *
      * @param capacity 好友容量
@@ -141,6 +150,9 @@ public class BuddyList implements Serializable {
      */
     public void put(BuddyEntry newEntry) {
         buddies.put(newEntry.getCharacterId(), newEntry);
+        if (dirtyTracker != null) {
+            dirtyTracker.mark(DirtyTracker.Category.BUDDIES);
+        }
     }
 
     /**
@@ -150,6 +162,9 @@ public class BuddyList implements Serializable {
      */
     public void remove(int characterId) {
         buddies.remove(characterId);
+        if (dirtyTracker != null) {
+            dirtyTracker.mark(DirtyTracker.Category.BUDDIES);
+        }
     }
 
     /**
@@ -244,6 +259,9 @@ public class BuddyList implements Serializable {
             BuddyEntry newPair = new BuddyEntry(character, BuddyList.DEFAULT_GROUP, -1, false);
             pendingReqs.push(newPair);
 
+        }
+        if (dirtyTracker != null) {
+            dirtyTracker.mark(DirtyTracker.Category.BUDDIES);
         }
     }
 

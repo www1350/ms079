@@ -383,6 +383,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         ret.fame = 0;
         ret.accountid = client.getAccID();
         ret.buddylist = new BuddyList((byte) 20);
+        ret.buddylist.setDirtyTracker(ret.dirtyTracker);
 
         ret.stats.str = 12;
         ret.stats.dex = 5;
@@ -498,6 +499,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             ret.mgc = new MapleGuildCharacter(ret.character, client.getChannel(), true);
         }
         ret.buddylist = new BuddyList(ct.buddysize);
+        ret.buddylist.setDirtyTracker(ret.dirtyTracker);
         ret.subcategory = ct.subcategory;
         ret.prefix = ct.prefix;
 
@@ -866,6 +868,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             this.mgc = new MapleGuildCharacter(this.character, client.getChannel(), true);
         }
         this.buddylist = new BuddyList(one.getBuddyCapacity());
+        this.buddylist.setDirtyTracker(this.dirtyTracker);
         this.subcategory = one.getSubcategory();
         this.mount = new MapleMount(this, 0, this.job > 1000 && this.job < 2000 ? 10001004 : (this.job >= 2000 ? (this.job == 2001 || (this.job >= 2200 && this.job <= 2218) ? 20011004 : (this.job >= 3000 ? 30001004 : 20001004)) : 1004), (byte) 0, (byte) 1, 0);
         this.rank = one.getRank();
@@ -1087,118 +1090,136 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         character.setPets(petstring.substring(0, petstring.length() - 1));
         character.save();
 
-        new QDSkillMacro().character.eq(character).delete();
-        for (int i = 0; i < 5; i++) {
-            SkillMacro macro = skillMacros[i];
-            if (macro != null) {
-                DSkillMacro skillMacro = new DSkillMacro();
-                skillMacro.setCharacter(character);
-                skillMacro.setSkill1(macro.getSkill1());
-                skillMacro.setSkill2(macro.getSkill2());
-                skillMacro.setSkill3(macro.getSkill3());
-                skillMacro.setName(macro.getName());
-                skillMacro.setShout(macro.getShout());
-                skillMacro.setPosition(i);
-            }
-        }
-
-        new QDInventorySlot().character.eq(character).delete();
-
-        DInventorySlot inventorySlot = new DInventorySlot();
-        inventorySlot.setCharacter(character);
-        inventorySlot.setEquip(getInventory(MapleInventoryType.EQUIP).getSlotLimit());
-        inventorySlot.setUse(getInventory(MapleInventoryType.USE).getSlotLimit());
-        inventorySlot.setSetup(getInventory(MapleInventoryType.SETUP).getSlotLimit());
-        inventorySlot.setEtc(getInventory(MapleInventoryType.ETC).getSlotLimit());
-        inventorySlot.setCash(getInventory(MapleInventoryType.CASH).getSlotLimit());
-        inventorySlot.save();
-
-        saveInventory(character);
-
-        new QDQuestInfo().character.eq(character).delete();
-
-        for (final Entry<Integer, String> q : questinfo.entrySet()) {
-            DQuestInfo questInfo = new DQuestInfo();
-            questInfo.setCharacter(character);
-            questInfo.setQuest(q.getKey());
-            questInfo.setCustomData(q.getValue());
-            questInfo.save();
-        }
-
-        new QDQuestStatus().character.eq(character).delete();
-        Iterator<MapleQuestStatus> questsIt = quests.values().iterator();
-        while (questsIt.hasNext()) {
-            MapleQuestStatus q = questsIt.next();
-            if (q.getQuest() == null || q.getQuest().getId() < 0) {
-                questsIt.remove();
-                continue;
-            }
-            DQuestStatus questStatus = new DQuestStatus();
-            questStatus.setCharacter(character);
-            questStatus.setQuest(q.getQuest().getId());
-            questStatus.setStatus(q.getStatus());
-            questStatus.setTime((int) (q.getCompletionTime() / 1000));
-            questStatus.setForfeited(q.getForfeited());
-            questStatus.setCustomData(q.getCustomData());
-            questStatus.save();
-
-            if (q.hasMobKills()) {
-                for (int mob : q.getMobKills().keySet()) {
-                    DQuestStatusMob questStatusMob = new DQuestStatusMob();
-                    questStatusMob.setQuestStatus(questStatus);
-                    questStatusMob.setMob(mob);
-                    questStatusMob.setCount(q.getMobKills(mob));
-                    questStatusMob.save();
+        if (dirtyTracker.isDirty(DirtyTracker.Category.SKILL_MACROS)) {
+            new QDSkillMacro().character.eq(character).delete();
+            for (int i = 0; i < 5; i++) {
+                SkillMacro macro = skillMacros[i];
+                if (macro != null) {
+                    DSkillMacro skillMacro = new DSkillMacro();
+                    skillMacro.setCharacter(character);
+                    skillMacro.setSkill1(macro.getSkill1());
+                    skillMacro.setSkill2(macro.getSkill2());
+                    skillMacro.setSkill3(macro.getSkill3());
+                    skillMacro.setName(macro.getName());
+                    skillMacro.setShout(macro.getShout());
+                    skillMacro.setPosition(i);
                 }
             }
         }
 
-        new QDSkill().character.eq(character).delete();
+        if (dirtyTracker.isDirty(DirtyTracker.Category.INVENTORY_SLOTS)) {
+            new QDInventorySlot().character.eq(character).delete();
 
-        for (Entry<ISkill, SkillEntry> entryEntry : skills.entrySet()) {
-            if (GameConstants.isApplicableSkill(entryEntry.getKey().getId())) { //do not save additional skills
-                DSkill skill = new DSkill();
-                skill.setCharacter(character);
-                skill.setSkillId(entryEntry.getKey().getId());
-                skill.setSkillLevel(entryEntry.getValue().skillevel);
-                skill.setMasterLevel(entryEntry.getValue().masterlevel);
-                skill.setExpiration(entryEntry.getValue().expiration);
-                skill.save();
+            DInventorySlot inventorySlot = new DInventorySlot();
+            inventorySlot.setCharacter(character);
+            inventorySlot.setEquip(getInventory(MapleInventoryType.EQUIP).getSlotLimit());
+            inventorySlot.setUse(getInventory(MapleInventoryType.USE).getSlotLimit());
+            inventorySlot.setSetup(getInventory(MapleInventoryType.SETUP).getSlotLimit());
+            inventorySlot.setEtc(getInventory(MapleInventoryType.ETC).getSlotLimit());
+            inventorySlot.setCash(getInventory(MapleInventoryType.CASH).getSlotLimit());
+            inventorySlot.save();
+        }
+
+        if (dirtyTracker.isDirty(DirtyTracker.Category.INVENTORY)) {
+            saveInventory(character);
+        }
+
+        if (dirtyTracker.isDirty(DirtyTracker.Category.QUEST_INFO)) {
+            new QDQuestInfo().character.eq(character).delete();
+
+            for (final Entry<Integer, String> q : questinfo.entrySet()) {
+                DQuestInfo questInfo = new DQuestInfo();
+                questInfo.setCharacter(character);
+                questInfo.setQuest(q.getKey());
+                questInfo.setCustomData(q.getValue());
+                questInfo.save();
             }
         }
 
-        List<MapleCoolDownValueHolder> cd = getCooldowns();
-        if (dc && cd.size() > 0) {
-            new QDSkillCooldown().character.eq(character).delete();
-            for (final MapleCoolDownValueHolder cooling : cd) {
-                DSkillCooldown skillCooldown = new DSkillCooldown();
-                skillCooldown.setSkillId(cooling.skillId);
-                skillCooldown.setStartTime(cooling.startTime);
-                skillCooldown.setLength(cooling.length);
-                skillCooldown.setCharacter(character);
-                skillCooldown.save();
+        if (dirtyTracker.isDirty(DirtyTracker.Category.QUEST_STATUS)) {
+            new QDQuestStatus().character.eq(character).delete();
+            Iterator<MapleQuestStatus> questsIt = quests.values().iterator();
+            while (questsIt.hasNext()) {
+                MapleQuestStatus q = questsIt.next();
+                if (q.getQuest() == null || q.getQuest().getId() < 0) {
+                    questsIt.remove();
+                    continue;
+                }
+                DQuestStatus questStatus = new DQuestStatus();
+                questStatus.setCharacter(character);
+                questStatus.setQuest(q.getQuest().getId());
+                questStatus.setStatus(q.getStatus());
+                questStatus.setTime((int) (q.getCompletionTime() / 1000));
+                questStatus.setForfeited(q.getForfeited());
+                questStatus.setCustomData(q.getCustomData());
+                questStatus.save();
+
+                if (q.hasMobKills()) {
+                    for (int mob : q.getMobKills().keySet()) {
+                        DQuestStatusMob questStatusMob = new DQuestStatusMob();
+                        questStatusMob.setQuestStatus(questStatus);
+                        questStatusMob.setMob(mob);
+                        questStatusMob.setCount(q.getMobKills(mob));
+                        questStatusMob.save();
+                    }
+                }
             }
         }
 
-        new QDSavedLocation().character.eq(character).delete();
-        for (SavedLocationType savedLocationType : SavedLocationType.values()) {
-            if (savedLocations[savedLocationType.getValue()] != -1) {
-                DSavedLocation savedLocation = new DSavedLocation();
-                savedLocation.setCharacter(character);
-                savedLocation.setLocationType(savedLocationType.getValue());
-                savedLocation.setMap(savedLocations[savedLocationType.getValue()]);
-                savedLocation.save();
+        if (dirtyTracker.isDirty(DirtyTracker.Category.SKILLS)) {
+            new QDSkill().character.eq(character).delete();
+
+            for (Entry<ISkill, SkillEntry> entryEntry : skills.entrySet()) {
+                if (GameConstants.isApplicableSkill(entryEntry.getKey().getId())) { //do not save additional skills
+                    DSkill skill = new DSkill();
+                    skill.setCharacter(character);
+                    skill.setSkillId(entryEntry.getKey().getId());
+                    skill.setSkillLevel(entryEntry.getValue().skillevel);
+                    skill.setMasterLevel(entryEntry.getValue().masterlevel);
+                    skill.setExpiration(entryEntry.getValue().expiration);
+                    skill.save();
+                }
             }
         }
 
-        new QDAchievement().account.eq(character.getAccount()).delete();
+        if (dirtyTracker.isDirty(DirtyTracker.Category.COOLDOWNS)) {
+            List<MapleCoolDownValueHolder> cd = getCooldowns();
+            if (dc && cd.size() > 0) {
+                new QDSkillCooldown().character.eq(character).delete();
+                for (final MapleCoolDownValueHolder cooling : cd) {
+                    DSkillCooldown skillCooldown = new DSkillCooldown();
+                    skillCooldown.setSkillId(cooling.skillId);
+                    skillCooldown.setStartTime(cooling.startTime);
+                    skillCooldown.setLength(cooling.length);
+                    skillCooldown.setCharacter(character);
+                    skillCooldown.save();
+                }
+            }
+        }
 
-        for (Integer achid : finishedAchievements) {
-            DAchievement achievement = new DAchievement();
-            achievement.setAccount(character.getAccount());
-            achievement.getAchievement().setCharId(character.getId());
-            achievement.getAchievement().setAchievementId(achid);
-            achievement.save();
+        if (dirtyTracker.isDirty(DirtyTracker.Category.SAVED_LOCATIONS)) {
+            new QDSavedLocation().character.eq(character).delete();
+            for (SavedLocationType savedLocationType : SavedLocationType.values()) {
+                if (savedLocations[savedLocationType.getValue()] != -1) {
+                    DSavedLocation savedLocation = new DSavedLocation();
+                    savedLocation.setCharacter(character);
+                    savedLocation.setLocationType(savedLocationType.getValue());
+                    savedLocation.setMap(savedLocations[savedLocationType.getValue()]);
+                    savedLocation.save();
+                }
+            }
+        }
+
+        if (dirtyTracker.isDirty(DirtyTracker.Category.ACHIEVEMENTS)) {
+            new QDAchievement().account.eq(character.getAccount()).delete();
+
+            for (Integer achid : finishedAchievements) {
+                DAchievement achievement = new DAchievement();
+                achievement.setAccount(character.getAccount());
+                achievement.getAchievement().setCharId(character.getId());
+                achievement.getAchievement().setAchievementId(achid);
+                achievement.save();
+            }
         }
 
         /*
@@ -1214,14 +1235,16 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
          * ps.close();
          */
         // if (buddylist.changed()) {
-        new QDBuddy().owner.eq(character).delete();
-        for (BuddyEntry entry : buddylist.getBuddies()) {
-            if (entry != null) {
-                DBuddy buddy = new DBuddy();
-                buddy.setBuddies(DB.reference(DCharacter.class, entry.getCharacterId()));
-                buddy.setPending(!entry.isVisible());
-                buddy.setOwner(character);
-                buddy.save();
+        if (dirtyTracker.isDirty(DirtyTracker.Category.BUDDIES)) {
+            new QDBuddy().owner.eq(character).delete();
+            for (BuddyEntry entry : buddylist.getBuddies()) {
+                if (entry != null) {
+                    DBuddy buddy = new DBuddy();
+                    buddy.setBuddies(DB.reference(DCharacter.class, entry.getCharacterId()));
+                    buddy.setPending(!entry.isVisible());
+                    buddy.setOwner(character);
+                    buddy.save();
+                }
             }
         }
 
@@ -1250,34 +1273,39 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         }
         monsterbook.saveCards(id);
 
-        new QDWishList().character.eq(character).delete();
-        for (int i = 0; i < getWishlistSize(); i++) {
-            DWishList dWishList = new DWishList();
-            dWishList.setCharacter(character);
-            dWishList.setSn(wishlist[i]);
-            dWishList.save();
-        }
-
-        new QDTrockLocation().character.eq(character).delete();
-        for (int rock : rocks) {
-            if (rock != 999999999) {
-                DTrockLocation trockLocation = new DTrockLocation();
-                trockLocation.setCharacter(character);
-                trockLocation.setMapId(rock);
-                trockLocation.save();
+        if (dirtyTracker.isDirty(DirtyTracker.Category.WISHLIST)) {
+            new QDWishList().character.eq(character).delete();
+            for (int i = 0; i < getWishlistSize(); i++) {
+                DWishList dWishList = new DWishList();
+                dWishList.setCharacter(character);
+                dWishList.setSn(wishlist[i]);
+                dWishList.save();
             }
         }
 
-        new QDRegrockLocation().character.eq(character).delete();
-        for (int regrock : regrocks) {
-            if (regrock != 999999999) {
-                DRegrockLocation regrockLocation = new DRegrockLocation();
-                regrockLocation.setCharacter(character);
-                regrockLocation.setMapId(regrock);
-                regrockLocation.save();
+        if (dirtyTracker.isDirty(DirtyTracker.Category.TROCK_LOCATIONS)) {
+            new QDTrockLocation().character.eq(character).delete();
+            for (int rock : rocks) {
+                if (rock != 999999999) {
+                    DTrockLocation trockLocation = new DTrockLocation();
+                    trockLocation.setCharacter(character);
+                    trockLocation.setMapId(rock);
+                    trockLocation.save();
+                }
+            }
+
+            new QDRegrockLocation().character.eq(character).delete();
+            for (int regrock : regrocks) {
+                if (regrock != 999999999) {
+                    DRegrockLocation regrockLocation = new DRegrockLocation();
+                    regrockLocation.setCharacter(character);
+                    regrockLocation.setMapId(regrock);
+                    regrockLocation.save();
+                }
             }
         }
             transaction.commit();
+            dirtyTracker.clear();
         } finally {
             transaction.end();
         }
@@ -1302,6 +1330,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         try {
             ItemLoader.deleteItems(inventory);
             ItemLoader.saveItems(inventory, character);
+            dirtyTracker.mark(DirtyTracker.Category.INVENTORY);
         } finally {
             playerLock.unlock();
         }
@@ -1327,6 +1356,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     public final void updateInfoQuest(final int questid, final String data) {
         questinfo.put(questid, data);
         client.getSession().write(MaplePacketCreator.updateInfoQuest(questid, data));
+        dirtyTracker.mark(DirtyTracker.Category.QUEST_INFO);
     }
 
     public final String getInfoQuest(final int questid) {
@@ -1366,7 +1396,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         final MapleQuestStatus stat = new MapleQuestStatus(quest, status);
         stat.setCustomData(customData);
         quests.put(quest, stat);
-
+        dirtyTracker.mark(DirtyTracker.Category.QUEST_STATUS);
     }
 
     public final void setQuestAdd(final MapleQuest quest, final byte status, final String customData) {
@@ -1374,6 +1404,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             final MapleQuestStatus stat = new MapleQuestStatus(quest, status);
             stat.setCustomData(customData);
             quests.put(quest, stat);
+            dirtyTracker.mark(DirtyTracker.Category.QUEST_STATUS);
         }
     }
 
@@ -1381,12 +1412,14 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (!quests.containsKey(quest)) {
             final MapleQuestStatus status = new MapleQuestStatus(quest, (byte) 0);
             quests.put(quest, status);
+            dirtyTracker.mark(DirtyTracker.Category.QUEST_STATUS);
             return status;
         }
         return quests.get(quest);
     }
 
     public MapleQuestStatus getQuestRemove(MapleQuest quest) {
+        dirtyTracker.mark(DirtyTracker.Category.QUEST_STATUS);
         return (MapleQuestStatus) this.quests.remove(quest);
     }
 
@@ -1400,6 +1433,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public final void updateQuest(final MapleQuestStatus quest, final boolean update) {
         quests.put(quest.getQuest(), quest);
+        dirtyTracker.mark(DirtyTracker.Category.QUEST_STATUS);
         if (!(quest.isCustom())) {
             client.getSession().write(MaplePacketCreator.updateQuest(quest));
             if (quest.getStatus() == 1 && !update) {
@@ -2359,6 +2393,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public void setHpApUsed(short hpApUsed) {
         this.hpApUsed = hpApUsed;
+        dirtyTracker.mark(DirtyTracker.Category.CORE);
     }
 
     public int getSkinColor() {
@@ -2393,6 +2428,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         playerLock.lock();
         try {
             this.exp = exp;
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } finally {
             playerLock.unlock();
         }
@@ -2408,6 +2444,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public void setFame(short fame) {
         this.fame = fame;
+        dirtyTracker.mark(DirtyTracker.Category.CORE);
     }
 
     public void setDojo(final int dojo) {
@@ -2437,6 +2474,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public void setRemainingAp(short remainingAp) {
         this.remainingAp = remainingAp;
+        dirtyTracker.mark(DirtyTracker.Category.CORE);
     }
 
     public void setRemainingSp(int remainingSp) {
@@ -2469,6 +2507,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public void addFame(int famechange) {
         this.fame += famechange;
+        dirtyTracker.mark(DirtyTracker.Category.CORE);
         /*
          * if (this.fame >= 50) { finishAchievement(7); }
          */
@@ -2725,6 +2764,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 map.spawnDragon(dragon);
                 map.updateMapObjectVisibility(this, dragon);
             }
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } catch (Exception e) {
             FileoutputUtil.outputFileError(FileoutputUtil.ScriptEx_Log, e); //all jobs throw errors :(
         }
@@ -2755,6 +2795,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     public void gainAp(short ap) {
         this.remainingAp += ap;
         updateSingleStat(MapleStat.AVAILABLEAP, this.remainingAp);
+        dirtyTracker.mark(DirtyTracker.Category.CORE);
     }
 
     public void gainSP(int sp) {
@@ -2823,6 +2864,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             } else {
                 skills.put(skill, new SkillEntry(newLevel, newMasterlevel, expiration));
             }
+            dirtyTracker.mark(DirtyTracker.Category.SKILLS);
             if (GameConstants.isRecoveryIncSkill(skill.getId())) {
                 stats.relocHeal();
             } else if (GameConstants.isElementAmp_Skill(skill.getId())) {
@@ -2849,6 +2891,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             } else {
                 skills.put(skill, new SkillEntry(newLevel, newMasterlevel, -1L));
             }
+            dirtyTracker.mark(DirtyTracker.Category.SKILLS);
         } finally {
             playerLock.unlock();
         }
@@ -2976,6 +3019,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             if (stats.setHp(stats.getHp() + delta)) {
                 updateSingleStat(MapleStat.HP, stats.getHp());
             }
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } finally {
             playerLock.unlock();
         }
@@ -2994,6 +3038,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             if (stats.setMp(stats.getMp() + delta)) {
                 updateSingleStat(MapleStat.MP, stats.getMp());
             }
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } finally {
             playerLock.unlock();
         }
@@ -3013,6 +3058,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             if (statups.size() > 0) {
                 client.getSession().write(MaplePacketCreator.updatePlayerStats(statups, getJob()));
             }
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } finally {
             playerLock.unlock();
         }
@@ -3145,6 +3191,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 }
                 updateSingleStat(MapleStat.EXP, getExp());
             }
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } catch (Exception e) {
             FileoutputUtil.outputFileError(FileoutputUtil.ScriptEx_Log, e);
         } finally {
@@ -3223,10 +3270,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     client.getSession().write(MaplePacketCreator.GainEXP_Monster(gain, white, wedding_EXP, partyinc, Class_Bonus_EXP, Equipment_Bonus_EXP, Premium_Bonus_EXP));
                 }
             }
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } finally {
             playerLock.unlock();
         }
     }
+
 
     public void forceReAddItem_NoUpdate(IItem item, MapleInventoryType type) {
         getInventory(type).moveSlot(item.getPosition());
@@ -3380,14 +3429,17 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public void saveLocation(SavedLocationType type) {
         savedLocations[type.getValue()] = getMapId();
+        dirtyTracker.mark(DirtyTracker.Category.SAVED_LOCATIONS);
     }
 
     public void saveLocation(SavedLocationType type, int mapz) {
         savedLocations[type.getValue()] = mapz;
+        dirtyTracker.mark(DirtyTracker.Category.SAVED_LOCATIONS);
     }
 
     public void clearSavedLocation(SavedLocationType type) {
         savedLocations[type.getValue()] = -1;
+        dirtyTracker.mark(DirtyTracker.Category.SAVED_LOCATIONS);
     }
 
     public long getDY() {
@@ -3423,6 +3475,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             if (show) {
                 client.getSession().write(MaplePacketCreator.showMesoGain(gain, inChat));
             }
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } finally {
             playerLock.unlock();
         }
@@ -3679,6 +3732,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         guildUpdate();
         familyUpdate();
 
+        dirtyTracker.mark(DirtyTracker.Category.CORE);
         saveToDB(false, false);
 //                if (GameConstants.isAran(job)) {
 //            switch (level) {
@@ -3760,6 +3814,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public void updateMacros(int position, SkillMacro updateMacro) {
         skillMacros[position] = updateMacro;
+        dirtyTracker.mark(DirtyTracker.Category.SKILL_MACROS);
     }
 
     public final SkillMacro[] getMacros() {
@@ -4653,6 +4708,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     public void setBuddyCapacity(byte capacity) {
         buddylist.setCapacity(capacity);
         client.getSession().write(MaplePacketCreator.updateBuddyCapacity(capacity));
+        dirtyTracker.mark(DirtyTracker.Category.BUDDIES);
     }
 
     public MapleMessenger getMessenger() {
@@ -4667,6 +4723,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         playerLock.lock();
         try {
             coolDowns.put(Integer.valueOf(skillId), new MapleCoolDownValueHolder(skillId, startTime, length));
+            dirtyTracker.mark(DirtyTracker.Category.COOLDOWNS);
 
             long delay = startTime + length - System.currentTimeMillis();
             if (delay > 0) {
@@ -4697,6 +4754,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             if (coolDowns.containsKey(Integer.valueOf(skillId))) {
                 coolDowns.remove(Integer.valueOf(skillId));
             }
+            dirtyTracker.mark(DirtyTracker.Category.COOLDOWNS);
         } finally {
             playerLock.unlock();
         }
@@ -4874,6 +4932,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         playerLock.lock();
         try {
             this.level = (short) (level - 1);
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } finally {
             playerLock.unlock();
         }
@@ -5063,6 +5122,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         for (int i = 0; i < 10; i++) {
             wishlist[i] = 0;
         }
+        dirtyTracker.mark(DirtyTracker.Category.WISHLIST);
     }
 
     public int getWishlistSize() {
@@ -5077,6 +5137,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public void setWishlist(int[] wl) {
         this.wishlist = wl;
+        dirtyTracker.mark(DirtyTracker.Category.WISHLIST);
     }
 
     public int[] getRocks() {
@@ -5100,6 +5161,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 break;
             }
         }
+        dirtyTracker.mark(DirtyTracker.Category.TROCK_LOCATIONS);
     }
 
     public void addRockMap() {
@@ -5107,6 +5169,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             return;
         }
         rocks[getRockSize()] = getMapId();
+        dirtyTracker.mark(DirtyTracker.Category.TROCK_LOCATIONS);
     }
 
     public boolean isRockMap(int id) {
@@ -5139,6 +5202,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 break;
             }
         }
+        dirtyTracker.mark(DirtyTracker.Category.TROCK_LOCATIONS);
     }
 
     public void addRegRockMap() {
@@ -5146,6 +5210,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             return;
         }
         regrocks[getRegRockSize()] = getMapId();
+        dirtyTracker.mark(DirtyTracker.Category.TROCK_LOCATIONS);
     }
 
     public boolean isRegRockMap(int id) {
@@ -5328,6 +5393,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         playerLock.lock();
         try {
             stats.setHp(hp);
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } finally {
             playerLock.unlock();
         }
@@ -5341,6 +5407,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         playerLock.lock();
         try {
             stats.setMp(mp);
+            dirtyTracker.mark(DirtyTracker.Category.CORE);
         } finally {
             playerLock.unlock();
         }
@@ -5840,6 +5907,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         stat.add(new Pair<MapleStat, Integer>(MapleStat.LUK, luk));
         stat.add(new Pair<MapleStat, Integer>(MapleStat.AVAILABLEAP, total));
         client.getSession().write(MaplePacketCreator.updatePlayerStats(stat, false, getJob()));
+        dirtyTracker.mark(DirtyTracker.Category.CORE);
     }
 
     public Event_PyramidSubway getPyramidSubway() {
@@ -5938,6 +6006,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     public void expandInventory(byte type, int amount) {
         final MapleInventory inv = getInventory(MapleInventoryType.getByType(type));
         inv.addSlot((byte) amount);
+        dirtyTracker.mark(DirtyTracker.Category.INVENTORY_SLOTS);
         // client.getSession().write(MaplePacketCreator.getSlotUpdate(type, (byte) inv.getSlotLimit()));
     }
 
