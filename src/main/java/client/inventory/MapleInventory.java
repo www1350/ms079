@@ -229,7 +229,10 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     }
 
     public void removeSlot(int slot) {
-        inventory.remove(slot);
+        IItem item = inventory.remove(slot);
+        if (item != null) {
+            removeInventory.put(item.getItemId(), item);
+        }
     }
 
     public void dropSlot(int slot) {
