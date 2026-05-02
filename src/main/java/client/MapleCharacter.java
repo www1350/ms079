@@ -237,6 +237,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private boolean smega, hidden, hasSummon = false;
     private int[] wishlist, rocks, savedLocations, regrocks, remainingSp = new int[10];
     private final transient ReentrantLock playerLock = new ReentrantLock();
+    private final transient DirtyTracker dirtyTracker = new DirtyTracker();
     private transient AtomicInteger inst;
     private transient List<LifeMovementFragment> lastres;
     private List<Integer> lastmonthfameids;
@@ -2306,6 +2307,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         return playerLock;
     }
 
+    public final DirtyTracker getDirtyTracker() {
+        return dirtyTracker;
+    }
+
     public final MapleClient getClient() {
         return client;
     }
@@ -3503,6 +3508,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public byte getSkillLevel(final ISkill skill) {
+        if (skill == null) {
+            return 0;
+        }
         final SkillEntry ret = skills.get(skill);
         if (ret == null || ret.skillevel <= 0) {
             return 0;
@@ -3515,6 +3523,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public int getMasterLevel(final ISkill skill) {
+        if (skill == null) {
+            return 0;
+        }
         final SkillEntry ret = skills.get(skill);
         if (ret == null) {
             return 0;
