@@ -1,6 +1,9 @@
 package client;
 
 import client.anticheat.CheatTracker;
+import client.component.CharacterCooldowns;
+import client.component.CharacterDiseases;
+import client.component.CharacterPets;
 import client.inventory.Equip;
 import client.inventory.IItem;
 import client.inventory.Item;
@@ -238,11 +241,13 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private int[] wishlist, rocks, savedLocations, regrocks, remainingSp = new int[10];
     private final transient ReentrantLock playerLock = new ReentrantLock();
     private final transient DirtyTracker dirtyTracker = new DirtyTracker();
+    private final transient CharacterCooldowns cooldownsComp = new CharacterCooldowns(this, dirtyTracker);
+    private final transient CharacterDiseases diseasesComp = new CharacterDiseases(this);
+    private final transient CharacterPets petsComp = new CharacterPets(this);
     private transient AtomicInteger inst;
     private transient List<LifeMovementFragment> lastres;
     private List<Integer> lastmonthfameids;
     private List<MapleDoor> doors;
-    private List<MaplePet> pets;
     private transient WeakReference<MapleCharacter>[] clones;
     private transient Set<MapleMonster> controlled;
     private transient Set<MapleMapObject> visibleMapObjects;
@@ -252,9 +257,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private Map<ISkill, SkillEntry> skills = new ConcurrentHashMap<>();
     private transient Map<MapleBuffStat, MapleBuffStatValueHolder> effects = new ConcurrentEnumMap<>(MapleBuffStat.class);
     private transient Map<Integer, MapleSummon> summons;
-    private transient Map<Integer, MapleCoolDownValueHolder> coolDowns = new ConcurrentHashMap<>();
-    private transient Map<MapleDisease, MapleDiseaseValueHolder> diseases = new ConcurrentEnumMap<>(MapleDisease.class);
-    private List<MapleDisease> diseases2 = new ArrayList();
     private CashShop cs;
     private transient Deque<MapleCarnivalChallenge> pendingCarnivalRequests;
     private transient MapleCarnivalParty carnivalParty;
@@ -273,7 +275,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private MapleMount mount;
     private List<Integer> finishedAchievements = new ArrayList<>();
     private MapleMessenger messenger;
-    private byte[] petStore;
     private transient IMaplePlayerShop playerShop;
     private MapleParty party;
     private boolean invincible = false, canTalk = true, clone = false, followinitiator = false, followon = false;
@@ -284,7 +285,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private SkillMacro[] skillMacros = new SkillMacro[5];
     private MapleKeyLayout keylayout;
     private transient ScheduledFuture<?> beholderHealingSchedule, beholderBuffSchedule, BerserkSchedule,
-            dragonBloodSchedule, fairySchedule, mapTimeLimitTask, fishing, petHungerTask;
+            dragonBloodSchedule, fairySchedule, mapTimeLimitTask, fishing;
     private long nextConsume = 0, pqStartTime = 0;
     private transient Event_PyramidSubway pyramidSubway = null;
     private transient List<Integer> pendingExpiration = null, pendingSkills = null;
@@ -340,8 +341,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             combo = 0;
             keydown_skill = 0;
             smega = true;
-            petStore = new byte[3];
-            Arrays.fill(petStore, (byte) -1);
             wishlist = new int[10];
             rocks = new int[10];
             regrocks = new int[5];
@@ -365,7 +364,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             }
             questinfo = new LinkedHashMap<>();
             anticheat = new CheatTracker(this);
-            pets = new ArrayList<>();
         }
     }
 
@@ -566,7 +564,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         ret.inventory = (MapleInventory[]) ct.inventorys;
         ret.BlessOfFairy_Origin = ct.BlessOfFairy;
         ret.skillMacros = (SkillMacro[]) ct.skillmacro;
-        ret.petStore = ct.petStore;
+        System.arraycopy(ct.petStore, 0, ret.petsComp.getPetStores(), 0, ct.petStore.length);
         ret.keylayout = new MapleKeyLayout(ct.keymap);
         ret.questinfo = ct.InfoQuest;
         ret.savedLocations = ct.savedlocation;
@@ -626,9 +624,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             ret.bookCover = one.getMonsterBookCover();
             ret.dojo = one.getDojoPts();
             ret.dojoRecord = one.getDojoRecord();
-            final String[] pets = one.getPets().split(",");
-            for (int i = 0; i < ret.petStore.length; i++) {
-                ret.petStore[i] = Byte.parseByte(pets[i]);
+            final String[] petSlots = one.getPets().split(",");
+            for (int i = 0; i < ret.petsComp.getPetStores().length; i++) {
+                ret.petsComp.getPetStores()[i] = Byte.parseByte(petSlots[i]);
             }
             new QDAchievement().account.eq(one.getAccount())
                     .findEach(it -> ret.finishedAchievements.add(it.getAchievement().getAchievementId()));
@@ -673,7 +671,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             for (Pair<IItem, MapleInventoryType> mit : ItemLoader.loadItems(0, false, charid).values()) {
                 ret.getInventory(mit.getRight()).addFromDB(mit.getLeft());
                 if (mit.getLeft().getPet() != null) {
-                    ret.pets.add(mit.getLeft().getPet());
+                    ret.petsComp.addPet(mit.getLeft().getPet());
                 }
             }
 
@@ -1074,7 +1072,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         character.setBuddyCapacity(buddylist.getCapacity());
         StringBuilder petz = new StringBuilder();
         int petLength = 0;
-        for (MaplePet pet : pets) {
+        for (MaplePet pet : petsComp.getPets()) {
             pet.saveToDb();
             if (pet.getSummoned()) {
                 petz.append(pet.getInventoryPosition());
@@ -1540,56 +1538,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         }, 4000, 4000);
     }
 
-    private void startPetHungerTask() {
-        if (petHungerTask != null) {
-            return;
-        }
-        petHungerTask = Timer.BUFF.register(() -> {
-            if (client == null || !client.isLoggedIn()) {
-                cancelPetHungerTask();
-                return;
-            }
-            playerLock.lock();
-            try {
-                boolean anySummoned = false;
-                for (MaplePet pet : getPets()) {
-                    if (pet.getSummoned()) {
-                        anySummoned = true;
-                        if (pet.getPetItemId() == 5000054 && pet.getSecondsLeft() > 0) {
-                            pet.setSecondsLeft(pet.getSecondsLeft() - 1);
-                            if (pet.getSecondsLeft() <= 0) {
-                                unequipPet(pet, true, true);
-                                continue;
-                            }
-                        }
-                        int newFullness = pet.getFullness() - PetDataFactory.getHunger(pet.getPetItemId());
-                        if (newFullness <= 5) {
-                            pet.setFullness(15);
-                            unequipPet(pet, true, true);
-                        } else {
-                            pet.setFullness(newFullness);
-                            if (client != null && client.getSession() != null) {
-                                client.getSession().write(PetPacket.updatePet(pet, getInventory(MapleInventoryType.CASH).getItem(pet.getInventoryPosition()), true));
-                            }
-                        }
-                    }
-                }
-                if (!anySummoned) {
-                    cancelPetHungerTask();
-                }
-            } finally {
-                playerLock.unlock();
-            }
-        }, 60000, 60000);
-    }
-
-    private void cancelPetHungerTask() {
-        if (petHungerTask != null) {
-            petHungerTask.cancel(false);
-            petHungerTask = null;
-        }
-    }
-
     public void startMapTimeLimitTask(int time, final MapleMap to) {
         client.getSession().write(MaplePacketCreator.getClock(time));
 
@@ -1870,7 +1818,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     this.hidden = false;
                     map.broadcastMessage(this, MaplePacketCreator.spawnPlayerMapobject(this), false);
 
-                    for (final MaplePet pet : pets) {
+                    for (final MaplePet pet : petsComp.getPets()) {
                         if (pet.getSummoned()) {
                             map.broadcastMessage(this, PetPacket.showPet(this, pet, false, false), false);
                         }
@@ -4006,7 +3954,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (client.getPlayer().allowedToTarget(this)) {
             client.getSession().write(MaplePacketCreator.spawnPlayerMapobject(this));
 
-            for (final MaplePet pet : pets) {
+            for (final MaplePet pet : petsComp.getPets()) {
                 if (pet.getSummoned()) {
                     client.getSession().write(PetPacket.showPet(this, pet, false, false));
                 }
@@ -4044,130 +3992,51 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public final MaplePet getPet(final int index) {
-        byte count = 0;
-        for (final MaplePet pet : pets) {
-            if (pet.getSummoned()) {
-                if (count == index) {
-                    return pet;
-                }
-            }
-            count++;
-        }
-        return null;
+        return petsComp.getPet(index);
     }
 
     public void removePetCS(MaplePet pet) {
-        pets.remove(pet);
+        petsComp.removePetCS(pet);
     }
 
     public void addPet(final MaplePet pet) {
-        if (pets.contains(pet)) {
-            pets.remove(pet);
-        }
-        pets.add(pet);
-        // So that the pet will be at the last
-        // Pet index logic :(
+        petsComp.addPet(pet);
     }
 
     public void removePet(MaplePet pet, boolean shiftLeft) {
-        /*
-         * int petslot = getPetIndex(pet); if (petslot < 0) { return; }
-         * this.pets.remove(petslot);
-        getClient().getSession().write(PetPacket.petStatUpdate(this));
-         */
-        pet.setSummoned(0);
-        /*
-         * int slot = -1; for (int i = 0; i < 3; i++) { if (pets[i] != null) {
-         * if (pets[i].getUniqueId() == pet.getUniqueId()) { pets[i] = null;
-         * slot = i; break; } } } if (shiftLeft) { if (slot > -1) { for (int i =
-         * slot; i < 3; i++) { if (i != 2) { pets[i] = pets[i + 1]; } else {
-         * pets[i] = null; } } }
-         }
-         */
+        petsComp.removePet(pet, shiftLeft);
     }
 
     public final byte getPetIndex(final MaplePet petz) {
-        byte count = 0;
-        for (final MaplePet pet : pets) {
-            if (pet.getSummoned()) {
-                if (pet == petz) {
-                    return count;
-                }
-                count++;
-            }
-        }
-        return -1;
+        return petsComp.getPetIndex(petz);
     }
 
     public final byte getPetIndex(final int petId) {
-        byte count = 0;
-        for (final MaplePet pet : pets) {
-            if (pet.getSummoned()) {
-                if (pet.getUniqueId() == petId) {
-                    return count;
-                }
-                count++;
-            }
-        }
-        return -1;
+        return petsComp.getPetIndex(petId);
     }
 
     public final byte getPetById(final int petId) {
-        byte count = 0;
-        for (final MaplePet pet : pets) {
-            if (pet.getSummoned()) {
-                if (pet.getPetItemId() == petId) {
-                    return count;
-                }
-                count++;
-            }
-        }
-        return -1;
+        return petsComp.getPetById(petId);
     }
 
     public List<MaplePet> getPets() {
-        return this.pets;
+        return petsComp.getPets();
     }
 
     public int getNoPets() {
-        return this.pets.size();
+        return petsComp.getNoPets();
     }
 
     public final void unequipAllPets() {
-        for (final MaplePet pet : pets) {
-            if (pet != null) {
-                unequipPet(pet, true, false);
-            }
-        }
+        petsComp.unequipAllPets();
     }
 
     public void unequipPet(MaplePet pet, boolean shiftLeft, boolean hunger) {
-        playerLock.lock();
-        try {
-            if (pet.getSummoned()) {
-                pet.saveToDb();
-                this.client.getSession().write(PetPacket.updatePet(pet, getInventory(MapleInventoryType.CASH).getItem(pet.getInventoryPosition()), false));
-                if (this.map != null) {
-                    this.map.broadcastMessage(this, PetPacket.showPet(this, pet, true, hunger), true);
-                }
-                removePet(pet, shiftLeft);
-                client.getSession().write(PetPacket.petStatUpdate(this));
-                client.getSession().write(MaplePacketCreator.enableActions());
+        petsComp.unequipPet(pet, shiftLeft, hunger);
+    }
 
-                boolean anySummoned = false;
-                for (MaplePet p : getPets()) {
-                    if (p.getSummoned()) {
-                        anySummoned = true;
-                        break;
-                    }
-                }
-                if (!anySummoned) {
-                    cancelPetHungerTask();
-                }
-            }
-        } finally {
-            playerLock.unlock();
-        }
+    public int getPetSlot(MaplePet pet) {
+        return petsComp.getPetSlot(pet);
     }
 
     public final long getLastFameTime() {
@@ -4569,17 +4438,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         // client.getSession().write(MaplePacketCreator.modifyInventory(updateTick, mods, this));
     }
 
-    public int getPetSlot(MaplePet pet) {
-        if (this.pets.size() > 0) {
-            for (int i = 0; i < this.pets.size(); i++) {
-                if ((this.pets.get(i) != null) && (((MaplePet) this.pets.get(i)).getUniqueId() == pet.getUniqueId())) {
-                    return i;
-                }
-            }
-        }
-
-        return -1;
-    }
 
     public void dropTopMsg(String message) {
         this.client.getSession().write(UIPacket.getTopMsg(message));
@@ -4720,212 +4578,61 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void addCooldown(int skillId, long startTime, long length) {
-        playerLock.lock();
-        try {
-            coolDowns.put(Integer.valueOf(skillId), new MapleCoolDownValueHolder(skillId, startTime, length));
-            dirtyTracker.mark(DirtyTracker.Category.COOLDOWNS);
-
-            long delay = startTime + length - System.currentTimeMillis();
-            if (delay > 0) {
-                final long scheduledStart = startTime;
-                Timer.BUFF.schedule(() -> {
-                    playerLock.lock();
-                    try {
-                        MapleCoolDownValueHolder current = coolDowns.get(Integer.valueOf(skillId));
-                        if (current != null && current.startTime == scheduledStart) {
-                            coolDowns.remove(Integer.valueOf(skillId));
-                            if (client != null && client.getSession() != null) {
-                                client.getSession().write(MaplePacketCreator.skillCooldown(skillId, 0));
-                            }
-                        }
-                    } finally {
-                        playerLock.unlock();
-                    }
-                }, delay);
-            }
-        } finally {
-            playerLock.unlock();
-        }
+        cooldownsComp.addCooldown(skillId, startTime, length);
     }
 
     public void removeCooldown(int skillId) {
-        playerLock.lock();
-        try {
-            if (coolDowns.containsKey(Integer.valueOf(skillId))) {
-                coolDowns.remove(Integer.valueOf(skillId));
-            }
-            dirtyTracker.mark(DirtyTracker.Category.COOLDOWNS);
-        } finally {
-            playerLock.unlock();
-        }
+        cooldownsComp.removeCooldown(skillId);
     }
 
     public boolean skillisCooling(int skillId) {
-        return coolDowns.containsKey(Integer.valueOf(skillId));
+        return cooldownsComp.skillisCooling(skillId);
     }
 
     public void giveCoolDowns(final int skillid, long starttime, long length) {
-        playerLock.lock();
-        try {
-            addCooldown(skillid, starttime, length);
-        } finally {
-            playerLock.unlock();
-        }
+        cooldownsComp.giveCoolDowns(skillid, starttime, length);
     }
 
     public void giveCoolDowns(final List<MapleCoolDownValueHolder> cooldowns) {
-        playerLock.lock();
-        try {
-            if (cooldowns != null) {
-                for (MapleCoolDownValueHolder cooldown : cooldowns) {
-                    coolDowns.put(cooldown.skillId, cooldown);
-                }
-            } else {
-                new QDSkillCooldown().character.eq(character).findEach(it -> {
-                    if (it.getLength() + it.getStartTime() - System.currentTimeMillis() > 0) {
-                        giveCoolDowns(it.getSkillId(), it.getStartTime(), it.getLength());
-                    }
-                });
-                new QDSkillCooldown().character.eq(character).delete();
-            }
-        } finally {
-            playerLock.unlock();
-        }
+        cooldownsComp.giveCoolDowns(cooldowns);
     }
 
     public List<MapleCoolDownValueHolder> getCooldowns() {
-        return new ArrayList<MapleCoolDownValueHolder>(coolDowns.values());
+        return cooldownsComp.getCooldowns();
     }
 
     public final List<MapleDiseaseValueHolder> getAllDiseases() {
-        return new ArrayList<MapleDiseaseValueHolder>(diseases.values());
+        return diseasesComp.getAllDiseases();
     }
 
     public final boolean hasDisease(final MapleDisease dis) {
-        return diseases.keySet().contains(dis);
-    }/*
-    //怪物给玩家BUFF
-    public void giveDebuff(MapleDisease disease, MobSkill skill) {
-        giveDebuff(disease, skill, false);
+        return diseasesComp.hasDisease(dis);
     }
-    //怪物给玩家BUFF
-    public void giveDebuff(MapleDisease disease, MobSkill skill, boolean cpq) {
-        MapleClient c;
-        synchronized (diseases) {
-
-            int duration = 4000;
-            if (isAlive() && !isActiveBuffedValue(2321005) && !diseases2.contains(disease) && diseases2.size() < 2) {
-                diseases2.add(disease);
-                List<Pair<MapleDisease, Integer>> debuff = Collections.singletonList(new Pair<MapleDisease, Integer>(disease, Integer.valueOf(skill.getX())));
-                long mask = 0;
-                for (Pair<MapleDisease, Integer> statup : debuff) {
-                    mask |= statup.getLeft().getValue();
-                }
-                getClient().getSession().write(MaplePacketCreator.giveDebuff(mask, debuff, skill,duration));//怪物给玩家BUFF
-                getMap().broadcastMessage(this, MaplePacketCreator.giveForeignDebuff(id, mask, skill), false);//其他人看见的负面状态效果
-
-                if (isAlive() && diseases2.contains(disease)) {
-                    final MapleCharacter character = this;
-                    final MapleDisease disease_ = disease;
-                    Timer.WORLD.schedule(new Runnable() {
-                        //..getInstance().schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (character.diseases2.contains(disease_)) {
-                                dispelDebuff(disease_);
-                            }
-                        }
-                    }, skill.getDuration());
-                }
-            }
-        }
-    }
-     */
 
     //怪物给玩家上BUFF
     public void giveDebuff(final MapleDisease disease, MobSkill skill) {
-        giveDebuff(disease, skill.getX(), skill.getDuration(), skill.getSkillId(), skill.getSkillLevel());
+        diseasesComp.giveDebuff(disease, skill.getX(), skill.getDuration(), skill.getSkillId(), skill.getSkillLevel());
     }
 
     //怪物给玩家上BUFF
     public void giveDebuff(final MapleDisease disease, int x, long duration, int skillid, int level) {
-        playerLock.lock();
-        try {
-            final List<Pair<MapleDisease, Integer>> debuff = Collections.singletonList(new Pair<MapleDisease, Integer>(disease, Integer.valueOf(x)));
-
-            if (!hasDisease(disease) && diseases.size() < 2) {
-                if (!(disease == MapleDisease.SEDUCE || disease == MapleDisease.STUN)) {
-                    if (isActiveBuffedValue(2321005)) {
-                        return;
-                    }
-                }
-
-                diseases.put(disease, new MapleDiseaseValueHolder(disease, System.currentTimeMillis(), duration));
-                client.getSession().write(MaplePacketCreator.giveDebuff(debuff, skillid, level, (int) duration));
-                map.broadcastMessage(this, MaplePacketCreator.giveForeignDebuff(id, debuff, skillid, level), false);
-
-                if (duration > 0) {
-                    Timer.BUFF.schedule(() -> {
-                        playerLock.lock();
-                        try {
-                            if (hasDisease(disease)) {
-                                dispelDebuff(disease);
-                            }
-                        } finally {
-                            playerLock.unlock();
-                        }
-                    }, duration);
-                }
-            }
-        } finally {
-            playerLock.unlock();
-        }
+        diseasesComp.giveDebuff(disease, x, duration, skillid, level);
     }
 
     public final void giveSilentDebuff(final List<MapleDiseaseValueHolder> ld) {
-        if (ld != null) {
-            for (final MapleDiseaseValueHolder disease : ld) {
-                diseases.put(disease.disease, disease);
-            }
-        }
+        diseasesComp.giveSilentDebuff(ld);
     }
 
     public void dispelDebuff(MapleDisease debuff) {
-        playerLock.lock();
-        try {
-            if (hasDisease(debuff)) {
-                long mask = debuff.getValue();
-                boolean first = debuff.isFirst();
-                client.getSession().write(MaplePacketCreator.cancelDebuff(mask, first));
-                map.broadcastMessage(this, MaplePacketCreator.cancelForeignDebuff(id, mask, first), false);
-
-                diseases.remove(debuff);
-            }
-        } finally {
-            playerLock.unlock();
-        }
+        diseasesComp.dispelDebuff(debuff);
     }
 
     public void dispelDebuffs() {
-        playerLock.lock();
-        try {
-            dispelDebuff(MapleDisease.CURSE);
-            dispelDebuff(MapleDisease.DARKNESS);
-            dispelDebuff(MapleDisease.POISON);
-            dispelDebuff(MapleDisease.SEAL);
-            dispelDebuff(MapleDisease.WEAKEN);
-        } finally {
-            playerLock.unlock();
-        }
+        diseasesComp.dispelDebuffs();
     }
 
     public void cancelAllDebuffs() {
-        playerLock.lock();
-        try {
-            diseases.clear();
-        } finally {
-            playerLock.unlock();
-        }
+        diseasesComp.cancelAllDebuffs();
     }
 
     public void setLevel(final short level) {
@@ -5616,78 +5323,15 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void spawnPet(byte slot) {
-        spawnPet(slot, false, true);
+        petsComp.spawnPet(slot);
     }
 
     public void spawnPet(byte slot, boolean lead) {
-        spawnPet(slot, lead, true);
+        petsComp.spawnPet(slot, lead);
     }
 
     public void spawnPet(byte slot, boolean lead, boolean broadcast) {
-        playerLock.lock();
-        try {
-            final IItem item = getInventory(MapleInventoryType.CASH).getItem(slot);
-            if (item == null || item.getItemId() > 5001000 || item.getItemId() < 5000000) {
-                return;
-            }
-            switch (item.getItemId()) {
-                case 5000047:
-                case 5000028: {
-                    final MaplePet pet = MaplePet.createPet(item.getItemId() + 1, MapleInventoryIdentifier.getInstance());
-                    if (pet != null) {
-                        MapleInventoryManipulator.addById(client, item.getItemId() + 1, (short) 1, item.getOwner(), pet, 45, (byte) 0);
-                        MapleInventoryManipulator.removeFromSlot(client, MapleInventoryType.CASH, slot, (short) 1, false);
-                    }
-                    break;
-                }
-                default: {
-                    final MaplePet pet = item.getPet();
-                    if (pet != null && (item.getItemId() != 5000054 || pet.getSecondsLeft() > 0) && (item.getExpiration() == -1 || item.getExpiration() > System.currentTimeMillis())) {
-                        if (pet.getSummoned()) { // Already summoned, let's keep it
-                            unequipPet(pet, true, false);
-                        } else {
-                            int leadid = 8;
-                            if (GameConstants.isKOC(getJob())) {
-                                leadid = 10000018;
-                            } else if (GameConstants.isAran(getJob())) {
-                                leadid = 20000024;
-                            } else if (GameConstants.isEvan(getJob())) {
-                                leadid = 20010024;
-                            } else if (GameConstants.isResist(getJob())) {
-                                leadid = 30000024;
-                            }
-                            if (getSkillLevel(SkillFactory.getSkill(leadid)) == 0 && getPet(0) != null) {
-                                unequipPet(getPet(0), false, false);
-                            } else if (lead || getSkillLevel(SkillFactory.getSkill(leadid)) <= 0) { // Follow the Lead
-                                // shiftPetsRight();
-                            }
-                            final Vector pos = getPosition();
-                            pet.setPos(pos);
-                            try {
-                                pet.setFh(getMap().getFootholds().findBelow(pos).getId());
-                            } catch (NullPointerException e) {
-                                pet.setFh(0); //lol, it can be fixed by movement
-                            }
-                            pet.setStance(0);
-                            pet.setSummoned(slot);
-
-                            addPet(pet);
-                            startPetHungerTask();
-                            if (broadcast) {
-                                getMap().broadcastMessage(this, PetPacket.showPet(this, pet, false, false), true);
-                                client.getSession().write(PetPacket.updatePet(pet, getInventory(MapleInventoryType.CASH)
-                                        .getItem(pet.getInventoryPosition()), true));
-                                client.getSession().write(PetPacket.petStatUpdate(this));
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-            client.getSession().write(PetPacket.emptyStatUpdate());
-        } finally {
-            playerLock.unlock();
-        }
+        petsComp.spawnPet(slot, lead, broadcast);
     }
 
     public void addMoveMob(int mobid) {
@@ -5870,17 +5514,11 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public final void spawnSavedPets() {
-        for (int i = 0; i < petStore.length; i++) {
-            if (petStore[i] > -1) {
-                spawnPet(petStore[i], false, false);
-            }
-        }
-        client.getSession().write(PetPacket.petStatUpdate(this));
-//        petStore = new byte[]{-1, -1, -1};
+        petsComp.spawnSavedPets();
     }
 
     public final byte[] getPetStores() {
-        return petStore;
+        return petsComp.getPetStores();
     }
 
     public void resetStats(final int str, final int dex, final int int_, final int luk) {
