@@ -239,7 +239,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private Vector old = Vector.empty();
     private boolean smega, hidden, hasSummon = false;
     private int[] wishlist, rocks, savedLocations, regrocks, remainingSp = new int[10];
-    private final transient ReentrantLock playerLock = new ReentrantLock();
+    private final transient ReentrantLock playerLock = new ReentrantLock(); // @Deprecated — use actor instead
+    private final transient PlayerActorExecutor actor = new PlayerActorExecutor(0); // id updated in loadCharFromDB
     private final transient DirtyTracker dirtyTracker = new DirtyTracker();
     private final transient CharacterCooldowns cooldownsComp = new CharacterCooldowns(this, dirtyTracker);
     private final transient CharacterDiseases diseasesComp = new CharacterDiseases(this);
@@ -1328,7 +1329,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         try {
             ItemLoader.deleteItems(inventory);
             ItemLoader.saveItems(inventory, character);
-            dirtyTracker.mark(DirtyTracker.Category.INVENTORY);
         } finally {
             playerLock.unlock();
         }
@@ -2287,6 +2287,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     public final ReentrantLock getLock() {
         return playerLock;
+    }
+
+    public final PlayerActorExecutor getActor() {
+        return actor;
     }
 
     public final DirtyTracker getDirtyTracker() {

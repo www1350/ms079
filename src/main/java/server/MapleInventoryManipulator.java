@@ -1,5 +1,6 @@
 package server;
 
+import client.DirtyTracker;
 import client.MapleBuffStat;
 import client.MapleCharacter;
 import client.MapleClient;
@@ -212,6 +213,7 @@ public class MapleInventoryManipulator {
             throw new InventoryException("Trying to create equip with non-one quantity");
         }
         c.getPlayer().havePartyQuest(itemId);
+        c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
         return newSlot;
     }
 
@@ -710,6 +712,7 @@ public class MapleInventoryManipulator {
         if (item != null) {
             final boolean allowZero = consume && GameConstants.isRechargable(item.getItemId());
             c.getPlayer().getInventory(type).removeItem(slot, quantity, allowZero);
+            c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
 
             if (item.getQuantity() == 0 && !allowZero) {
                 c.getSession().write(MaplePacketCreator.clearInventoryItem(type, item.getPosition(), fromDrop));
@@ -751,6 +754,7 @@ public class MapleInventoryManipulator {
         final int oldsrcQ = source.getQuantity();
         final int slotMax = ii.getSlotMax(c, source.getItemId());
         c.getPlayer().getInventory(type).move(src, dst, slotMax);
+        c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
 
         if (!type.equals(MapleInventoryType.EQUIP) && initialTarget != null
                 && initialTarget.getItemId() == source.getItemId()
@@ -1069,6 +1073,7 @@ public class MapleInventoryManipulator {
             }
         } else {
             c.getPlayer().getInventory(type).dropSlot(src);
+            c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
             c.getSession().write(MaplePacketCreator.dropInventoryItem((src < 0 ? MapleInventoryType.EQUIP : type), src));//发送删除道具的封包
             if (src < 0) {
                 c.getPlayer().equipChanged();
