@@ -3830,6 +3830,13 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (getMessenger() != null) {
             World.Messenger.updateMessenger(getMessenger().getId(), getName(), client.getChannel());
         }
+        Transaction transaction = DB.beginTransaction();
+        try {
+            saveInventory(character);
+            transaction.commit();
+        } finally {
+            transaction.end();
+        }
     }
 
     public final MaplePet getPet(final int index) {
