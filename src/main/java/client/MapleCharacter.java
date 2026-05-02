@@ -412,7 +412,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         ret.DebugMessage = ct.DebugMessage;
         ret.id = ct.characterid;
         if(ret.character == null) {
-            LOGGER.error("Reconstruct chr " + ret.id + " failed character is null");
             ret.setCharacter(new QDCharacter().id.eq(ct.characterid).findOne());
         }
         ret.name = ct.name;
@@ -531,7 +530,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         MapleQuest quest;
         for (final Map.Entry<Integer, Object> qs : ct.Quest.entrySet()) {
             if (qs.getKey() < 0){
-                LOGGER.error("Invalid quest ID: " + qs.getKey());
                 continue;
             }
             quest = MapleQuest.getInstance(qs.getKey());
@@ -1123,7 +1121,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         while (questsIt.hasNext()) {
             MapleQuestStatus q = questsIt.next();
             if (q.getQuest() == null || q.getQuest().getId() < 0) {
-                LOGGER.error("保存任務失敗:{}", q);
                 questsIt.remove();
                 continue;
             }

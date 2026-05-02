@@ -86,7 +86,8 @@ public class MapleFamilyCharacter implements java.io.Serializable {
     }
 
     public int getSeniorId() {
-        return character.getSenior().getId();
+        DCharacter senior = character.getSenior();
+        return senior != null ? senior.getId() : 0;
     }
 
     public void setSeniorId(int si) {
