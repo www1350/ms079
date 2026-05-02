@@ -21,7 +21,7 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     private final MapleInventoryType type;
 
     private final Map<Integer, IItem> inventory = Maps.newLinkedHashMap();
-    private final Map<Integer, IItem> removeInventory = Maps.newLinkedHashMap();
+    private final List<IItem> removeInventory = new ArrayList<>();
     /**
      * Creates a new instance of MapleInventory
      */
@@ -102,7 +102,11 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     }
 
     public Collection<IItem> waitDeleteList() {
-        return removeInventory.values();
+        return removeInventory;
+    }
+
+    private void removeFromWaitDelete(int itemId) {
+        removeInventory.removeIf(it -> it.getItemId() == itemId);
     }
 
     /**
@@ -115,7 +119,7 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
         }
         inventory.put(slotId, item);
         item.setPosition(slotId);
-        removeInventory.remove(item.getItemId());
+        removeFromWaitDelete(item.getItemId());
         return slotId;
     }
 
@@ -125,7 +129,7 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
             return;
         }
         inventory.put(item.getPosition(), item);
-        removeInventory.remove(item.getItemId());
+        removeFromWaitDelete(item.getItemId());
     }
 
     public boolean move2(int sSlot, int dSlot, int slotMax) {
@@ -231,7 +235,7 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     public void removeSlot(int slot) {
         IItem item = inventory.remove(slot);
         if (item != null) {
-            removeInventory.put(item.getItemId(), item);
+            removeInventory.add(item);
         }
     }
 
@@ -245,7 +249,7 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
 
     public void dropSlot(int slot) {
         IItem rmItem = inventory.remove(slot);
-        removeInventory.put(rmItem.getItemId(), rmItem);
+        removeInventory.add(rmItem);
     }
 
     public boolean isFull() {

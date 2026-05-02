@@ -4,6 +4,7 @@ import client.anticheat.CheatTracker;
 import client.component.CharacterCooldowns;
 import client.component.CharacterDiseases;
 import client.component.CharacterPets;
+import client.component.CharacterSkills;
 import client.inventory.Equip;
 import client.inventory.IItem;
 import client.inventory.Item;
@@ -238,13 +239,14 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private boolean canSetBeansNum;
     private Vector old = Vector.empty();
     private boolean smega, hidden, hasSummon = false;
-    private int[] wishlist, rocks, savedLocations, regrocks, remainingSp = new int[10];
+    private int[] wishlist, rocks, savedLocations, regrocks;
     private final transient ReentrantLock playerLock = new ReentrantLock(); // @Deprecated — use actor instead
     private final transient PlayerActorExecutor actor = new PlayerActorExecutor(0); // id updated in loadCharFromDB
     private final transient DirtyTracker dirtyTracker = new DirtyTracker();
     private final transient CharacterCooldowns cooldownsComp = new CharacterCooldowns(this, dirtyTracker);
     private final transient CharacterDiseases diseasesComp = new CharacterDiseases(this);
     private final transient CharacterPets petsComp = new CharacterPets(this);
+    private final transient CharacterSkills skillsComp = new CharacterSkills(this, dirtyTracker);
     private transient AtomicInteger inst;
     private transient List<LifeMovementFragment> lastres;
     private List<Integer> lastmonthfameids;
@@ -255,7 +257,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private transient ReentrantReadWriteLock visibleMapObjectsLock;
     private Map<MapleQuest, MapleQuestStatus> quests;
     private Map<Integer, String> questinfo;
-    private Map<ISkill, SkillEntry> skills = new ConcurrentHashMap<>();
+
     private transient Map<MapleBuffStat, MapleBuffStatValueHolder> effects = new ConcurrentEnumMap<>(MapleBuffStat.class);
     private transient Map<Integer, MapleSummon> summons;
     private CashShop cs;
@@ -283,13 +285,14 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private MapleFamilyCharacter mfc;
     private transient EventInstanceManager eventInstance;
     private MapleInventory[] inventory;
-    private SkillMacro[] skillMacros = new SkillMacro[5];
+
+
     private MapleKeyLayout keylayout;
     private transient ScheduledFuture<?> beholderHealingSchedule, beholderBuffSchedule, BerserkSchedule,
             dragonBloodSchedule, fairySchedule, mapTimeLimitTask, fishing;
     private long nextConsume = 0, pqStartTime = 0;
     private transient Event_PyramidSubway pyramidSubway = null;
-    private transient List<Integer> pendingExpiration = null, pendingSkills = null;
+    private transient List<Integer> pendingExpiration = null;
     private transient Map<Integer, Integer> movedMobs = new HashMap<>();
     private String teleportname = "";
     private int APQScore;
@@ -330,7 +333,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         }
         quests = new LinkedHashMap<>(); // Stupid erev quest.
         stats = new PlayerStats(this);
-        Arrays.fill(remainingSp, 0);
+        Arrays.fill(skillsComp.getRemainingSps(), 0);
         if (channelServer) {
             lastMoveItemTime = 0;
             lastCheckPeriodTime = 0;
@@ -439,7 +442,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         ret.chalktext = ct.chalkboard;
         ret.exp = ct.exp;
         ret.hpApUsed = ct.hpApUsed;
-        ret.remainingSp = ct.remainingSp;
+        System.arraycopy(ct.remainingSp, 0, ret.skillsComp.getRemainingSps(), 0, ct.remainingSp.length);
         ret.remainingAp = ct.remainingAp;
         ret.beans = ct.beans;
         ret.meso = ct.meso;
@@ -556,7 +559,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             ret.quests.put(quest, queststatus);
         }
         for (final Map.Entry<Integer, SkillEntry> qs : ct.Skills.entrySet()) {
-            ret.skills.put(SkillFactory.getSkill(qs.getKey()), qs.getValue());
+            ret.skillsComp.getSkillsInternal().put(SkillFactory.getSkill(qs.getKey()), qs.getValue());
         }
         for (final Integer zz : ct.finishedAchievements) {
             ret.finishedAchievements.add(zz);
@@ -564,7 +567,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         ret.monsterbook = new MonsterBook(ct.mbook);
         ret.inventory = (MapleInventory[]) ct.inventorys;
         ret.BlessOfFairy_Origin = ct.BlessOfFairy;
-        ret.skillMacros = (SkillMacro[]) ct.skillmacro;
+        System.arraycopy(ct.skillmacro, 0, ret.skillsComp.getMacros(), 0, ((SkillMacro[]) ct.skillmacro).length);
         System.arraycopy(ct.petStore, 0, ret.petsComp.getPetStores(), 0, ct.petStore.length);
         ret.keylayout = new MapleKeyLayout(ct.keymap);
         ret.questinfo = ct.InfoQuest;
@@ -699,9 +702,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             for (DSkill skill : skills) {
                 skil = SkillFactory.getSkill(skill.getSkillId());
                 if (skil != null && GameConstants.isApplicableSkill(skill.getSkillId())) {
-                    ret.skills.put(skil, new SkillEntry(skill.getSkillLevel().byteValue(), skill.getMasterLevel().byteValue(), skill.getExpiration()));
+                    ret.skillsComp.getSkillsInternal().put(skil, new SkillEntry(skill.getSkillLevel().byteValue(), skill.getMasterLevel().byteValue(), skill.getExpiration()));
                 } else if (skil == null) { //doesnt. exist. e.g. bb
-                    ret.remainingSp[GameConstants.getSkillBookForSkill(skill.getSkillId())] += skill.getSkillLevel();
+                    ret.skillsComp.getRemainingSps()[GameConstants.getSkillBookForSkill(skill.getSkillId())] += skill.getSkillLevel();
                 }
             }
 
@@ -724,12 +727,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
                 } else if (charid < 17000 && !compensate_previousEvans && ret.job >= 2200 && ret.job <= 2218) { //compensate, watch max charid
                     for (int i = 0; i <= GameConstants.getSkillBook(ret.job); i++) {
-                        ret.remainingSp[i] += 2; //2 that they missed. gg
+                        ret.skillsComp.getRemainingSps()[i] += 2; //2 that they missed. gg
                     }
                     ret.setQuestAdd(MapleQuest.getInstance(170000), (byte) 0, null); //set it so never again
                 }
             }
-            ret.skills.put(SkillFactory.getSkill(GameConstants.getBOF_ForJob(ret.job)), new SkillEntry(maxlevel_, (byte) 0, -1));
+            ret.skillsComp.getSkillsInternal().put(SkillFactory.getSkill(GameConstants.getBOF_ForJob(ret.job)), new SkillEntry(maxlevel_, (byte) 0, -1));
             // END
 
             List<DSkillMacro> macros = new QDSkillMacro().character.eq(one).findList();
@@ -738,7 +741,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 position = macro.getPosition();
                 SkillMacro skillMacro = new SkillMacro(macro.getSkill1(), macro.getSkill2(),
                         macro.getSkill3(), macro.getName(), macro.getShout(), position);
-                ret.skillMacros[position] = skillMacro;
+                ret.skillsComp.getMacros()[position] = skillMacro;
             }
 
             List<DKeyMap> maps = new QDKeyMap().character.eq(one).findList();
@@ -839,8 +842,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         this.exp = one.getExp();
         this.hpApUsed = one.getHpApUsed().shortValue();
         String[] sp = one.getSp().split(",");
-        for (int i = 0; i < this.remainingSp.length; i++) {
-            this.remainingSp[i] = Integer.parseInt(sp[i]);
+        for (int i = 0; i < this.skillsComp.getRemainingSps().length; i++) {
+            this.skillsComp.getRemainingSps()[i] = Integer.parseInt(sp[i]);
         }
         this.remainingAp = one.getAp().byteValue();
         this.beans = one.getBeans();
@@ -1051,7 +1054,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         character.setAp(remainingAp);
         character.setHair(hair);
         character.setFace(face);
-        character.setSp(Arrays.stream(remainingSp)
+        character.setSp(Arrays.stream(skillsComp.getRemainingSps())
                 .mapToObj(String::valueOf)
                 .collect(Collectors.joining(",")));
         if (!fromcs && map != null) {
@@ -1092,7 +1095,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (dirtyTracker.isDirty(DirtyTracker.Category.SKILL_MACROS)) {
             new QDSkillMacro().character.eq(character).delete();
             for (int i = 0; i < 5; i++) {
-                SkillMacro macro = skillMacros[i];
+                SkillMacro macro = skillsComp.getMacros()[i];
                 if (macro != null) {
                     DSkillMacro skillMacro = new DSkillMacro();
                     skillMacro.setCharacter(character);
@@ -1168,7 +1171,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (dirtyTracker.isDirty(DirtyTracker.Category.SKILLS)) {
             new QDSkill().character.eq(character).delete();
 
-            for (Entry<ISkill, SkillEntry> entryEntry : skills.entrySet()) {
+            for (Entry<ISkill, SkillEntry> entryEntry : skillsComp.getSkillsInternal().entrySet()) {
                 if (GameConstants.isApplicableSkill(entryEntry.getKey().getId())) { //do not save additional skills
                     DSkill skill = new DSkill();
                     skill.setCharacter(character);
@@ -2314,25 +2317,19 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public int getRemainingSp() {
-        return remainingSp[GameConstants.getSkillBook(job)]; //default
+        return skillsComp.getRemainingSp();
     }
 
     public int getRemainingSp(final int skillbook) {
-        return remainingSp[skillbook];
+        return skillsComp.getRemainingSp(skillbook);
     }
 
     public int[] getRemainingSps() {
-        return remainingSp;
+        return skillsComp.getRemainingSps();
     }
 
     public int getRemainingSpSize() {
-        int ret = 0;
-        for (int i = 0; i < remainingSp.length; i++) {
-            if (remainingSp[i] > 0) {
-                ret++;
-            }
-        }
-        return ret;
+        return skillsComp.getRemainingSpSize();
     }
 
     public short getHpApUsed() {
@@ -2430,11 +2427,11 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void setRemainingSp(int remainingSp) {
-        this.remainingSp[GameConstants.getSkillBook(job)] = remainingSp; //default
+        skillsComp.setRemainingSp(remainingSp);
     }
 
     public void setRemainingSp(int remainingSp, final int skillbook) {
-        this.remainingSp[skillbook] = remainingSp;
+        skillsComp.setRemainingSp(remainingSp, skillbook);
     }
 
     public void setGender(Gender gender) {
@@ -2588,12 +2585,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             this.job = (short) newJob;
             if (newJob != 0 && newJob != 1000 && newJob != 2000 && newJob != 2001 && newJob != 3000) {
                 if (isEv) {
-                    remainingSp[GameConstants.getSkillBook(newJob)] += 5;
+                    skillsComp.getRemainingSps()[GameConstants.getSkillBook(newJob)] += 5;
                     client.getSession().write(UIPacket.getSPMsg((byte) 5, (short) newJob));
                 } else {
-                    remainingSp[GameConstants.getSkillBook(newJob)]++;
+                    skillsComp.getRemainingSps()[GameConstants.getSkillBook(newJob)]++;
                     if (newJob % 10 >= 2) {
-                        remainingSp[GameConstants.getSkillBook(newJob)] += 2;
+                        skillsComp.getRemainingSps()[GameConstants.getSkillBook(newJob)] += 2;
                     }
                 }
             }
@@ -2601,7 +2598,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 resetStatsByJob(true);
                 if (!GameConstants.isEvan(newJob)) {
                     if (getLevel() > (newJob == 200 ? 8 : 10) && newJob % 100 == 0 && (newJob % 1000) / 100 > 0) { //first job
-                        remainingSp[GameConstants.getSkillBook(newJob)] += 3 * (getLevel() - (newJob == 200 ? 8 : 10));
+                        skillsComp.getRemainingSps()[GameConstants.getSkillBook(newJob)] += 3 * (getLevel() - (newJob == 200 ? 8 : 10));
                     }
                 } else if (newJob == 2200) {
                     MapleQuest.getInstance(22100).forceStart(this, 0, null);
@@ -2723,17 +2720,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void baseSkills() {
-        if (GameConstants.getJobNumber(job) >= 3) { //third job.
-            List<Integer> skills = SkillFactory.getSkillsByJob(job);
-            if (skills != null) {
-                for (int i : skills) {
-                    final ISkill skil = SkillFactory.getSkill(i);
-                    if (skil != null && !skil.isInvisible() && skil.isFourthJob() && getSkillLevel(skil) <= 0 && getMasterLevel(skil) <= 0 && skil.getMasterLevel() > 0) {
-                        changeSkillLevel(skil, (byte) 0, (byte) skil.getMasterLevel()); //usually 10 master
-                    }
-                }
-            }
-        }
+        skillsComp.baseSkills();
     }
 
     public void makeDragon() {
@@ -2751,102 +2738,35 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void gainSP(int sp) {
-        this.remainingSp[GameConstants.getSkillBook(job)] += sp; //default
-        client.getSession().write(MaplePacketCreator.updateSp(this, false));
-        client.getSession().write(UIPacket.getSPMsg((byte) sp, (short) job));
+        skillsComp.gainSP(sp);
     }
 
     public void gainSP(int sp, final int skillbook) {
-        this.remainingSp[skillbook] += sp; //default
-        client.getSession().write(MaplePacketCreator.updateSp(this, false));
-        client.getSession().write(UIPacket.getSPMsg((byte) sp, (short) job));
+        skillsComp.gainSP(sp, skillbook);
     }
 
     public void resetSP(int sp) {
-        for (int i = 0; i < this.remainingSp.length; i++) {
-            this.remainingSp[i] = sp;
-        }
-        updateSingleStat(MapleStat.AVAILABLESP, getRemainingSp());
-        //   this.client.getSession().write(MaplePacketCreator.updateSp(this, false));
+        skillsComp.resetSP(sp);
     }
 
     public void resetAPSP() {
-        for (int i = 0; i < remainingSp.length; i++) {
-            this.remainingSp[i] = 0;
-        }
-        client.getSession().write(MaplePacketCreator.updateSp(this, false));
-        gainAp((short) -this.remainingAp);
+        skillsComp.resetAPSP();
     }
 
     public int getAllSkillLevels() {
-        int rett = 0;
-        for (Map.Entry ret : this.skills.entrySet()) {
-            if ((!((Skill) ret.getKey()).isBeginnerSkill()) && (((SkillEntry) ret.getValue()).skillevel > 0)) {
-                rett += ((SkillEntry) ret.getValue()).skillevel;
-            }
-        }
-        return rett;
+        return skillsComp.getAllSkillLevels();
     }
 
     public void changeSkillLevel(final ISkill skill, int newLevel, int newMasterlevel) {
-        playerLock.lock();
-        try {
-            if (skill == null) {
-                return;
-            }
-            changeSkillLevel(skill, newLevel, newMasterlevel, skill.isTimeLimited() ? (System.currentTimeMillis() + (long) (30L * 24L * 60L * 60L * 1000L)) : -1);
-        } finally {
-            playerLock.unlock();
-        }
+        skillsComp.changeSkillLevel(skill, newLevel, newMasterlevel);
     }
 
     public void changeSkillLevel(final ISkill skill, int newLevel, int newMasterlevel, long expiration) {
-        playerLock.lock();
-        try {
-            if (skill == null || (!GameConstants.isApplicableSkill(skill.getId()) && !GameConstants.isApplicableSkill_(skill.getId()))) {
-                return;
-            }
-            client.getSession().write(MaplePacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, expiration));
-            if (newLevel == 0 && newMasterlevel == 0) {
-                if (skills.containsKey(skill)) {
-                    skills.remove(skill);
-                } else {
-                    return;
-                }
-            } else {
-                skills.put(skill, new SkillEntry(newLevel, newMasterlevel, expiration));
-            }
-            dirtyTracker.mark(DirtyTracker.Category.SKILLS);
-            if (GameConstants.isRecoveryIncSkill(skill.getId())) {
-                stats.relocHeal();
-            } else if (GameConstants.isElementAmp_Skill(skill.getId())) {
-                stats.recalcLocalStats();
-            }
-        } finally {
-            playerLock.unlock();
-        }
+        skillsComp.changeSkillLevel(skill, newLevel, newMasterlevel, expiration);
     }
 
     public void changeSkillLevel_Skip(final ISkill skill, int newLevel, int newMasterlevel) {
-        playerLock.lock();
-        try {
-            if (skill == null) {
-                return;
-            }
-            client.getSession().write(MaplePacketCreator.updateSkill(skill.getId(), newLevel, newMasterlevel, -1L));
-            if (newLevel == 0 && newMasterlevel == 0) {
-                if (skills.containsKey(skill)) {
-                    skills.remove(skill);
-                } else {
-                    return;
-                }
-            } else {
-                skills.put(skill, new SkillEntry(newLevel, newMasterlevel, -1L));
-            }
-            dirtyTracker.mark(DirtyTracker.Category.SKILLS);
-        } finally {
-            playerLock.unlock();
-        }
+        skillsComp.changeSkillLevel_Skip(skill, newLevel, newMasterlevel);
     }
 
     public void playerDead() {
@@ -3298,13 +3218,13 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 }
             }
             pendingExpiration = null;
-            if (pendingSkills != null) {
-                for (Integer z : pendingSkills) {
+            if (skillsComp.getPendingSkills() != null) {
+                for (Integer z : skillsComp.getPendingSkills()) {
                     client.sendPacket(MaplePacketCreator.updateSkill(z, 0, 0, -1));
                     client.sendPacket(MaplePacketCreator.serverNotice(5, "[" + SkillFactory.getSkillName(z) + "] 技能已经过期"));
                 }
             } //not real msg
-            pendingSkills = null;
+            skillsComp.clearPendingSkills();
             return;
         }
         long expiration;
@@ -3345,18 +3265,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
         this.pendingExpiration = ret;
 
-        final List<Integer> skilz = new ArrayList<>();
-        final List<ISkill> toberem = new ArrayList<>();
-        for (Entry<ISkill, SkillEntry> skil : skills.entrySet()) {
-            if (skil.getValue().expiration != -1 && currenttime > skil.getValue().expiration) {
-                toberem.add(skil.getKey());
-            }
-        }
-        for (ISkill skil : toberem) {
-            skilz.add(skil.getId());
-            this.skills.remove(skil);
-        }
-        this.pendingSkills = skilz;
+        skillsComp.checkSkillExpirations(currenttime);
     }
 
     public MapleShop getShop() {
@@ -3509,33 +3418,19 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public Map<ISkill, SkillEntry> getSkills() {
-        return Collections.unmodifiableMap(skills);
+        return skillsComp.getSkills();
     }
 
     public byte getSkillLevel(final ISkill skill) {
-        if (skill == null) {
-            return 0;
-        }
-        final SkillEntry ret = skills.get(skill);
-        if (ret == null || ret.skillevel <= 0) {
-            return 0;
-        }
-        return (byte) Math.min(skill.getMaxLevel(), ret.skillevel + (skill.isBeginnerSkill() ? 0 : stats.incAllskill));
+        return skillsComp.getSkillLevel(skill);
     }
 
     public int getMasterLevel(int skill) {
-        return getMasterLevel(SkillFactory.getSkill(skill));
+        return skillsComp.getMasterLevel(skill);
     }
 
     public int getMasterLevel(final ISkill skill) {
-        if (skill == null) {
-            return 0;
-        }
-        final SkillEntry ret = skills.get(skill);
-        if (ret == null) {
-            return 0;
-        }
-        return ret.masterlevel;
+        return skillsComp.getMasterLevel(skill);
     }
 
     public void levelUp() {
@@ -3662,7 +3557,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         statup.add(new Pair<MapleStat, Integer>(MapleStat.LEVEL, (int) level));
 
         if (isGM() || (job != 0 && job != 1000 && job != 2000 && job != 2001 && job != 3000)) { // Not Beginner, Nobless and Legend
-            remainingSp[GameConstants.getSkillBook(this.job)] += 3;
+            skillsComp.getRemainingSps()[GameConstants.getSkillBook(this.job)] += 3;
             client.getSession().write(MaplePacketCreator.updateSp(this, false));
         } else if (level <= 10) {
             stats.setStr((short) (stats.getStr() + remainingAp));
@@ -3756,21 +3651,15 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void sendMacros() {
-        for (int i = 0; i < 5; i++) {
-            if (skillMacros[i] != null) {
-                client.getSession().write(MaplePacketCreator.getMacros(skillMacros));
-                break;
-            }
-        }
+        skillsComp.sendMacros();
     }
 
     public void updateMacros(int position, SkillMacro updateMacro) {
-        skillMacros[position] = updateMacro;
-        dirtyTracker.mark(DirtyTracker.Category.SKILL_MACROS);
+        skillsComp.updateMacros(position, updateMacro);
     }
 
     public final SkillMacro[] getMacros() {
-        return skillMacros;
+        return skillsComp.getMacros();
     }
 
     public void tempban(String reason, Calendar duration, int greason, boolean IPMac) {
@@ -4383,14 +4272,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void maxAllSkills() {
-        WzData.STRING.directory().findFile("Skill.img")
-                .map(WzFile::content)
-                .map(ImgdirElement::childrenStream)
-                .ifPresent(stream -> stream.map(WzElement::name)
-                        .map(Numbers::ofInt)
-                        .map(SkillFactory::getSkill1)
-                        .filter(skill -> level > 0)
-                        .forEach(skill -> changeSkillLevel(skill, skill.getMaxLevel(), skill.getMaxLevel())));
+        skillsComp.maxAllSkills();
     }
 
     public void setAPQScore(int score) {
@@ -5434,7 +5316,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         for (IItem equip : getInventory(MapleInventoryType.EQUIPPED)) {
             ret.getInventory(MapleInventoryType.EQUIPPED).addFromDB(equip);
         }
-        ret.skillMacros = skillMacros;
+        System.arraycopy(skillsComp.getMacros(), 0, ret.skillsComp.getMacros(), 0, skillsComp.getMacros().length);
         ret.keylayout = keylayout;
         ret.questinfo = questinfo;
         ret.savedLocations = savedLocations;
@@ -6418,9 +6300,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void maxSkills() {
-        for (ISkill sk : SkillFactory.getAllSkills()) {
-            changeSkillLevel(sk, sk.getMaxLevel(), sk.getMaxLevel());
-        }
+        skillsComp.maxSkills();
     }
 
     public void UpdateCash() {

@@ -1050,6 +1050,7 @@ public class MapleInventoryManipulator {
             final IItem target = source.copy();
             target.setQuantity(quantity);
             source.setQuantity(source.getQuantity() - quantity);
+            c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
             c.getSession().write(MaplePacketCreator.dropInventoryItemUpdate(type, source));//发送更新道具数量的封包
             if (c.getPlayer().isGM()) {
                 c.getPlayer().dropMessage("[丢弃道具] " + c.getPlayer().getName() + " 物品: " + target.getItemId() + " x " + target.getQuantity() + " - " + ii.getName(target.getItemId()) + " 地图: " + c.getPlayer().getMapId());
