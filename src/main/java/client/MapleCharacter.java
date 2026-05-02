@@ -306,6 +306,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     private transient Map<Integer, Integer> linkMid;
     private int skillzq = 0, bosslog = 0, grname = 0, jzname = 0, mrsjrw = 0, mrsgrw = 0, mrsbossrw = 0, mrfbrw = 0, hythd = 0, mrsgrwa = 0, mrsbossrwa = 0, mrfbrwa = 0, mrsgrws = 0, mrsbossrws = 0, mrfbrws = 0, mrsgrwas = 0, mrsbossrwas = 0, mrfbrwas = 0, ddj = 0, vip = 0, djjl = 0, qiandao = 0;
 
+    private transient DAccountInfo cachedAccountInfo;
+    private transient DHyPay cachedHyPay;
+    private transient DFishingJf cachedFishingJf;
+
     private MapleCharacter(boolean channelServer) {
         setStance(0);
         setPosition(Vector.empty());
@@ -4389,24 +4393,70 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         return new Rectangle(getTruePosition().x - 25, getTruePosition().y - 75, 50, 75);
     }
 
+    private DAccountInfo getAccountInfo() {
+        if (cachedAccountInfo == null) {
+            cachedAccountInfo = new QDAccountInfo()
+                    .account.id.eq(getClient().getAccID())
+                    .worldId.eq(getWorld())
+                    .findOne();
+            if (cachedAccountInfo == null) {
+                cachedAccountInfo = new DAccountInfo();
+                cachedAccountInfo.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
+                cachedAccountInfo.setWorldId(getWorld());
+                cachedAccountInfo.save();
+            }
+        }
+        return cachedAccountInfo;
+    }
+
+    private DHyPay getHyPayInfo() {
+        if (cachedHyPay == null) {
+            cachedHyPay = new QDHyPay().accName.eq(getClient().getAccountName()).findOne();
+            if (cachedHyPay == null) {
+                cachedHyPay = new DHyPay();
+                cachedHyPay.setAccName(getClient().getAccountName());
+                cachedHyPay.setPay(0);
+                cachedHyPay.setPayUsed(0);
+                cachedHyPay.setPayReward(0);
+                cachedHyPay.save();
+            }
+        }
+        return cachedHyPay;
+    }
+
+    private DFishingJf getFishingJfInfo() {
+        if (cachedFishingJf == null) {
+            cachedFishingJf = new QDFishingJf().accname.eq(getClient().getAccountName()).findOne();
+            if (cachedFishingJf == null) {
+                cachedFishingJf = new DFishingJf();
+                cachedFishingJf.setAccname(getClient().getAccountName());
+                cachedFishingJf.setFishing(0);
+                cachedFishingJf.setXx(0);
+                cachedFishingJf.setXxx(0);
+                cachedFishingJf.save();
+            }
+        }
+        return cachedFishingJf;
+    }
+
     public int getGamePointsPS() {//跑商
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID())
-                .worldId.eq(getWorld())
-                .findOneOrEmpty()
-                .orElse(new DAccountInfo());
+        DAccountInfo one = getAccountInfo();
         int gamePointsRQ = one.getGamePoints() != null ? one.getGamePoints() : 0;
         LocalDateTime updateTime = one.getUpdated() != null ? one.getUpdated() : LocalDateTime.now();
 
+        boolean changed = false;
         if (updateTime.isBefore(LocalDateTime.now())) {
             gamePointsRQ = 0;
             one.setGamePoints(0);
             one.setUpdated(LocalDateTime.now());
+            changed = true;
         } else {
             one.setGamePoints(0);
+            changed = true;
         }
-        one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-        one.setWorldId(getWorld());
-        one.save();
+        if (changed) {
+            one.save();
+        }
         return gamePointsRQ;
     }
 
@@ -4420,11 +4470,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateGamePointsPS(int amount) {//跑商
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID())
-                .worldId.eq(getWorld())
-                .findOneOrEmpty()
-                .orElse(new DAccountInfo());
-        one.setGamePoints(0);
+        DAccountInfo one = getAccountInfo();
+        one.setGamePoints(amount);
         one.setUpdated(LocalDateTime.now());
         one.save();
     }
@@ -6205,27 +6252,18 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public int getHyPay(int type) {
-        DHyPay one = new QDHyPay().accName.eq(getClient().getAccountName()).findOne();
-        if (one != null) {
-            switch (type) {
-                case 1:
-                    return one.getPay();
-                case 2:
-                    return one.getPayUsed();
-                case 3:
-                    return one.getPay() + one.getPayUsed();
-                case 4:
-                    return one.getPayReward();
-                default:
-                    break;
-            }
-        } else {
-            one = new DHyPay();
-            one.setAccName(getClient().getAccountName());
-            one.setPay(0);
-            one.setPayUsed(0);
-            one.setPayReward(0);
-            one.save();
+        DHyPay one = getHyPayInfo();
+        switch (type) {
+            case 1:
+                return one.getPay();
+            case 2:
+                return one.getPayUsed();
+            case 3:
+                return one.getPay() + one.getPayUsed();
+            case 4:
+                return one.getPayReward();
+            default:
+                break;
         }
         return 0;
     }
@@ -6234,88 +6272,65 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (hypay <= 0) {
             return 0;
         }
-        // todo 删除这些垃圾代码
-        int pay = getHyPay(1);
-        int payUsed = getHyPay(2);
-        int payReward = getHyPay(4);
-        DHyPay one = new QDHyPay().accName.eq(getClient().getAccountName()).findOne();
-        if (one != null) {
-            one.setPay(pay + hypay);
-            one.setPayUsed(payUsed);
-            one.setPayReward(payReward);
-            one.save();
-            return 1;
-        }
-        return 0;
+        DHyPay one = getHyPayInfo();
+        one.setPay(one.getPay() + hypay);
+        one.setPayUsed(one.getPayUsed());
+        one.setPayReward(one.getPayReward());
+        one.save();
+        return 1;
     }
 
     public int addHyPay(int hypay) {
-        int pay = getHyPay(1);
-        if (hypay > pay) {
+        DHyPay one = getHyPayInfo();
+        if (hypay > one.getPay()) {
             return -1;
         }
-        int payUsed = getHyPay(2);
-        int payReward = getHyPay(4);
-        DHyPay one = new QDHyPay().accName.eq(getClient().getAccountName()).findOne();
-        if (one != null) {
-            one.setPay(pay - hypay);
-            one.setPayUsed(payUsed + hypay);
-            one.setPayReward(payReward + hypay);
-            one.save();
-            return 1;
-        }
-        return -1;
+        one.setPay(one.getPay() - hypay);
+        one.setPayUsed(one.getPayUsed() + hypay);
+        one.setPayReward(one.getPayReward() + hypay);
+        one.save();
+        return 1;
     }
 
     public int delPayReward(int pay) {
         if (pay <= 0) {
             return -1;
         }
-        int payReward = getHyPay(4);
-        if (pay > payReward) {
+        DHyPay one = getHyPayInfo();
+        if (pay > one.getPayReward()) {
             return -1;
         }
-        DHyPay one = new QDHyPay().accName.eq(getClient().getAccountName()).findOne();
-        if (one != null) {
-            one.setPayReward(payReward - pay);
-            one.save();
-            return 1;
-        }
-        return -1;
+        one.setPayReward(one.getPayReward() - pay);
+        one.save();
+        return 1;
     }
 
     public int getGamePoints() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setGamePoints(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setGamePoints(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getGamePoints();
+        if (changed) {
+            one.save();
+        }
+        return one.getGamePoints() != null ? one.getGamePoints() : 0;
     }
 
     public int getGamePointsPD() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setGamePoints(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
-            one.setGamePoints(0);
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
+            one.setGamePointsPd(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getGamePoints();
+        if (changed) {
+            one.save();
+        }
+        return one.getGamePointsPd() != null ? one.getGamePointsPd() : 0;
     }
 
     public void gainGamePoints(int amount) {
@@ -6333,10 +6348,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateGamePointsPD(int amount) {
-        new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).asUpdate()
-                .set("gamePointsPd", amount)
-                .set("updated", LocalDate.now())
-                .update();
+        DAccountInfo one = getAccountInfo();
+        one.setGamePointsPd(amount);
+        one.setUpdated(LocalDateTime.now());
+        one.save();
     }
 
     public void resetGamePoints() {
@@ -6344,27 +6359,24 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateGamePoints(int amount) {
-        new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).asUpdate()
-                .set("gamePoints", amount)
-                .set("updated", LocalDate.now())
-                .update();
+        DAccountInfo one = getAccountInfo();
+        one.setGamePoints(amount);
+        one.setUpdated(LocalDateTime.now());
+        one.save();
     }
 
     public int getGamePointsRQ() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setGamePointsPd(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setGamePointsPd(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getGamePointsPd();
+        if (changed) {
+            one.save();
+        }
+        return one.getGamePointsPd() != null ? one.getGamePointsPd() : 0;
     }
 
     public void gainGamePointsRQ(int amount) {
@@ -6377,10 +6389,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateGamePointsRQ(int amount) {
-        new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld())
-                .asUpdate()
-                .set("gamePointsPd", amount)
-                .update();
+        DAccountInfo one = getAccountInfo();
+        one.setGamePointsPd(amount);
+        one.save();
     }
 
     public long getDeadtime() {
@@ -6698,20 +6709,17 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     //--------------------------------------------赏金任务
     public int getSJRW() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setSjrw(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setSjrw(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getSjrw();
+        if (changed) {
+            one.save();
+        }
+        return one.getSjrw() != null ? one.getSjrw() : 0;
     }
 
     public void gainSJRW(int amount) {
@@ -6724,12 +6732,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateSJRW(int amount) {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one == null) {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
-        }
+        DAccountInfo one = getAccountInfo();
         one.setSjrw(amount);
         one.setUpdated(LocalDateTime.now());
         one.save();
@@ -6737,20 +6740,17 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     //--------------------------------------------每日副本任务
     public int getFBRW() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setFbrw(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setFbrw(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getFbrw();
+        if (changed) {
+            one.save();
+        }
+        return one.getFbrw() != null ? one.getFbrw() : 0;
     }
 
     public void gainFBRW(int amount) {
@@ -6763,32 +6763,24 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateFBRW(int amount) {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one == null) {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
-        }
+        DAccountInfo one = getAccountInfo();
         one.setFbrw(amount);
         one.setUpdated(LocalDateTime.now());
         one.save();
     }
 
     public int getFBRWA() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setFbrwa(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setFbrwa(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getFbrwa();
+        if (changed) {
+            one.save();
+        }
+        return one.getFbrwa() != null ? one.getFbrwa() : 0;
     }
 
     public void gainFBRWA(int amount) {
@@ -6801,12 +6793,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateFBRWA(int amount) {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one == null) {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
-        }
+        DAccountInfo one = getAccountInfo();
         one.setFbrwa(amount);
         one.setUpdated(LocalDateTime.now());
         one.save();
@@ -6814,20 +6801,17 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     //--------------------------------------------每日杀怪任务
     public int getSGRW() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setSgrw(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setSgrw(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getSgrw();
+        if (changed) {
+            one.save();
+        }
+        return one.getSgrw() != null ? one.getSgrw() : 0;
     }
 
     public void gainSGRW(int amount) {
@@ -6840,32 +6824,24 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateSGRW(int amount) {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one == null) {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
-        }
+        DAccountInfo one = getAccountInfo();
         one.setSgrw(amount);
         one.setUpdated(LocalDateTime.now());
         one.save();
     }
 
     public int getSGRWA() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setSgrwa(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setSgrwa(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getSgrwa();
+        if (changed) {
+            one.save();
+        }
+        return one.getSgrwa() != null ? one.getSgrwa() : 0;
     }
 
     public void gainSGRWA(int amount) {
@@ -6878,12 +6854,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateSGRWA(int amount) {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one == null) {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
-        }
+        DAccountInfo one = getAccountInfo();
         one.setSgrwa(amount);
         one.setUpdated(LocalDateTime.now());
         one.save();
@@ -6891,20 +6862,17 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     //--------------------------------------------每日杀BOSS任务
     public int getSBOSSRW() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setSbossrw(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setSbossrw(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getSbossrw();
+        if (changed) {
+            one.save();
+        }
+        return one.getSbossrw() != null ? one.getSbossrw() : 0;
     }
 
     public void gainSBOSSRW(int amount) {
@@ -6917,32 +6885,24 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateSBOSSRW(int amount) {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one == null) {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
-        }
+        DAccountInfo one = getAccountInfo();
         one.setSbossrw(amount);
         one.setUpdated(LocalDateTime.now());
         one.save();
     }
 
     public int getSBOSSRWA() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setSbossrwa(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setSbossrwa(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getSbossrwa();
+        if (changed) {
+            one.save();
+        }
+        return one.getSbossrwa() != null ? one.getSbossrwa() : 0;
     }
 
     public void gainSBOSSRWA(int amount) {
@@ -6955,12 +6915,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updateSBOSSRWA(int amount) {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one == null) {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
-        }
+        DAccountInfo one = getAccountInfo();
         one.setSbossrwa(amount);
         one.setUpdated(LocalDateTime.now());
         one.save();
@@ -6968,20 +6923,17 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
 
     //-------------七天礼包判断日期函数
     public int getlb() {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one != null) {
-            if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
-                one.setLb(0);
-                one.setUpdated(LocalDateTime.now());
-            }
-        } else {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
+        DAccountInfo one = getAccountInfo();
+        boolean changed = false;
+        if (one.getUpdated() != null && one.getUpdated().isBefore(LocalDateTime.now())) {
             one.setLb(0);
+            one.setUpdated(LocalDateTime.now());
+            changed = true;
         }
-        one.save();
-        return one.getLb();
+        if (changed) {
+            one.save();
+        }
+        return one.getLb() != null ? one.getLb() : 0;
     }
 
     public void gainlb(int amount) {
@@ -6994,12 +6946,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public void updatelb(int amount) {
-        DAccountInfo one = new QDAccountInfo().account.id.eq(getClient().getAccID()).worldId.eq(getWorld()).findOne();
-        if (one == null) {
-            one = new DAccountInfo();
-            one.setAccount(new QDAccount().id.eq(getClient().getAccID()).findOne());
-            one.setWorldId(getWorld());
-        }
+        DAccountInfo one = getAccountInfo();
         one.setLb(amount);
         one.setUpdated(LocalDateTime.now());
         one.save();
@@ -7174,25 +7121,16 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public int getFishingJF(int type) {
-        DFishingJf one = new QDFishingJf().accname.eq(getClient().getAccountName()).findOne();
-        if (one != null) {
-            switch (type) {
-                case 1:
-                    return one.getFishing();
-                case 2:
-                    return one.getXx();
-                case 3:
-                    return one.getXxx();
-                default:
-                    break;
-            }
-        } else {
-            one = new DFishingJf();
-            one.setAccname(getClient().getAccountName());
-            one.setFishing(0);
-            one.setXx(0);
-            one.setXxx(0);
-            one.save();
+        DFishingJf one = getFishingJfInfo();
+        switch (type) {
+            case 1:
+                return one.getFishing();
+            case 2:
+                return one.getXx();
+            case 3:
+                return one.getXxx();
+            default:
+                break;
         }
         return 0;
     }
@@ -7201,35 +7139,23 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (hypay <= 0) {
             return 0;
         }
-        int jf = getFishingJF(1);
-        int XX = getFishingJF(2);
-        int XXX = getFishingJF(3);
-        DFishingJf one = new QDFishingJf().accname.eq(getClient().getAccountName()).findOne();
-        if (one != null) {
-            one.setFishing(hypay + jf);
-            one.setXx(XX);
-            one.setXxx(XXX);
-            one.save();
-            return 1;
-        }
-        return 0;
+        DFishingJf one = getFishingJfInfo();
+        one.setFishing(one.getFishing() + hypay);
+        one.setXx(one.getXx());
+        one.setXxx(one.getXxx());
+        one.save();
+        return 1;
     }
 
     public int addFishingJF(int hypay) {
-        int jf = getFishingJF(1);
-        if (hypay > jf) {
+        DFishingJf one = getFishingJfInfo();
+        if (hypay > one.getFishing()) {
             return -1;
         }
-        int XX = getFishingJF(2);
-        int XXX = getFishingJF(3);
-        DFishingJf one = new QDFishingJf().accname.eq(getClient().getAccountName()).findOne();
-        if (one != null) {
-            one.setFishing(jf - hypay);
-            one.setXx(XX);
-            one.setXxx(XXX);
-            one.save();
-            return 1;
-        }
-        return -1;
+        one.setFishing(one.getFishing() - hypay);
+        one.setXx(one.getXx());
+        one.setXxx(one.getXxx());
+        one.save();
+        return 1;
     }
 }
