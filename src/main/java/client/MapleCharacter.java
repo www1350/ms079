@@ -2398,7 +2398,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (to == null) {
             return;
         }
-        saveToDB(false, false);
         final int nowmapid = map.getId();
         if (eventInstance != null) {
             eventInstance.changedMap(this, to.getId());
@@ -2415,6 +2414,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 stats.relocHeal();
             }
         }
+        savePosition();
         if (party != null) {
             silentPartyUpdate();
             getClient().getSession().write(MaplePacketCreator.updateParty(getClient().getChannel(), party, PartyOperation.SILENT_UPDATE, null));
@@ -2424,6 +2424,19 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             pyramidSubway.onChangeMap(this, to.getId());
         }
 
+    }
+
+    private void savePosition() {
+        if (map != null) {
+            if (map.getForcedReturnId() != 999999999) {
+                character.setMap(map.getForcedReturnId());
+            } else {
+                character.setMap(map.getId());
+            }
+            MaplePortal closest = map.findClosestSpawnpoint(getPosition());
+            character.setSpawnPoint(closest != null ? closest.getId() : 0);
+        }
+        character.save();
     }
 
     public void leaveMap() {
