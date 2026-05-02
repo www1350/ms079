@@ -37131,7 +37131,7 @@ CREATE TABLE `dueyequipment`  (
   `hpR` smallint(5) NOT NULL DEFAULT 0,
   `mpR` smallint(5) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `inventoryitemid`(`inventoryitemid`) USING BTREE,
+  UNIQUE KEY `uq_inventory_item_id` (`inventoryitemid`) USING BTREE,
   CONSTRAINT `dueyequipment_ibfk_1` FOREIGN KEY (`inventoryitemid`) REFERENCES `dueyitems` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
@@ -38038,7 +38038,7 @@ CREATE TABLE `hiredmerchequipment`  (
   `mpR` smallint(5) NOT NULL DEFAULT 0,
   `item_level` smallint(5) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `inventoryitemid`(`inventory_item_id`) USING BTREE,
+  UNIQUE KEY `uq_inventory_item_id` (`inventory_item_id`) USING BTREE,
   CONSTRAINT `hiredmerchantequipment_ibfk_1` FOREIGN KEY (`inventory_item_id`) REFERENCES `hiredmerchitems` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
@@ -38145,9 +38145,9 @@ CREATE TABLE `inventoryequipment`  (
   `potential3` smallint(5) NOT NULL DEFAULT 0,
   `hp_r` smallint(5) NOT NULL DEFAULT 0,
   `mp_r` smallint(5) NOT NULL DEFAULT 0,
-  `item_level` smallint(5) NOT NULL,
+  `item_level` smallint(5) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `inventoryitemid`(`inventory_item_id`) USING BTREE,
+  UNIQUE KEY `uq_inventory_item_id` (`inventory_item_id`) USING BTREE,
   CONSTRAINT `inventoryequipment_ibfk_1` FOREIGN KEY (`inventory_item_id`) REFERENCES `inventoryitems` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 1122 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
@@ -38607,7 +38607,7 @@ CREATE TABLE `mtsequipment`  (
   `hp_r` smallint(5) NOT NULL DEFAULT 0,
   `mp_r` smallint(5) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `inventoryitemid`(`inventory_item_id`) USING BTREE,
+  UNIQUE KEY `uq_inventory_item_id` (`inventory_item_id`) USING BTREE,
   CONSTRAINT `mtsequipment_ibfk_1` FOREIGN KEY (`inventory_item_id`) REFERENCES `mtsitems` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
@@ -38703,7 +38703,7 @@ CREATE TABLE `mtstransferequipment`  (
   `hp_r` smallint(5) NOT NULL DEFAULT 0,
   `mp_r` smallint(5) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `inventoryitemid`(`inventory_item_id`) USING BTREE,
+  UNIQUE KEY `uq_inventory_item_id` (`inventory_item_id`) USING BTREE,
   CONSTRAINT `mtstransferequipment_ibfk_1` FOREIGN KEY (`inventory_item_id`) REFERENCES `mtstransfer` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 

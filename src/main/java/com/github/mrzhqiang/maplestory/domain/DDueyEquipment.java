@@ -60,7 +60,7 @@ public class DDueyEquipment extends Model  implements Cloneable{
     @NotNull
     Integer itemExp;
     @NotNull
-    Integer durability;
+    Integer durability = -1;
     @NotNull
     Integer enhance;
     @NotNull

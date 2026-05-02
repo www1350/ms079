@@ -55,7 +55,7 @@ public class DInventoryEquipment extends Model implements Cloneable {
     @NotNull
     Integer itemExp = 0;
     @NotNull
-    Integer durability = 0;
+    Integer durability = -1;
     @NotNull
     Integer enhance = 0;
     @NotNull
