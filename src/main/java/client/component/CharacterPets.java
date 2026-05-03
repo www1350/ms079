@@ -59,8 +59,8 @@ public final class CharacterPets {
                 if (count == index) {
                     return pet;
                 }
+                count++;
             }
-            count++;
         }
         return null;
     }
