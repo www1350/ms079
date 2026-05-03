@@ -135,7 +135,9 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
             return;
         }
         inventory.put(item.getPosition(), item);
-        freeSlots.clear(item.getPosition());
+        if (item.getPosition() > 0) {
+            freeSlots.clear(item.getPosition());
+        }
         removeFromWaitDelete(item.getItemId());
     }
 
