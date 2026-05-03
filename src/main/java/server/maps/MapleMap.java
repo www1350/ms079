@@ -442,7 +442,7 @@ public final class MapleMap {
         }
         final MapleMonsterInformationProvider mi = MapleMonsterInformationProvider.getInstance();
 
-        final List<MonsterDropEntry> dropEntry = mi.retrieveDrop(mob.getId());
+        final List<MonsterDropEntry> dropEntry = new ArrayList<>(mi.retrieveDrop(mob.getId()));
         Collections.shuffle(dropEntry);
         for (MonsterDropEntry de : dropEntry) {
             if (de.data.getItemId() == mob.getStolen()) {
