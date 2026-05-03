@@ -74,6 +74,12 @@ public final class MapleServerHandler extends IoHandlerAdapter {
     private static final HashMap<String, FileWriter> logIPMap = new HashMap<>();
     //零注意事项：使用枚举集。不要遍历数组。
     private static final EnumSet<RecvPacketOpcode> blocked = EnumSet.noneOf(RecvPacketOpcode.class);
+    private static final Map<Integer, RecvPacketOpcode> OPCODE_MAP = new HashMap<>();
+    static {
+        for (RecvPacketOpcode opcode : RecvPacketOpcode.values()) {
+            OPCODE_MAP.put(opcode.getValue(), opcode);
+        }
+    }
 
     static {
 //        reloadLoggedIPs();
@@ -426,10 +432,8 @@ public final class MapleServerHandler extends IoHandlerAdapter {
             }
             // opCode
             short header_num = slea.readShort();
-            // Console output part
-            for (RecvPacketOpcode recv : RecvPacketOpcode.values()) {
-                if (recv.getValue() == header_num) {
-
+            RecvPacketOpcode recv = OPCODE_MAP.get(header_num);
+            if (recv != null) {
                     if (ServerConstants.properties.isDebug()) {//&& !RecvPacketOpcode.isSpamHeader(recv)
                         LOGGER.debug("Received data 已處理 :" + recv + "\n"
                                 + tools.HexTool.toString((byte[]) message) + "\n"
@@ -479,7 +483,6 @@ public final class MapleServerHandler extends IoHandlerAdapter {
 //                        fw.flush();
                     }
                     return;
-                }
             }
             if (ServerConstants.properties.isDebug()) {
                 String sb = "Received data 未處理 : "

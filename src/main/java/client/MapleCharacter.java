@@ -636,7 +636,19 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     .findEach(it -> ret.finishedAchievements.add(it.getAchievement().getAchievementId()));
         }
         boolean compensate_previousEvans = false;
-        for (DQuestStatus status : new QDQuestStatus().character.eq(one).findList()) {
+        List<DQuestStatus> statusList = new QDQuestStatus().character.eq(one).findList();
+        Map<Integer, List<DQuestStatusMob>> mobsByStatusId = new HashMap<>();
+        if (!statusList.isEmpty()) {
+            List<Integer> statusIds = new ArrayList<>();
+            for (DQuestStatus s : statusList) {
+                statusIds.add(s.getId());
+            }
+            for (DQuestStatusMob mob : new QDQuestStatusMob().questStatus.id.in(statusIds).findList()) {
+                mobsByStatusId.computeIfAbsent(mob.getQuestStatus().getId(),
+                        k -> new ArrayList<>()).add(mob);
+            }
+        }
+        for (DQuestStatus status : statusList) {
             int id = status.getQuest();
             if (id == 170000) {
                 compensate_previousEvans = true;
@@ -653,8 +665,11 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             questStatus.setForfeited(status.getForfeited());
             questStatus.setCustomData(status.getCustomData());
             ret.questsComp.getQuestMapInternal().put(q, questStatus);
-            for (DQuestStatusMob mob : new QDQuestStatusMob().questStatus.eq(status).findList()) {
-                questStatus.setMobKills(mob.getMob(), mob.getCount());
+            List<DQuestStatusMob> mobs = mobsByStatusId.get(status.getId());
+            if (mobs != null) {
+                for (DQuestStatusMob mob : mobs) {
+                    questStatus.setMobKills(mob.getMob(), mob.getCount());
+                }
             }
         }
         if (channelserver) {
