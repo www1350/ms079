@@ -1807,9 +1807,7 @@ public final class MapleMap {
         }
         for (MaplePet pet : chr.getPets()) {
             if (pet.getSummoned()) {
-                pet.setPos(chr.getTruePosition());
                 chr.getClient().getSession().write(PetPacket.updatePet(pet, chr.getInventory(MapleInventoryType.CASH).getItem((short) (byte) pet.getInventoryPosition()), true));
-                chr.getClient().getSession().write(PetPacket.showPet(chr, pet, false, false));
                 broadcastMessage(chr, PetPacket.showPet(chr, pet, false, false), false);
             }
         }

@@ -8,7 +8,6 @@ import tools.MaplePacketCreator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -23,24 +22,16 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
 
     private final Map<Integer, IItem> inventory = Maps.newLinkedHashMap();
     private final List<IItem> removeInventory = new ArrayList<>();
-    private final BitSet freeSlots = new BitSet(97);
 
     public MapleInventory(MapleInventoryType type, int slotLimit) {
         this.slotLimit = new AtomicInteger(slotLimit);
         this.type = type;
-        freeSlots.set(1, slotLimit + 1);
     }
 
     public void addSlot(byte slot) {
-        int oldLimit = slotLimit.get();
         this.slotLimit.getAndAdd(slot);
-        int newLimit = slotLimit.get();
-        if (newLimit > 96) {
+        if (slotLimit.get() > 96) {
             slotLimit.set(96);
-            newLimit = 96;
-        }
-        if (newLimit > oldLimit) {
-            freeSlots.set(oldLimit + 1, newLimit + 1);
         }
     }
 
@@ -124,7 +115,6 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
             return -1;
         }
         inventory.put(slotId, item);
-        freeSlots.clear(slotId);
         item.setPosition(slotId);
         removeFromWaitDelete(item.getItemId());
         return slotId;
@@ -135,9 +125,6 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
             return;
         }
         inventory.put(item.getPosition(), item);
-        if (item.getPosition() > 0) {
-            freeSlots.clear(item.getPosition());
-        }
         removeFromWaitDelete(item.getItemId());
     }
 
@@ -152,8 +139,6 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
             source.setPosition(dSlot);
             this.inventory.put(dSlot, source);
             this.inventory.remove(sSlot);
-            freeSlots.set(sSlot);
-            freeSlots.clear(dSlot);
         } else if ((target.getItemId() == source.getItemId()) && (!GameConstants.isThrowingStar(source.getItemId())) && (!GameConstants.isBullet(source.getItemId()))) {
             if (this.type.getType() == MapleInventoryType.EQUIP.getType()) {
                 swap(target, source);
@@ -168,7 +153,6 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
             } else {
                 target.setQuantity((short) (source.getQuantity() + target.getQuantity()));
                 this.inventory.remove(sSlot);
-                freeSlots.set(sSlot);
             }
         } else {
             swap(target, source);
@@ -189,8 +173,6 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
             source.setPosition(dSlot);
             inventory.put(dSlot, source);
             inventory.remove(sSlot);
-            freeSlots.set(sSlot);
-            freeSlots.clear(dSlot);
         } else if (target.getItemId() == source.getItemId() && !GameConstants.isThrowingStar(source.getItemId()) && !GameConstants.isBullet(source.getItemId()) && target.getOwner().equals(source.getOwner()) && target.getExpiration() == source.getExpiration()) {
             if (type.getType() == MapleInventoryType.EQUIP.getType() || type.getType() == MapleInventoryType.CASH.getType()) {
                 swap(target, source);
@@ -200,7 +182,6 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
             } else {
                 target.setQuantity((short) (source.getQuantity() + target.getQuantity()));
                 inventory.remove(sSlot);
-                freeSlots.set(sSlot);
             }
         } else {
             swap(target, source);
@@ -251,25 +232,16 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
         IItem item = inventory.remove(slot);
         if (item != null) {
             removeInventory.add(item);
-            if (slot > 0) {
-                freeSlots.set(slot);
-            }
         }
     }
 
     public void moveSlot(int slot) {
         inventory.remove(slot);
-        if (slot > 0) {
-            freeSlots.set(slot);
-        }
     }
 
     public void dropSlot(int slot) {
         IItem rmItem = inventory.remove(slot);
         removeInventory.add(rmItem);
-        if (slot > 0) {
-            freeSlots.set(slot);
-        }
     }
 
     public boolean isFull() {
@@ -281,11 +253,28 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     }
 
     public int getNextFreeSlot() {
-        return freeSlots.nextSetBit(1);
+        if (isFull()) {
+            return -1;
+        }
+        for (int i = 1; i <= slotLimit.get(); i++) {
+            if (!inventory.containsKey(i)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public int getNumFreeSlot() {
-        return freeSlots.cardinality();
+        if (isFull()) {
+            return 0;
+        }
+        int free = 0;
+        for (int i = 1; i <= slotLimit.get(); i++) {
+            if (!inventory.containsKey(i)) {
+                free++;
+            }
+        }
+        return free;
     }
 
     public MapleInventoryType getType() {
@@ -296,5 +285,5 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     public Iterator<IItem> iterator() {
         return Collections.unmodifiableCollection(inventory.values()).iterator();
     }
-    
+
 }
