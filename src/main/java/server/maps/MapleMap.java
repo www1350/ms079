@@ -89,6 +89,7 @@ public final class MapleMap {
     private final Map<MapleMapObjectType, ReentrantReadWriteLock> mapobjectlocks;
     private final List<MapleCharacter> characters = new ArrayList<>();
     private final ReentrantReadWriteLock charactersLock = new ReentrantReadWriteLock();
+    private final java.util.concurrent.atomic.AtomicInteger nonCloneCount = new java.util.concurrent.atomic.AtomicInteger(0);
     private int runningOid = 100000;
     private final Lock runningOidLock = new ReentrantLock();
     private final List<Spawns> monsterSpawn = new ArrayList<>();
@@ -1741,6 +1742,9 @@ public final class MapleMap {
         charactersLock.writeLock().lock();
         try {
             characters.add(chr);
+            if (!chr.isClone()) {
+                nonCloneCount.incrementAndGet();
+            }
         } finally {
             charactersLock.writeLock().unlock();
         }
@@ -2376,6 +2380,9 @@ public final class MapleMap {
         charactersLock.writeLock().lock();
         try {
             characters.remove(chr);
+            if (!chr.isClone()) {
+                nonCloneCount.decrementAndGet();
+            }
         } finally {
             charactersLock.writeLock().unlock();
         }
@@ -2773,7 +2780,7 @@ public final class MapleMap {
                         visibleObjects.remove(mo);
                     }
                 }
-                for (MapleMapObject mo : getMapObjectsInRange(player.getPosition(), GameConstants.maxViewRangeSq())) {
+                for (MapleMapObject mo : getMapObjectsInRange(player.getPosition(), GameConstants.maxViewRangeSq(), GameConstants.rangedMapobjectTypes)) {
                     if (mo != null && !player.isMapObjectVisible(mo)) {
                         mo.sendSpawnData(player.getClient());
                         visibleObjects.add(mo);
@@ -2819,21 +2826,7 @@ public final class MapleMap {
     }
 
     public int getCharactersSize() {
-        int ret = 0;
-        charactersLock.readLock().lock();
-        try {
-            final Iterator<MapleCharacter> ltr = characters.iterator();
-            MapleCharacter chr;
-            while (ltr.hasNext()) {
-                chr = ltr.next();
-                if (!chr.isClone()) {
-                    ret++;
-                }
-            }
-        } finally {
-            charactersLock.readLock().unlock();
-        }
-        return ret;
+        return nonCloneCount.get();
     }
 
     public Collection<MaplePortal> getPortals() {
