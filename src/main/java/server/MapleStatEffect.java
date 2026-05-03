@@ -16,6 +16,7 @@ import client.status.MonsterStatusEffect;
 import com.github.mrzhqiang.maplestory.domain.Gender;
 import com.github.mrzhqiang.maplestory.timer.Timer;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
+import constants.EquipSlot;
 import constants.GameConstants;
 import handling.channel.ChannelServer;
 import server.MapleCarnivalFactory.MCSkill;
@@ -760,8 +761,8 @@ public class MapleStatEffect implements Serializable {
             case 20001004:
             case 20011004:
             case 30001004:
-                if (player.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) (-118)) != null && player.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) (-119)) != null) {
-                    return player.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) (-118)).getItemId();
+                if (player.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.CASH_MOUNT) != null && player.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.CASH_MOUNT_COMPANION) != null) {
+                    return player.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.CASH_MOUNT).getItemId();
                 }
                 return parseMountInfo_Pure(player, skillid);
             default:
@@ -778,8 +779,8 @@ public class MapleStatEffect implements Serializable {
             case 20001004:
             case 20011004:
             case 20021004:
-                if (player.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) (-18)) != null && player.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) (-19)) != null) {
-                    return player.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) (-18)).getItemId();
+                if (player.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.MOUNT) != null && player.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.MOUNT_COMPANION) != null) {
+                    return player.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.MOUNT).getItemId();
                 }
                 return 0;
             default:

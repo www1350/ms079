@@ -9,6 +9,7 @@ import client.inventory.MaplePet;
 import client.inventory.PetDataFactory;
 import com.github.mrzhqiang.maplestory.timer.Timer;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
+import constants.EquipSlot;
 import constants.GameConstants;
 import server.MapleInventoryManipulator;
 import tools.MaplePacketCreator;
@@ -30,7 +31,7 @@ public final class CharacterPets {
         this.owner = owner;
         this.pets = new ArrayList<>();
         this.petStore = new byte[3];
-        Arrays.fill(petStore, (byte) -1);
+        Arrays.fill(petStore, EquipSlot.SENTINEL);
     }
 
     // --- Pet store (saved summon slots) ---
@@ -188,36 +189,27 @@ public final class CharacterPets {
     public void spawnPet(byte slot, boolean lead, boolean broadcast) {
         owner.getActor().execute(() -> {
             final IItem item = owner.getInventory(MapleInventoryType.CASH).getItem(slot);
-            if (item == null || item.getItemId() > 5001000 || item.getItemId() < 5000000) {
+            if (item == null || item.getItemId() > GameConstants.PET_ID_MAX || item.getItemId() < GameConstants.PET_ID_MIN) {
                 return;
             }
             switch (item.getItemId()) {
-                case 5000047:
-                case 5000028: {
+                case GameConstants.EVO_PET_47:
+                case GameConstants.EVO_PET_28: {
                     final MaplePet pet = MaplePet.createPet(item.getItemId() + 1, MapleInventoryIdentifier.getInstance());
                     if (pet != null) {
-                        MapleInventoryManipulator.addById(owner.getClient(), item.getItemId() + 1, (short) 1, item.getOwner(), pet, 45, (byte) 0);
+                        MapleInventoryManipulator.addById(owner.getClient(), item.getItemId() + 1, (short) 1, item.getOwner(), pet, GameConstants.EVO_PET_DEFAULT_DAYS, (byte) 0);
                         MapleInventoryManipulator.removeFromSlot(owner.getClient(), MapleInventoryType.CASH, slot, (short) 1, false);
                     }
                     break;
                 }
                 default: {
                     final MaplePet pet = item.getPet();
-                    if (pet != null && (item.getItemId() != 5000054 || pet.getSecondsLeft() > 0)
+                    if (pet != null && (item.getItemId() != GameConstants.DRAGON_PET_ID || pet.getSecondsLeft() > 0)
                             && (item.getExpiration() == -1 || item.getExpiration() > System.currentTimeMillis())) {
                         if (pet.getSummoned()) {
                             unequipPet(pet, true, false);
                         } else {
-                            int leadid = 8;
-                            if (GameConstants.isKOC(owner.getJob())) {
-                                leadid = 10000018;
-                            } else if (GameConstants.isAran(owner.getJob())) {
-                                leadid = 20000024;
-                            } else if (GameConstants.isEvan(owner.getJob())) {
-                                leadid = 20010024;
-                            } else if (GameConstants.isResist(owner.getJob())) {
-                                leadid = 30000024;
-                            }
+                            int leadid = GameConstants.getPetLeadSkill(owner.getJob());
                             if (owner.getSkillLevel(SkillFactory.getSkill(leadid)) == 0 && getPet(0) != null) {
                                 unequipPet(getPet(0), false, false);
                             } else if (lead || owner.getSkillLevel(SkillFactory.getSkill(leadid)) <= 0) {
@@ -266,7 +258,7 @@ public final class CharacterPets {
                 for (MaplePet pet : getPets()) {
                     if (pet.getSummoned()) {
                         anySummoned = true;
-                        if (pet.getPetItemId() == 5000054 && pet.getSecondsLeft() > 0) {
+                        if (pet.getPetItemId() == GameConstants.DRAGON_PET_ID && pet.getSecondsLeft() > 0) {
                             pet.setSecondsLeft(pet.getSecondsLeft() - 1);
                             if (pet.getSecondsLeft() <= 0) {
                                 unequipPet(pet, true, true);
@@ -274,8 +266,8 @@ public final class CharacterPets {
                             }
                         }
                         int newFullness = pet.getFullness() - PetDataFactory.getHunger(pet.getPetItemId());
-                        if (newFullness <= 5) {
-                            pet.setFullness(15);
+                        if (newFullness <= GameConstants.PET_HUNGER_THRESHOLD) {
+                            pet.setFullness(GameConstants.PET_HUNGER_RESET);
                             unequipPet(pet, true, true);
                         } else {
                             pet.setFullness(newFullness);
@@ -290,7 +282,7 @@ public final class CharacterPets {
                     cancelPetHungerTask();
                 }
             });
-        }, 60000, 60000);
+        }, GameConstants.PET_HUNGER_INTERVAL_MS, GameConstants.PET_HUNGER_INTERVAL_MS);
     }
 
     private void cancelPetHungerTask() {

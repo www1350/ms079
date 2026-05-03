@@ -18,6 +18,7 @@ import client.inventory.MapleMount;
 import client.inventory.MaplePet;
 import client.inventory.MaplePet.PetFlag;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
+import constants.EquipSlot;
 import constants.GameConstants;
 import handling.world.MaplePartyCharacter;
 import handling.world.World;
@@ -87,7 +88,7 @@ public class InventoryHandler {
             MapleInventoryManipulator.unequip(c, src, dst);
         //帶上裝備
         } else if (dst < 0) {
-            if (dst == -128) {
+            if (dst == EquipSlot.NOT_VISIBLE_BOUNDARY) {
                 c.getPlayer().dropMessage(5, "dst:-128现金戒指位暂停开放(待修复)！");
                 c.getSession().write(MaplePacketCreator.enableActions());
                 return;
@@ -2854,7 +2855,7 @@ public class InventoryHandler {
     }
 
     private static final void addMedalString(final MapleCharacter c, final StringBuilder sb) {
-        final IItem medal = c.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -26);
+        final IItem medal = c.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.CHAT_MEDAL);
         if (medal != null) { // Medal
             sb.append("<");
             sb.append(MapleItemInformationProvider.getInstance().getName(medal.getItemId()));

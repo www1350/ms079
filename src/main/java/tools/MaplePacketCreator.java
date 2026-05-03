@@ -21,6 +21,7 @@ import client.inventory.ModifyInventory;
 import com.github.mrzhqiang.maplestory.domain.DCharacter;
 import com.github.mrzhqiang.maplestory.domain.DGuild;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
+import constants.EquipSlot;
 import constants.GameConstants;
 import constants.ServerConstants;
 import handling.ByteArrayMaplePacket;
@@ -641,8 +642,8 @@ public class MaplePacketCreator {
             int pos = (position.getKey() * -1);
             if (pos < 100 && myEquip.get(pos) == null) {
                 myEquip.put(pos, position.getValue());
-            } else if ((pos > 100 || pos == -128) && pos != 111) { // don't ask. o.o
-                pos = (byte) (pos == -128 ? 28 : pos - 100);
+            } else if ((pos > 100 || pos == EquipSlot.NOT_VISIBLE_BOUNDARY) && pos != 111) { // don't ask. o.o
+                pos = (byte) (pos == EquipSlot.NOT_VISIBLE_BOUNDARY ? 28 : pos - 100);
                 if (myEquip.get(pos) != null) {
                     maskedEquip.put(pos, myEquip.get(pos));
                 }
@@ -661,7 +662,7 @@ public class MaplePacketCreator {
             mplew.writeInt(entry.getValue());
         }
         mplew.write(0xFF);
-        Integer cWeapon = equip.get(-111);
+        Integer cWeapon = equip.get((int) EquipSlot.CASH_WEAPON);
         if (cWeapon != null) {
             mplew.writeInt(cWeapon);
         } else {
@@ -1080,7 +1081,7 @@ public class MaplePacketCreator {
         mplew.writeInt(CHAR_MAGIC_SPAWN);
         mplew.writeShort(0); //start of Monster Riding
         mplew.write(0);
-        IItem mount = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -18);
+        IItem mount = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.MOUNT);
         if ((chr.getBuffedValue(MapleBuffStat.骑兽技能) != null) && (mount != null)) {
             mplew.writeInt(mount.getItemId());
             mplew.writeInt(1004);
@@ -2012,7 +2013,7 @@ public class MaplePacketCreator {
         for (final MaplePet pet : chr.getPets()) {
             if (pet.getSummoned()) {
                 final byte petIdx = chr.getPetIndex(pet);
-                final int petEquipSlot = petIdx == 1 ? -122 : petIdx == 2 ? -124 : -114;
+                final int petEquipSlot = petIdx == 1 ? EquipSlot.PET_EQUIP_2 : petIdx == 2 ? EquipSlot.PET_EQUIP_3 : EquipSlot.PET_EQUIP_1;
                 final IItem petEquip = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) petEquipSlot);
                 final int peteqid = petEquip != null ? petEquip.getItemId() : 0;
 
@@ -2028,8 +2029,8 @@ public class MaplePacketCreator {
         }
         mplew.write(0); // End of pet
 
-        if (chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -18) != null) {
-            final int itemid = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -18).getItemId();
+        if (chr.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.MOUNT) != null) {
+            final int itemid = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.MOUNT).getItemId();
             final MapleMount mount = chr.getMount();
             final boolean canwear = MapleItemInformationProvider.getInstance().getReqLevel(itemid) <= chr.getLevel();
             mplew.write(canwear ? 1 : 0);
@@ -2051,7 +2052,7 @@ public class MaplePacketCreator {
         mplew.write(0);
         chr.getMonsterBook().addCharInfoPacket(chr.getMonsterBookCover(), mplew);
 
-        IItem medal = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -49);
+        IItem medal = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.INFO_MEDAL);
         mplew.writeInt(medal == null ? 0 : medal.getItemId());
         List<Integer> medalQuests = new ArrayList<Integer>();
         List<MapleQuestStatus> completed = chr.getCompletedQuests();

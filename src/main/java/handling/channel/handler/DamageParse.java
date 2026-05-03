@@ -14,6 +14,7 @@ import client.status.MonsterStatus;
 import client.status.MonsterStatusEffect;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
 import constants.GameConstants;
+import constants.EquipSlot;
 import constants.ServerConstants;
 import handling.world.World;
 import server.MapleStatEffect;
@@ -389,7 +390,7 @@ public class DamageParse {
                             break;
                     }
                     if (totDamageToOneMonster > 0) {
-                        IItem weapon_ = player.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -11);
+                        IItem weapon_ = player.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.WEAPON);
                         if (weapon_ != null) {
                             MonsterStatus stat = GameConstants.getStatFromWeapon(weapon_.getItemId()); //10001 = acc/darkness. 10005 = speed/slow.
                             if (stat != null && Randomizer.nextInt(100) < GameConstants.getStatChance()) {

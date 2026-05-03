@@ -11,6 +11,7 @@ import com.github.mrzhqiang.maplestory.domain.Gender;
 import com.github.mrzhqiang.maplestory.domain.LoginState;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import constants.EquipSlot;
 import constants.ServerConstants;
 import handling.channel.ChannelServer;
 import handling.login.LoginInformationProvider;
@@ -353,19 +354,19 @@ public final class CharLoginHandler {
         MapleItemInformationProvider li = MapleItemInformationProvider.getInstance();//装备的类型
 
         IItem item = li.getEquipById(top);//是上衣或套服
-        item.setPosition((byte) -5);//设置角色的上衣数据，穿戴在角色装备栏坐标，-5为上衣栏
+        item.setPosition(EquipSlot.TOP);//设置角色的上衣数据，穿戴在角色装备栏坐标，-5为上衣栏
         equip.addFromDB(item);//存储装备信息
 
         item = li.getEquipById(bottom);//是裤裙
-        item.setPosition((byte) -6);//设置角色的裤裙数据，穿戴在角色装备栏坐标，-6为裤裙栏
+        item.setPosition(EquipSlot.BOTTOM);//设置角色的裤裙数据，穿戴在角色装备栏坐标，-6为裤裙栏
         equip.addFromDB(item);//存储装备信息
 
         item = li.getEquipById(shoes);//是鞋子
-        item.setPosition((byte) -7);//设置角色的鞋子数据，穿戴在角色装备栏坐标，-7为鞋子栏
+        item.setPosition(EquipSlot.SHOES);//设置角色的鞋子数据，穿戴在角色装备栏坐标，-7为鞋子栏
         equip.addFromDB(item);//存储装备信息
 
         item = li.getEquipById(weapon);//是武器
-        item.setPosition((byte) -11);//设置角色的武器数据，穿戴在角色装备栏坐标，-11为武器栏
+        item.setPosition(EquipSlot.WEAPON);//设置角色的武器数据，穿戴在角色装备栏坐标，-11为武器栏
         equip.addFromDB(item);//存储装备信息
 
         //blue/red pots

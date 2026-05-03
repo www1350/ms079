@@ -14,6 +14,7 @@ import com.github.mrzhqiang.maplestory.domain.DSpeedRun;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
 import com.google.common.base.Joiner;
 import constants.GameConstants;
+import constants.EquipSlot;
 import constants.ServerConstants;
 import handling.MaplePacket;
 import handling.channel.ChannelServer;
@@ -3139,7 +3140,7 @@ public final class MapleMap {
             newMons.setRx1(oldMons.getRx1());
             newMons.setPosition(Vector.of(oldMons.getPosition()));
             newMons.setHide(oldMons.isHidden());
-            addMonsterSpawn(newMons, mobTime, (byte) -1, null);
+            addMonsterSpawn(newMons, mobTime, EquipSlot.SENTINEL, null);
         }
         loadMonsterRate(true);
     }

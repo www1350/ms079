@@ -8,6 +8,7 @@ import client.inventory.Equip;
 import client.inventory.IItem;
 import client.inventory.ItemFlag;
 import client.inventory.MapleInventoryType;
+import constants.EquipSlot;
 import constants.GameConstants;
 import handling.SendPacketOpcode;
 import org.slf4j.Logger;
@@ -411,7 +412,7 @@ public class NPCHandler {
         if (cm == null || c.getPlayer().getConversation() == 0 || cm.getLastMsg() != lastMsg) {
             return;
         }
-        cm.setLastMsg((byte) -1);
+        cm.setLastMsg(EquipSlot.SENTINEL);
         if (lastMsg == 2) {
             if (action != 0) {
                 cm.setGetText(slea.readMapleAsciiString());

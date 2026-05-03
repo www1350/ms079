@@ -31,6 +31,7 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import java.util.Map;
 import java.util.WeakHashMap;
+import constants.EquipSlot;
 import java.util.concurrent.locks.Lock;
 
 public class NPCScriptManager extends AbstractScriptManager {
@@ -79,9 +80,9 @@ public class NPCScriptManager extends AbstractScriptManager {
                 final ScriptEngine scriptengine = (ScriptEngine) iv;
                 final NPCConversationManager cm;
                 if (wh == 0) {
-                    cm = new NPCConversationManager(c, npc, -1, (byte) -1, iv, 0);
+                    cm = new NPCConversationManager(c, npc, -1, EquipSlot.SENTINEL, iv, 0);
                 } else {
-                    cm = new NPCConversationManager(c, npc, -1, (byte) -1, iv, wh);
+                    cm = new NPCConversationManager(c, npc, -1, EquipSlot.SENTINEL, iv, wh);
                 }
                 cms.put(c, cm);
                 if ((iv == null) || (getInstance() == null)) {

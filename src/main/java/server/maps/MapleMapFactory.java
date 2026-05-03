@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import constants.EquipSlot;
 import java.util.stream.Collectors;
 
 public class MapleMapFactory {
@@ -249,7 +250,7 @@ public class MapleMapFactory {
                         break;
                     case "m":
                         final MapleMonster monster = (MapleMonster) n;
-                        map.addMonsterSpawn(monster, n.getMTime(), (byte) -1, null);
+                        map.addMonsterSpawn(monster, n.getMTime(), EquipSlot.SENTINEL, null);
                         break;
                 }
             }

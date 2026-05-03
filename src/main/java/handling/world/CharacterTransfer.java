@@ -13,6 +13,7 @@ import com.github.mrzhqiang.maplestory.domain.query.QDCharacter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import server.quest.MapleQuest;
+import constants.EquipSlot;
 import tools.Pair;
 
 import java.io.Externalizable;
@@ -139,7 +140,7 @@ public class CharacterTransfer implements Externalizable {
         for (int i = 0; i < this.petStore.length; i++) {
             final MaplePet pet = chr.getPet(i);
             if (this.petStore[i] == 0) {
-                this.petStore[i] = (byte) -1;
+                this.petStore[i] = EquipSlot.SENTINEL;
             }
             if (pet != null) {
                 uneq = true;

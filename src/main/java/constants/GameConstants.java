@@ -274,6 +274,40 @@ public class GameConstants {
         return itemId / 10000 == 105;
     }
 
+    // ======================== 宠物常量 ========================
+
+    public static final int PET_ID_MIN = 5000000;
+    public static final int PET_ID_MAX = 5001000;
+    public static final int EVO_PET_47 = 5000047;
+    public static final int EVO_PET_28 = 5000028;
+    public static final int DRAGON_PET_ID = 5000054;
+    public static final int EVO_PET_DEFAULT_DAYS = 45;
+    public static final int DRAGON_PET_DEFAULT_SECONDS = 18000; // 5 hours
+
+    public static final byte PET_MAX_LEVEL = 30;
+    public static final int PET_MAX_CLOSENESS = 30000;
+    public static final byte PET_MAX_FULLNESS = 100;
+    public static final byte PET_DEFAULT_FULLNESS = 100;
+    public static final byte PET_DEFAULT_LEVEL = 1;
+    public static final short PET_DEFAULT_CLOSENESS = 0;
+    public static final int PET_HUNGER_THRESHOLD = 5;
+    public static final int PET_HUNGER_RESET = 15;
+    public static final long PET_HUNGER_INTERVAL_MS = 60000;
+
+    public static final int PET_FEED_FULLNESS_GAIN = 30;
+    public static final int PET_FEED_CLOSENESS_GAIN = 1;
+
+    public static final int MAX_PET_STORE = 3;
+    public static final int MAX_INVENTORY_SLOTS = 96;
+
+    public static int getPetLeadSkill(final int job) {
+        if (isKOC(job)) return 10000018;
+        if (isAran(job)) return 20000024;
+        if (isEvan(job)) return 20010024;
+        if (isResist(job)) return 30000024;
+        return 8;
+    }
+
     public static boolean isPet(final int itemId) {
         return itemId / 10000 == 500;
     }

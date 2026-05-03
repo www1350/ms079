@@ -87,6 +87,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import constants.GameConstants;
+import constants.EquipSlot;
 import constants.ServerConstants;
 import handling.MaplePacket;
 import handling.channel.ChannelServer;
@@ -824,7 +825,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     .character.eq(one)
                     .findOneOrEmpty()
                     .orElseThrow(() -> new RuntimeException("No mount data found on SQL column"));
-            IItem mount = ret.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -18);
+            IItem mount = ret.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.MOUNT);
             ret.mount = new MapleMount(ret,
                     mount != null ? mount.getItemId() : 0,
                     ret.job > 1000 && ret.job < 2000 ? 10001004 : (ret.job >= 2000 ? (ret.job == 2001 || ret.job >= 2200 ? 20011004 : (ret.job >= 3000 ? 30001004 : 20001004)) : 1004),
@@ -2742,7 +2743,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     } else if (currenttime > expiration) {
                         toberemove.add(new Pair<MapleInventoryType, IItem>(inv, item));
                     }
-                } else if (item.getItemId() == 5000054 && item.getPet() != null && item.getPet().getSecondsLeft() <= 0) {
+                } else if (item.getItemId() == GameConstants.DRAGON_PET_ID && item.getPet() != null && item.getPet().getSecondsLeft() <= 0) {
                     toberemove.add(new Pair<MapleInventoryType, IItem>(inv, item));
                 }
             }
@@ -3007,7 +3008,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (!isGM()) {
             if (level == 10 || level == 30 || level == 70 || level == 120 || level == 200) {
                 final StringBuilder sb = new StringBuilder("[恭喜] ");
-                final IItem medal = getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -26);
+                final IItem medal = getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.CHAT_MEDAL);
                 if (medal != null) { // Medal
                     sb.append("<");
                     sb.append(MapleItemInformationProvider.getInstance().getName(medal.getItemId()));

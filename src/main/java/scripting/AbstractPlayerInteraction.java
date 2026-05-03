@@ -34,6 +34,7 @@ import client.inventory.MapleInventoryType;
 import client.inventory.MaplePet;
 import com.github.mrzhqiang.maplestory.domain.Gender;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
+import constants.EquipSlot;
 import constants.GameConstants;
 import handling.channel.ChannelServer;
 import handling.world.MapleParty;
@@ -435,7 +436,7 @@ public abstract class AbstractPlayerInteraction {
     }
 
     public void clearAranPolearm() {
-        this.c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).removeItem((byte) -11);
+        this.c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).removeItem(EquipSlot.WEAPON);
     }
 
     public void forceStartQuest(final int id) {
@@ -1273,7 +1274,7 @@ public abstract class AbstractPlayerInteraction {
         }
         name = getItemName(id);
         try {
-            MapleInventoryManipulator.addById(c, id, (short) 1, "", MaplePet.createPet(id, name, level, closeness, fullness, MapleInventoryIdentifier.getInstance(), id == 5000054 ? (int) period : 0), period, (byte) 0);
+            MapleInventoryManipulator.addById(c, id, (short) 1, "", MaplePet.createPet(id, name, level, closeness, fullness, MapleInventoryIdentifier.getInstance(), id == GameConstants.DRAGON_PET_ID ? (int) period : 0), period, (byte) 0);
         } catch (NullPointerException ex) {
             ex.printStackTrace();
         }

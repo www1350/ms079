@@ -25,6 +25,7 @@ import client.inventory.IEquip;
 import client.inventory.IItem;
 import client.inventory.MapleInventoryType;
 import client.inventory.MapleWeaponType;
+import constants.EquipSlot;
 import constants.GameConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -936,12 +937,12 @@ public class PlayerStats implements Serializable {
     }
 
     private final void CalcPassive_Mastery(final MapleCharacter player) {
-        if (player.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -11) == null) {
+        if (player.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.WEAPON) == null) {
             passive_mastery = 0;
             return;
         }
         final int skil;
-        switch (GameConstants.getWeaponType(player.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -11).getItemId())) {
+        switch (GameConstants.getWeaponType(player.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.WEAPON).getItemId())) {
             case BOW:
                 skil = GameConstants.isKOC(player.getJob()) ? 13100000 : (GameConstants.isResist(player.getJob()) ? 33100000 : 3100000);
                 break;
@@ -1122,7 +1123,7 @@ public class PlayerStats implements Serializable {
         if (watk == 0) {
             maxbasedamage = 1;
         } else {
-            final IItem weapon_item = chra.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -11);
+            final IItem weapon_item = chra.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.WEAPON);
             final int job = chra.getJob();
             final MapleWeaponType weapon = weapon_item == null ? MapleWeaponType.NOT_A_WEAPON : GameConstants.getWeaponType(weapon_item.getItemId());
             int mainstat, secondarystat;

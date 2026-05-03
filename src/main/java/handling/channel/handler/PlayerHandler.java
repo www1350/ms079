@@ -14,6 +14,7 @@ import com.github.mrzhqiang.maplestory.domain.LoginState;
 import com.github.mrzhqiang.maplestory.timer.Timer;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
 import constants.GameConstants;
+import constants.EquipSlot;
 import constants.MapConstants;
 import handling.channel.ChannelServer;
 import org.slf4j.Logger;
@@ -630,7 +631,7 @@ public class PlayerHandler {
 
                 } else {
                     final int mountid = MapleStatEffect.parseMountInfo(c.getPlayer(), skill.getId());
-                    if (mountid != 0 && mountid != GameConstants.getMountItem(skill.getId()) && !c.getPlayer().isGM() && c.getPlayer().getBuffedValue(MapleBuffStat.骑兽技能) == null && c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -118) == null) {
+                    if (mountid != 0 && mountid != GameConstants.getMountItem(skill.getId()) && !c.getPlayer().isGM() && c.getPlayer().getBuffedValue(MapleBuffStat.骑兽技能) == null && c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.CASH_MOUNT) == null) {
                         //if (!GameConstants.isMountItemAvailable(mountid, c.getPlayer().getJob())) {
                         //    c.getSession().write(MaplePacketCreator.enableActions());
                         //    return;

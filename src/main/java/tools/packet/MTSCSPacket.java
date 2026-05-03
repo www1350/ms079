@@ -10,6 +10,7 @@ import client.inventory.MapleInventory;
 import client.inventory.MapleInventoryType;
 import com.github.mrzhqiang.maplestory.domain.DNote;
 import com.github.mrzhqiang.maplestory.domain.query.QDWishList;
+import constants.EquipSlot;
 import constants.ServerConstants;
 import handling.MaplePacket;
 import handling.SendPacketOpcode;
@@ -75,15 +76,14 @@ public class MTSCSPacket {
         }
         Collections.sort(equipped);
         for (Item item : equipped) {
-            // if (item.getPosition() > -100) {
-            if (item.getPosition() < 0 && item.getPosition() > -100) {
+            if (EquipSlot.isBodySlot(item.getPosition())) {
                 PacketHelper.addItemInfo(mplew, item, false, false);
             }
         }
         mplew.write(0); // start of equipped nx
         for (Item item : equipped) {
             //  if (item.getPosition() <= -100) {
-            if (item.getPosition() <= -100 && item.getPosition() > -1000) {
+            if (EquipSlot.isCashSlot(item.getPosition())) {
                 PacketHelper.addItemInfo(mplew, item, false, false);
             }
         }

@@ -12,6 +12,7 @@ import client.inventory.MapleInventory;
 import client.inventory.MapleInventoryType;
 import client.inventory.MaplePet;
 import client.inventory.MapleRing;
+import constants.EquipSlot;
 import constants.GameConstants;
 import constants.ServerConstants;
 import org.slf4j.Logger;
@@ -212,15 +213,13 @@ public class PacketHelper {
         }
         Collections.sort(equipped);
         for (Item item : equipped) {
-            // if (item.getPosition() > -100) {
-            if (item.getPosition() < 0 && item.getPosition() > -100) {
+            if (EquipSlot.isBodySlot(item.getPosition())) {
                 addItemInfo(mplew, item, false, false);
             }
         }
         mplew.write(0); // start of equipped nx 结束加载1
         for (Item item : equipped) {
-            //  if (item.getPosition() <= -100) {
-            if (item.getPosition() <= -100 && item.getPosition() > -1000) {
+            if (EquipSlot.isCashSlot(item.getPosition())) {
                 addItemInfo(mplew, item, false, false);
             }
         }
@@ -307,15 +306,15 @@ public class PacketHelper {
         MapleInventory equip = chr.getInventory(MapleInventoryType.EQUIPPED);
 
         for (final IItem item : equip.list()) {
-            if (item.getPosition() < -128) { //not visible
+            if (item.getPosition() < EquipSlot.NOT_VISIBLE_BOUNDARY) { //not visible
                 continue;
             }
             byte pos = (byte) (item.getPosition() * -1);
 
             if (pos < 100 && myEquip.get(pos) == null) {
                 myEquip.put(pos, item.getItemId());
-            } else if ((pos > 100 || pos == -128) && pos != 111) {
-                pos = (byte) (pos == -128 ? 28 : pos - 100);
+            } else if ((pos > 100 || pos == EquipSlot.NOT_VISIBLE_BOUNDARY) && pos != 111) {
+                pos = (byte) (pos == EquipSlot.NOT_VISIBLE_BOUNDARY ? 28 : pos - 100);
                 if (myEquip.get(pos) != null) {
                     maskedEquip.put(pos, myEquip.get(pos));
                 }
@@ -336,7 +335,7 @@ public class PacketHelper {
         }
         mplew.write(0xFF); // ending markers
 
-        final IItem cWeapon = equip.getItem((byte) -111);
+        final IItem cWeapon = equip.getItem(EquipSlot.CASH_WEAPON);
         mplew.writeInt(cWeapon != null ? cWeapon.getItemId() : 0);
 
         /*
@@ -641,7 +640,7 @@ public class PacketHelper {
         }
         mplew.writeShort(0);
         mplew.writeShort(pet.getFlags());
-        mplew.writeInt(pet.getPetItemId() == 5000054 && pet.getSecondsLeft() > 0 ? pet.getSecondsLeft() : 0); //in seconds, 3600 = 1 hr.
+        mplew.writeInt(pet.getPetItemId() == GameConstants.DRAGON_PET_ID && pet.getSecondsLeft() > 0 ? pet.getSecondsLeft() : 0); //in seconds, 3600 = 1 hr.
         //mplew.writeShort(0);
         mplew.write(0);
         mplew.write(active ? pet.getSummoned() ? pet.getSummonedValue() : 0 : 0);//显示装备栏上宠物的位置
@@ -686,9 +685,9 @@ public class PacketHelper {
             if (!leaveOut) {
                 mplew.write(0);
             }
-        } else if (pos <= (byte) -1) {
+        } else if (pos <= EquipSlot.SENTINEL) {
             pos *= -1;
-            if ((pos > 100 || pos == -128) || ring) {
+            if ((pos > 100 || pos == EquipSlot.NOT_VISIBLE_BOUNDARY) || ring) {
                 masking = true;
                 //mplew.write(0);
                 mplew.write(pos - 100);

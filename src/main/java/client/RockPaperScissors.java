@@ -22,6 +22,7 @@ package client;
 
 import server.MapleInventoryManipulator;
 import server.Randomizer;
+import constants.EquipSlot;
 import tools.MaplePacketCreator;
 
 public class RockPaperScissors {
@@ -48,7 +49,7 @@ public class RockPaperScissors {
                 ableAnswer = false;
                 win = true;
             } else { //they lose
-                c.getSession().write(MaplePacketCreator.getRPSMode((byte) 0x0B, -1, (byte) response, (byte) -1));
+                c.getSession().write(MaplePacketCreator.getRPSMode((byte) 0x0B, -1, (byte) response, EquipSlot.SENTINEL));
                 ableAnswer = false;
             }
             return true;

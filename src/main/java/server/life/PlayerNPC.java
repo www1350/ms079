@@ -13,6 +13,7 @@ import com.github.mrzhqiang.maplestory.domain.query.QDPlayerNPCEquip;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
 import handling.channel.ChannelServer;
 import handling.world.World;
+import constants.EquipSlot;
 import tools.MaplePacketCreator;
 
 import java.util.HashMap;
@@ -104,7 +105,7 @@ public class PlayerNPC extends MapleNPC {
 
         equips.clear();
         for (IItem item : chr.getInventory(MapleInventoryType.EQUIPPED).list()) {
-            if (item.getPosition() < -128) {
+            if (item.getPosition() < EquipSlot.NOT_VISIBLE_BOUNDARY) {
                 continue;
             }
             equips.put(item.getPosition(), item.getItemId());

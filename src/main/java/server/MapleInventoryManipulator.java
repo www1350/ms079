@@ -15,6 +15,7 @@ import client.inventory.MapleInventoryType;
 import client.inventory.MaplePet;
 import client.inventory.ModifyInventory;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
+import constants.EquipSlot;
 import constants.GameConstants;
 import server.maps.AramiaFireWorks;
 import tools.MaplePacketCreator;
@@ -804,11 +805,11 @@ public class MapleInventoryManipulator {
             source.setUniqueId(1);
             c.getSession().write(MaplePacketCreator.updateSpecialItemUse_(source, GameConstants.getInventoryType(source.getItemId()).getType()));
         }
-        if (dst < -999 && !GameConstants.isEvanDragonItem(source.getItemId()) && !GameConstants.is豆豆装备(source.getItemId())) {
+        if (dst < EquipSlot.CASH_SLOT_MIN && !GameConstants.isEvanDragonItem(source.getItemId()) && !GameConstants.is豆豆装备(source.getItemId())) {
             c.getSession().write(MaplePacketCreator.enableActions());
             return;
-        } else if (dst >= -999 && dst < -99 && stats.get("cash") == 0
-                && dst != -114 && dst != -122 && dst != -124 // 宠物装备位不限制
+        } else if (dst >= EquipSlot.CASH_SLOT_MIN && dst < EquipSlot.BODY_SLOT_MIN && stats.get("cash") == 0
+                && !EquipSlot.isPetEquipSlot((short) dst)
                 && !GameConstants.is豆豆装备(source.getItemId()) && !GameConstants.isEffectRing(source.getItemId())) {
             c.getSession().write(MaplePacketCreator.enableActions());
             return;
@@ -817,7 +818,7 @@ public class MapleInventoryManipulator {
             c.getSession().write(MaplePacketCreator.enableActions());
             return;
         }
-        if (GameConstants.isWeapon(source.getItemId()) && dst != -10 && dst != -11) {
+        if (GameConstants.isWeapon(source.getItemId()) && dst != EquipSlot.WEAPON && dst != EquipSlot.SHIELD) {
             AutobanManager.getInstance().autoban(c, "Equipment hack, itemid " + source.getItemId() + " to slot " + dst);
             return;
         }
@@ -827,28 +828,28 @@ public class MapleInventoryManipulator {
         }
 
         switch (dst) {
-            case -6: { // Top
-                final IItem top = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(-5);
+            case EquipSlot.BOTTOM: { // Top
+                final IItem top = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.TOP);
                 if (top != null && GameConstants.isOverall(top.getItemId())) {
                     if (chr.getInventory(MapleInventoryType.EQUIP).isFull()) {
                         c.getSession().write(MaplePacketCreator.getInventoryFull());
                         c.getSession().write(MaplePacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, -5, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
+                    unequip(c, EquipSlot.TOP, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
                 }
                 break;
             }
-            case -5: {
-                final IItem top = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(-5);
-                final IItem bottom = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(-6);
+            case EquipSlot.TOP: {
+                final IItem top = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.TOP);
+                final IItem bottom = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.BOTTOM);
                 if (top != null && GameConstants.isOverall(source.getItemId())) {
                     if (chr.getInventory(MapleInventoryType.EQUIP).isFull(bottom != null && GameConstants.isOverall(source.getItemId()) ? 1 : 0)) {
                         c.getSession().write(MaplePacketCreator.getInventoryFull());
                         c.getSession().write(MaplePacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, -5, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
+                    unequip(c, EquipSlot.TOP, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
                 }
                 if (bottom != null && GameConstants.isOverall(source.getItemId())) {
                     if (chr.getInventory(MapleInventoryType.EQUIP).isFull()) {
@@ -856,12 +857,12 @@ public class MapleInventoryManipulator {
                         c.getSession().write(MaplePacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, -6, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
+                    unequip(c, EquipSlot.BOTTOM, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
                 }
                 break;
             }
-            case -10: { // Shield
-                IItem weapon = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(-11);
+            case EquipSlot.SHIELD: { // Shield
+                IItem weapon = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.WEAPON);
                 if (GameConstants.isKatara(source.getItemId())) {
                     if ((chr.getJob() != 900 && (chr.getJob() < 430 || chr.getJob() > 434)) || weapon == null || !GameConstants.isDagger(weapon.getItemId())) {
                         c.getSession().write(MaplePacketCreator.getInventoryFull());
@@ -874,19 +875,19 @@ public class MapleInventoryManipulator {
                         c.getSession().write(MaplePacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, -11, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
+                    unequip(c, EquipSlot.WEAPON, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
                 }
                 break;
             }
-            case -11: { // Weapon
-                IItem shield = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(-10);
+            case EquipSlot.WEAPON: { // Weapon
+                IItem shield = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(EquipSlot.SHIELD);
                 if (shield != null && GameConstants.isTwoHanded(source.getItemId())) {
                     if (chr.getInventory(MapleInventoryType.EQUIP).isFull()) {
                         c.getSession().write(MaplePacketCreator.getInventoryFull());
                         c.getSession().write(MaplePacketCreator.getShowInventoryFull());
                         return;
                     }
-                    unequip(c, -10, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
+                    unequip(c, EquipSlot.SHIELD, chr.getInventory(MapleInventoryType.EQUIP).getNextFreeSlot());
                 }
                 break;
             }
