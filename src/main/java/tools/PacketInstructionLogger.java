@@ -80,6 +80,9 @@ public final class PacketInstructionLogger {
                 F.f("模式", T.BYTE), F.f("对象ID", T.INT), F.f("是否金币", T.BOOL),
                 F.f("物品ID", T.INT), F.f("归属角色ID", T.INT), F.f("掉落类型", T.BYTE));
 
+        regS("REMOVE_ITEM_FROM_MAP", "删除地上物品",
+                F.f("动画类型", T.BYTE), F.f("物品对象ID", T.INT));  // 动画≥2时后面还有拾取角色ID(4B)，动画=5时再加宠物栏位(1B)
+
         regS("SHOW_ITEM_GAIN_INCHAT", "物品获得",
                 F.f("模式", T.BYTE), F.f("物品ID", T.INT), F.f("数量", T.INT));
 
