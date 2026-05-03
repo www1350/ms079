@@ -1038,6 +1038,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         playerLock.lock();
         try {
             Transaction transaction = DB.beginTransaction();
+            transaction.setBatchMode(true);
+            transaction.setBatchSize(100);
         try {
             coreStart = System.nanoTime();
             if (character.getHp() < 1) {
@@ -3353,6 +3355,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             World.Messenger.updateMessenger(getMessenger().getId(), getName(), client.getChannel());
         }
         Transaction transaction = DB.beginTransaction();
+        transaction.setBatchMode(true);
+        transaction.setBatchSize(100);
         try {
             saveInventory(character);
             transaction.commit();
