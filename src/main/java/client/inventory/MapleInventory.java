@@ -30,8 +30,8 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
 
     public void addSlot(byte slot) {
         this.slotLimit.getAndAdd(slot);
-        if (slotLimit.get() > 96) {
-            slotLimit.set(96);
+        if (slotLimit.get() > GameConstants.MAX_INVENTORY_SLOTS) {
+            slotLimit.set(GameConstants.MAX_INVENTORY_SLOTS);
         }
     }
 
@@ -40,8 +40,8 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     }
 
     public void setSlotLimit(int slot) {
-        if (slot > 96) {
-            slot = 96;
+        if (slot > GameConstants.MAX_INVENTORY_SLOTS) {
+            slot = GameConstants.MAX_INVENTORY_SLOTS;
         }
         slotLimit.set(slot);
     }

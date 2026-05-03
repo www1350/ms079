@@ -6,6 +6,7 @@ import client.MapleDiseaseValueHolder;
 import client.inventory.MapleInventoryType;
 import client.inventory.MaplePet;
 import client.inventory.PetDataFactory;
+import constants.GameConstants;
 import com.google.common.base.Stopwatch;
 import handling.cashshop.CashShopServer;
 import handling.channel.ChannelServer;
@@ -277,7 +278,7 @@ public final class WorldService {
         if (numTimes % 20 == 0) { //we're parsing through the characters anyway (:
             for (MaplePet pet : chr.getPets()) {
                 if (pet.getSummoned()) {
-                    if (pet.getPetItemId() == 5000054 && pet.getSecondsLeft() > 0) {
+                    if (pet.getPetItemId() == GameConstants.DRAGON_PET_ID && pet.getSecondsLeft() > 0) {
                         pet.setSecondsLeft(pet.getSecondsLeft() - 1);
                         if (pet.getSecondsLeft() <= 0) {
                             chr.unequipPet(pet, true, true);

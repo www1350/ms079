@@ -120,10 +120,10 @@ public class PetHandler {
         boolean success = false;
         if (Randomizer.nextInt(99) <= petCommand.getProbability()) {
             success = true;
-            if (pet.getCloseness() < 30000) {
+            if (pet.getCloseness() < GameConstants.PET_MAX_CLOSENESS) {
                 int newCloseness = pet.getCloseness() + petCommand.getIncrease();
-                if (newCloseness > 30000) {
-                    newCloseness = 30000;
+                if (newCloseness > GameConstants.PET_MAX_CLOSENESS) {
+                    newCloseness = GameConstants.PET_MAX_CLOSENESS;
                 }
                 pet.setCloseness(newCloseness);
                 if (newCloseness >= GameConstants.getClosenessNeededForLevel(pet.getLevel() + 1)) {
@@ -146,7 +146,7 @@ public class PetHandler {
         int slot = 0;
         List<MaplePet> pets = c.getPlayer().getPets();
         for (MaplePet pet : pets) {
-            if (pet.getFullness() < 100) {
+            if (pet.getFullness() < GameConstants.PET_MAX_FULLNESS) {
                 slot = c.getPlayer().getPetSlot(pet);
             }
         }
@@ -164,16 +164,16 @@ public class PetHandler {
         if (Randomizer.nextInt(101) > 50) {
             gainCloseness = true;
         }
-        if (pet.getFullness() < 100) {
-            int newFullness = pet.getFullness() + 30;
-            if (newFullness > 100) {
-                newFullness = 100;
+        if (pet.getFullness() < GameConstants.PET_MAX_FULLNESS) {
+            int newFullness = pet.getFullness() + GameConstants.PET_FEED_FULLNESS_GAIN;
+            if (newFullness > GameConstants.PET_MAX_FULLNESS) {
+                newFullness = GameConstants.PET_MAX_FULLNESS;
             }
             pet.setFullness(newFullness);
-            if ((gainCloseness) && (pet.getCloseness() < 30000)) {
-                int newCloseness = pet.getCloseness() + 1;
-                if (newCloseness > 30000) {
-                    newCloseness = 30000;
+            if ((gainCloseness) && (pet.getCloseness() < GameConstants.PET_MAX_CLOSENESS)) {
+                int newCloseness = pet.getCloseness() + GameConstants.PET_FEED_CLOSENESS_GAIN;
+                if (newCloseness > GameConstants.PET_MAX_CLOSENESS) {
+                    newCloseness = GameConstants.PET_MAX_CLOSENESS;
                 }
                 pet.setCloseness(newCloseness);
                 if (newCloseness >= ExpTable.getClosenessNeededForLevel(pet.getLevel() + 1)) {

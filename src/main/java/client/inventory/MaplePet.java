@@ -3,6 +3,7 @@ package client.inventory;
 import com.github.mrzhqiang.maplestory.domain.DPet;
 import com.github.mrzhqiang.maplestory.domain.query.QDPet;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
+import constants.GameConstants;
 import server.MapleItemInformationProvider;
 import server.movement.AbsoluteLifeMovement;
 import server.movement.LifeMovement;
@@ -133,7 +134,7 @@ public class MaplePet implements Serializable {
     }
 
     public static MaplePet createPet(int itemid, int uniqueid) {
-        return createPet(itemid, MapleItemInformationProvider.getInstance().getName(itemid), 1, 0, 100, uniqueid, itemid == 5000054 ? 18000 : 0);
+        return createPet(itemid, MapleItemInformationProvider.getInstance().getName(itemid), GameConstants.PET_DEFAULT_LEVEL, GameConstants.PET_DEFAULT_CLOSENESS, GameConstants.PET_DEFAULT_FULLNESS, uniqueid, itemid == GameConstants.DRAGON_PET_ID ? GameConstants.DRAGON_PET_DEFAULT_SECONDS : 0);
     }
 
     public static MaplePet createPet(int itemid, String name, int level, int closeness, int fullness, int uniqueid, int secondsLeft) {
