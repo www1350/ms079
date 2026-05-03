@@ -20,6 +20,7 @@ This is a **MapleStory v079 private game server** written in Java 8 using Maven.
 - **CLI:** `com.github.mrzhqiang.maplestory.MapleStoryApplication` (main method)
 - **GUI:** `gui.GUIApplication` (Swing-based launcher)
 - Both use `ApplicationStarter` for common startup logic
+- **Distribution:** `mvn clean package -DskipTests` then run `启动服务端-GUI.bat` from project root
 
 ### Server Architecture (3-tier network)
 
@@ -31,15 +32,34 @@ The server runs three MINA-based network servers:
 
 All share the same MINA codec filter (`MapleCodecFactory`) for the custom MapleStory packet protocol. Opcodes map via `recvops.properties` / `sendops.properties`.
 
+### Threading Model (2026-05 refactored)
+
+Each player's state mutations run on a single **Actor thread** (`PlayerActorExecutor`), eliminating race conditions:
+
+```
+IO thread (MINA)                     Timer thread (BUFF/MAP/WORLD)
+     │                                       │
+     ▼                                       ▼
+┌─────────────────────────────────────────────────┐
+│     PlayerActorExecutor (single-threaded)         │
+│  All state changes for one player are serialized   │
+└─────────────────────────────────────────────────┘
+```
+
+- `actor.execute()` — blocking submit (keeps calling thread synchronous)
+- `actor.submit()` — fire-and-forget (for timer callbacks, packet sends)
+- Components use `owner.getActor().execute()` before mutating state
+
 ### Key Packages
 
 | Package | Responsibility |
 |---|---|
 | `client/` | Player state, inventory, skills, buddy list, anticheat |
+| `client/component/` | Extracted character subsystems (Cooldowns, Diseases, Pets, Skills, Quests, Buffs) |
 | `handling/` | Network servers, handlers, world/guild/family/party management |
 | `server/` | Game logic (maps, monsters, NPCs, shops, items, quests, events) |
 | `scripting/` | JavaScript engine for NPCs, portals, events, reactors |
-| `tools/` | Packet construction, data I/O, WZ-to-SQL tools |
+| `tools/` | Packet construction, data I/O, WZ-to-SQL tools, `ConcurrentEnumMap` |
 | `tools/packet/` | Per-category packet builders (Login, Mob, Pet, etc.) |
 | `com/.../domain/` | EBean ORM entities (D-prefixed classes) |
 | `com/.../service/` | Service layer (Account, World, Guild, Party, etc.) |
@@ -51,11 +71,29 @@ All share the same MINA codec filter (`MapleCodecFactory`) for the custom MapleS
 | `constants/` | Game constants and server constants |
 | `gui/` | Swing GUI for server management |
 
+### MapleCharacter — Componentized
+
+`MapleCharacter` is the central player class. After Phase 4 refactoring, it delegates to 6 components:
+
+| Component | File | Responsibility |
+|---|---|---|
+| `CharacterCooldowns` | `client/component/CharacterCooldowns.java` | Skill cooldowns (ConcurrentHashMap-backed) |
+| `CharacterDiseases` | `client/component/CharacterDiseases.java` | Debuff/disease state (ConcurrentEnumMap) |
+| `CharacterPets` | `client/component/CharacterPets.java` | Pet spawning, hunger, unequip |
+| `CharacterSkills` | `client/component/CharacterSkills.java` | Skills, macros, remaining SP |
+| `CharacterQuests` | `client/component/CharacterQuests.java` | Quest status and info maps |
+| `CharacterBuffs` | `client/component/CharacterBuffs.java` | Buff effects, combo, battleship, timers |
+| `PlayerActorExecutor` | `client/PlayerActorExecutor.java` | Single-threaded actor for serialized state access |
+| `DirtyTracker` | `client/DirtyTracker.java` | 13-category EnumSet tracking which data changed since last save |
+
+Public API on MapleCharacter is backward-compatible — all methods still work, now delegate to components.
+
 ### DI & Configuration
 
 - **Guice** is used for dependency injection. Modules are in `com/.../di/`.
 - Config is loaded from `服务端配置.ini` (Properties format, read from external path)
 - Database config (datasource.*), server IP/port, rate multipliers, feature toggles
+- `Injectors.get(Class)` static service locator for legacy code without DI.
 
 ### Database
 
@@ -64,6 +102,24 @@ All share the same MINA codec filter (`MapleCodecFactory`) for the custom MapleS
 - Query beans auto-generated (e.g., `QDAccount`) at compile time via annotation processor
 - Initial schema: `db/ms079.sql`
 - EBean migrations: `src/main/resources/dbmigration/`
+
+### Persistence Model (2026-05 refactored)
+
+`saveToDB()` uses **DirtyTracker** for incremental saves — only changed categories hit the DB:
+
+```
+Core row (always) → character.save()
+Dirty sections (only if marked):
+  INVENTORY, SKILLS, QUEST_STATUS, QUEST_INFO, SKILL_MACROS,
+  COOLDOWNS, SAVED_LOCATIONS, ACHIEVEMENTS, BUDDIES,
+  WISHLIST, TROCK_LOCATIONS, INVENTORY_SLOTS
+Always sections:
+  Account points, storage, CS, keylayout, mount, monsterbook
+```
+
+`saveToDB()` logs timing breakdown at INFO level: `[saveToDB] char=<name> total=<N>ms core=<N>ms always=<N>ms dirty=<N> sections:<breakdown>`
+
+Auto-save runs every 30 min via `ApplicationStarter.autoSave()`, using `actor.submit()` for thread safety.
 
 ### Testing
 
@@ -89,9 +145,23 @@ All share the same MINA codec filter (`MapleCodecFactory`) for the custom MapleS
 
 ### Startup
 
+**Option 1: Distribution (recommended)**
+
+```bash
+mvn clean package -DskipTests   # Creates target/ms079-1.0-SNAPSHOT-dist.zip
+# Extract to project root (auto-extracted by build), then double-click:
+#   启动服务端-GUI.bat   (Swing GUI)
+#   启动服务端-命令行.bat  (CLI)
+```
+
+The zip includes `ms079.jar` + all dependency jars in `lib/` + wz/ + 脚本/ + config.
+
+**Option 2: Direct Java**
+
 ```bash
 mvn clean compile -DskipTests
-mvn exec:java -Dexec.mainClass="com.github.mrzhqiang.maplestory.MapleStoryApplication"
+java -server -cp "./target/classes;./lib/*" -Dwzpath=wz \
+  com.github.mrzhqiang.maplestory.MapleStoryApplication
 ```
 
 The server reads config from `服务端配置.ini` in the working directory. This file is NOT in git.

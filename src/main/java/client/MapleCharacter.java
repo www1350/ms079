@@ -1015,10 +1015,16 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             return;
         }
 
+        long saveStart = System.nanoTime();
+        long coreStart, coreEnd;
+        int dirtyCount = 0;
+        StringBuilder timings = new StringBuilder();
+
         playerLock.lock();
         try {
             Transaction transaction = DB.beginTransaction();
         try {
+            coreStart = System.nanoTime();
             if (character.getHp() < 1) {
             character.setHp(50);
         }
@@ -1091,8 +1097,11 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         String petstring = petz.toString();
         character.setPets(petstring.substring(0, petstring.length() - 1));
         character.save();
+            coreEnd = System.nanoTime();
+            long coreMs = (coreEnd - coreStart) / 1_000_000;
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.SKILL_MACROS)) {
+            long t0 = System.nanoTime();
             new QDSkillMacro().character.eq(character).delete();
             for (int i = 0; i < 5; i++) {
                 SkillMacro macro = skillsComp.getMacros()[i];
@@ -1107,9 +1116,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     skillMacro.setPosition(i);
                 }
             }
+            timings.append(" macros=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.INVENTORY_SLOTS)) {
+            long t0 = System.nanoTime();
             new QDInventorySlot().character.eq(character).delete();
 
             DInventorySlot inventorySlot = new DInventorySlot();
@@ -1120,13 +1132,19 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             inventorySlot.setEtc(getInventory(MapleInventoryType.ETC).getSlotLimit());
             inventorySlot.setCash(getInventory(MapleInventoryType.CASH).getSlotLimit());
             inventorySlot.save();
+            timings.append(" invSlots=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.INVENTORY)) {
+            long t0 = System.nanoTime();
             saveInventory(character);
+            timings.append(" inventory=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.QUEST_INFO)) {
+            long t0 = System.nanoTime();
             new QDQuestInfo().character.eq(character).delete();
 
             for (final Entry<Integer, String> q : questsComp.getInfoQuestMapInternal().entrySet()) {
@@ -1136,9 +1154,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 questInfo.setCustomData(q.getValue());
                 questInfo.save();
             }
+            timings.append(" questInfo=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.QUEST_STATUS)) {
+            long t0 = System.nanoTime();
             new QDQuestStatus().character.eq(character).delete();
             Iterator<MapleQuestStatus> questsIt = questsComp.getQuestMapInternal().values().iterator();
             while (questsIt.hasNext()) {
@@ -1166,9 +1187,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     }
                 }
             }
+            timings.append(" questStatus=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.SKILLS)) {
+            long t0 = System.nanoTime();
             new QDSkill().character.eq(character).delete();
 
             for (Entry<ISkill, SkillEntry> entryEntry : skillsComp.getSkillsInternal().entrySet()) {
@@ -1182,9 +1206,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     skill.save();
                 }
             }
+            timings.append(" skills=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.COOLDOWNS)) {
+            long t0 = System.nanoTime();
             List<MapleCoolDownValueHolder> cd = getCooldowns();
             if (dc && cd.size() > 0) {
                 new QDSkillCooldown().character.eq(character).delete();
@@ -1197,9 +1224,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     skillCooldown.save();
                 }
             }
+            timings.append(" cooldowns=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.SAVED_LOCATIONS)) {
+            long t0 = System.nanoTime();
             new QDSavedLocation().character.eq(character).delete();
             for (SavedLocationType savedLocationType : SavedLocationType.values()) {
                 if (savedLocations[savedLocationType.getValue()] != -1) {
@@ -1210,9 +1240,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     savedLocation.save();
                 }
             }
+            timings.append(" savedLocs=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.ACHIEVEMENTS)) {
+            long t0 = System.nanoTime();
             new QDAchievement().account.eq(character.getAccount()).delete();
 
             for (Integer achid : finishedAchievements) {
@@ -1222,6 +1255,8 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 achievement.getAchievement().setAchievementId(achid);
                 achievement.save();
             }
+            timings.append(" achievements=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         /*
@@ -1238,6 +1273,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
          */
         // if (buddylist.changed()) {
         if (dirtyTracker.isDirty(DirtyTracker.Category.BUDDIES)) {
+            long t0 = System.nanoTime();
             new QDBuddy().owner.eq(character).delete();
             for (BuddyEntry entry : buddylist.getBuddies()) {
                 if (entry != null) {
@@ -1248,8 +1284,11 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     buddy.save();
                 }
             }
+            timings.append(" buddies=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
+        long alwaysStart = System.nanoTime();
         new QDAccount().id.eq(client.getAccID())
                 .asUpdate()
                 .set("cash", acash)
@@ -1274,8 +1313,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             e.printStackTrace();
         }
         monsterbook.saveCards(id);
+        long alwaysEnd = System.nanoTime();
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.WISHLIST)) {
+            long t0 = System.nanoTime();
             new QDWishList().character.eq(character).delete();
             for (int i = 0; i < getWishlistSize(); i++) {
                 DWishList dWishList = new DWishList();
@@ -1283,9 +1324,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 dWishList.setSn(wishlist[i]);
                 dWishList.save();
             }
+            timings.append(" wishlist=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
 
         if (dirtyTracker.isDirty(DirtyTracker.Category.TROCK_LOCATIONS)) {
+            long t0 = System.nanoTime();
             new QDTrockLocation().character.eq(character).delete();
             for (int rock : rocks) {
                 if (rock != 999999999) {
@@ -1305,8 +1349,15 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                     regrockLocation.save();
                 }
             }
+            timings.append(" trock=").append((System.nanoTime() - t0) / 1_000_000).append("ms");
+            dirtyCount++;
         }
             transaction.commit();
+            long totalMs = (System.nanoTime() - saveStart) / 1_000_000;
+            LOGGER.info("[saveToDB] char={} total={}ms core={}ms always={}ms dirty={} sections:{}",
+                    getName(), totalMs, coreMs,
+                    (alwaysEnd - alwaysStart) / 1_000_000,
+                    dirtyCount, timings.toString());
             dirtyTracker.clear();
         } finally {
             transaction.end();
