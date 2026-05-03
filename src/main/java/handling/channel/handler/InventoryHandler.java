@@ -92,7 +92,7 @@ public class InventoryHandler {
                 c.getSession().write(MaplePacketCreator.enableActions());
                 return;
             }
-            MapleInventoryManipulator.equip(c, src, dst);
+            MapleInventoryManipulator.equip(c, type, src, dst);
         // 丟棄
         } else if (dst == 0) {
             MapleInventoryManipulator.drop(c, type, src, quantity);

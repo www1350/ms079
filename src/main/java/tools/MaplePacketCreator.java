@@ -2009,21 +2009,19 @@ public class MaplePacketCreator {
          * mplew.write(chr.getday());// 日
          */
 
-        final IItem inv = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -114);
-        final int peteqid = inv != null ? inv.getItemId() : 0; //宠物装备1
-        final IItem inv1 = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -122);
-        final int peteqid1 = inv1 != null ? inv1.getItemId() : 0; //宠物装备2
-        final IItem inv2 = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -124);
-        final int peteqid2 = inv2 != null ? inv2.getItemId() : 0; //宠物装备2
-
         for (final MaplePet pet : chr.getPets()) {
             if (pet.getSummoned()) {
-                mplew.write(pet.getUniqueId()); //o-o byte ?
-                mplew.writeInt(pet.getPetItemId()); // petid
+                final byte petIdx = chr.getPetIndex(pet);
+                final int petEquipSlot = petIdx == 1 ? -122 : petIdx == 2 ? -124 : -114;
+                final IItem petEquip = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) petEquipSlot);
+                final int peteqid = petEquip != null ? petEquip.getItemId() : 0;
+
+                mplew.write(pet.getUniqueId());
+                mplew.writeInt(pet.getPetItemId());
                 mplew.writeMapleAsciiString(pet.getName());
-                mplew.write(pet.getLevel()); // pet level
-                mplew.writeShort(pet.getCloseness()); // pet closeness
-                mplew.write(pet.getFullness()); // pet fullness
+                mplew.write(pet.getLevel());
+                mplew.writeShort(pet.getCloseness());
+                mplew.write(pet.getFullness());
                 mplew.writeShort(pet.getFlags());
                 mplew.writeInt(peteqid);
             }

@@ -772,7 +772,7 @@ public class MapleInventoryManipulator {
         }
     }
 
-    public static void equip(final MapleClient c, final int src, int dst) {
+    public static void equip(final MapleClient c, final MapleInventoryType srcType, final int src, int dst) {
         boolean itemChanged = false;
         final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
         final MapleCharacter chr = c.getPlayer();
@@ -781,7 +781,12 @@ public class MapleInventoryManipulator {
         }
         // chr.expirationTask(true, false);
         final PlayerStats statst = c.getPlayer().getStat();
-        Equip source = (Equip) chr.getInventory(MapleInventoryType.EQUIP).getItem(src);
+        final IItem sourceItem = chr.getInventory(srcType).getItem(src);
+        if (!(sourceItem instanceof Equip)) {
+            c.getSession().write(MaplePacketCreator.enableActions());
+            return;
+        }
+        Equip source = (Equip) sourceItem;
         Equip target = (Equip) chr.getInventory(MapleInventoryType.EQUIPPED).getItem(dst);
 
         if (source == null || source.getDurability() == 0) {
@@ -802,7 +807,9 @@ public class MapleInventoryManipulator {
         if (dst < -999 && !GameConstants.isEvanDragonItem(source.getItemId()) && !GameConstants.is豆豆装备(source.getItemId())) {
             c.getSession().write(MaplePacketCreator.enableActions());
             return;
-        } else if (dst >= -999 && dst < -99 && stats.get("cash") == 0 && !GameConstants.is豆豆装备(source.getItemId()) && !GameConstants.isEffectRing(source.getItemId())) {
+        } else if (dst >= -999 && dst < -99 && stats.get("cash") == 0
+                && dst != -114 && dst != -122 && dst != -124 // 宠物装备位不限制
+                && !GameConstants.is豆豆装备(source.getItemId()) && !GameConstants.isEffectRing(source.getItemId())) {
             c.getSession().write(MaplePacketCreator.enableActions());
             return;
         }
@@ -884,7 +891,7 @@ public class MapleInventoryManipulator {
                 break;
             }
         }
-        source = (Equip) chr.getInventory(MapleInventoryType.EQUIP).getItem(src); // Equip
+        source = (Equip) chr.getInventory(srcType).getItem(src); // Equip
         target = (Equip) chr.getInventory(MapleInventoryType.EQUIPPED).getItem(dst); // Currently equipping
         if (source == null) {
             c.getSession().write(MaplePacketCreator.enableActions());
@@ -904,7 +911,7 @@ public class MapleInventoryManipulator {
             source.setFlag(flag & ~ItemFlag.KARMA_USE.getValue());
             c.getSession().write(MaplePacketCreator.updateSpecialItemUse(source, GameConstants.getInventoryType(source.getItemId()).getType()));
         }
-        chr.getInventory(MapleInventoryType.EQUIP).moveSlot(src);
+        chr.getInventory(srcType).moveSlot(src);
         if (target != null) {
             chr.getInventory(MapleInventoryType.EQUIPPED).moveSlot(dst);
         }
@@ -917,7 +924,7 @@ public class MapleInventoryManipulator {
         chr.getInventory(MapleInventoryType.EQUIPPED).addFromDB(source);
         if (target != null) {
             target.setPosition(src);
-            chr.getInventory(MapleInventoryType.EQUIP).addFromDB(target);
+            chr.getInventory(srcType).addFromDB(target);
         }
         if (GameConstants.isWeapon(source.getItemId())) {
             if (chr.getBuffedValue(MapleBuffStat.BOOSTER) != null) {
@@ -949,7 +956,7 @@ public class MapleInventoryManipulator {
         }
         //信息判断结束就移动道具
         mods.add(new ModifyInventory(2, source, src));//移动道具
-        c.getSession().write(MaplePacketCreator.moveInventoryItem(MapleInventoryType.EQUIP, src, dst, 2));
+        c.getSession().write(MaplePacketCreator.moveInventoryItem(srcType, src, dst, 2));
         chr.equipChanged();
         c.getSession().write(MaplePacketCreator.updateSpecialItemUse_(source, GameConstants.getInventoryType(source.getItemId()).getType()));//刷新装备的信息
     }
