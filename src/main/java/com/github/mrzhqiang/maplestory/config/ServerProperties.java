@@ -45,6 +45,7 @@ public final class ServerProperties {
     private final boolean debug;
     private final boolean packetLogger;
     private final boolean packetDebugLogger;
+    private final boolean packetInstructionLogger;
 
     private final boolean adventurer;
     private final boolean knights;
@@ -83,6 +84,7 @@ public final class ServerProperties {
         this.debug = Boolean.parseBoolean(properties.getProperty("server.debug.enabled", "false"));
         this.packetLogger = Boolean.parseBoolean(properties.getProperty("server.logger.packet", "false"));
         this.packetDebugLogger = Boolean.parseBoolean(properties.getProperty("server.logger.packet.debug", "false"));
+        this.packetInstructionLogger = Boolean.parseBoolean(properties.getProperty("server.logger.packet.instruction", "true"));
         this.adventurer = Boolean.parseBoolean(properties.getProperty("server.job.adventurer", "true"));
         this.knights = Boolean.parseBoolean(properties.getProperty("server.job.knights", "false"));
         this.warGod = Boolean.parseBoolean(properties.getProperty("server.job.war-god", "false"));
@@ -189,6 +191,10 @@ public final class ServerProperties {
 
     public boolean isPacketDebugLogger() {
         return packetDebugLogger;
+    }
+
+    public boolean isPacketInstructionLogger() {
+        return packetInstructionLogger;
     }
 
     public boolean isAdventurer() {

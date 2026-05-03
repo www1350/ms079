@@ -13,6 +13,7 @@ import tools.FileoutputUtil;
 import tools.HexTool;
 import tools.MapleAESOFB;
 import tools.MapleCustomEncryption;
+import tools.PacketInstructionLogger;
 import tools.data.input.ByteArrayByteStream;
 import tools.data.input.GenericLittleEndianAccessor;
 
@@ -107,6 +108,9 @@ public final class MaplePacketDecoder extends CumulativeProtocolDecoder {
                 } else {
                     LOGGER.info(HexTool.toString(new byte[]{decryptedPacket[0], decryptedPacket[1]}) + "...");
                 }
+            }
+            if (properties.isPacketInstructionLogger()) {
+                PacketInstructionLogger.logRecv(decryptedPacket);
             }
             return true;
         }

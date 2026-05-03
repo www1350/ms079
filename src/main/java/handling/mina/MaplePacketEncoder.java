@@ -14,6 +14,7 @@ import tools.FileoutputUtil;
 import tools.HexTool;
 import tools.MapleAESOFB;
 import tools.MapleCustomEncryption;
+import tools.PacketInstructionLogger;
 import tools.data.input.ByteArrayByteStream;
 import tools.data.input.GenericLittleEndianAccessor;
 
@@ -76,6 +77,9 @@ public final class MaplePacketEncoder implements ProtocolEncoder {
                     LOGGER.info(HexTool.toString(new byte[]{inputInitialPacket[0], inputInitialPacket[1]}) + " ...");
                 }
 
+            }
+            if (properties.isPacketInstructionLogger()) {
+                PacketInstructionLogger.logSend(inputInitialPacket);
             }
             byte[] unencrypted = new byte[inputInitialPacket.length];
             System.arraycopy(inputInitialPacket, 0, unencrypted, 0, inputInitialPacket.length); // Copy the input > "unencrypted"

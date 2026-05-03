@@ -1761,18 +1761,6 @@ public final class MapleMap {
                 LOGGER.debug("进入地图加载数据B");
             }
 
-            for (final MaplePet pet : chr.getPets()) {
-                if (pet.getSummoned()) {
-                    pet.setPos(chr.getTruePosition());//设置宠物坐标。
-                    chr.getClient().getSession().write(PetPacket.updatePet(pet, chr.getInventory(MapleInventoryType.CASH).getItem((short) (byte) pet.getInventoryPosition()), true));
-                    broadcastMessage(chr, PetPacket.showPet(chr, pet, false, false), false);
-                    //broadcastMessage(chr, PetPacket.showPet(chr, pet, false, false), false);
-                    if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
-                        LOGGER.debug("进入地图加载数据B+");
-                    }
-                }
-            }
-
             if (chr.isGM() && speedRunStart > 0) {
                 endSpeedRun();
                 broadcastMessage(MaplePacketCreator.serverNotice(5, "The speed run has ended."));
@@ -1823,8 +1811,9 @@ public final class MapleMap {
         }
         for (MaplePet pet : chr.getPets()) {
             if (pet.getSummoned()) {
-                pet.setPos(pet.getPos());//设置宠物坐标。.getTruePosition()
+                pet.setPos(chr.getTruePosition());
                 chr.getClient().getSession().write(PetPacket.updatePet(pet, chr.getInventory(MapleInventoryType.CASH).getItem((short) (byte) pet.getInventoryPosition()), true));
+                chr.getClient().getSession().write(PetPacket.showPet(chr, pet, false, false));
                 broadcastMessage(chr, PetPacket.showPet(chr, pet, false, false), false);
             }
         }

@@ -43,7 +43,7 @@ public final class CharacterPets {
         owner.getActor().execute(() -> {
             for (int i = 0; i < petStore.length; i++) {
                 if (petStore[i] > -1) {
-                    spawnPet(petStore[i], false, false);
+                    spawnPet(petStore[i], false, true);
                 }
             }
             owner.getClient().getSession().write(PetPacket.petStatUpdate(owner));
