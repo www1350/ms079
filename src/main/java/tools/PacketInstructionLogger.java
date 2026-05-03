@@ -258,6 +258,13 @@ public final class PacketInstructionLogger {
         regR("PET_CHAT", "宠物对话",
                 F.f("Tick", T.INT), F.f("宠物ID", T.INT), F.f("方式", T.BYTE), F.f("对话内容", T.STR));
 
+        regR("PET_LOOT", "宠物捡取",
+                F.f("宠物ID", T.LONG), F.f("保留", T.BYTE), F.f("Tick", T.INT),
+                F.f("宠物位置", T.POS), F.f("物品对象ID", T.INT));
+
+        regR("PET_AUTO_POT", "宠物自动吃药",
+                F.f("Tick", T.INT), F.f("宠物ID", T.INT), F.f("物品ID", T.SHORT), F.f("背包类型", T.BYTE), F.f("格子", T.BYTE));
+
         regR("GAME_POLL", "问卷",
                 F.f("Tick", T.INT), F.f("选择", T.BYTE));
 
