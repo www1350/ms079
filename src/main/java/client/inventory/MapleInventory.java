@@ -267,6 +267,9 @@ public class MapleInventory implements Iterable<IItem>, Serializable {
     public void dropSlot(int slot) {
         IItem rmItem = inventory.remove(slot);
         removeInventory.add(rmItem);
+        if (slot > 0) {
+            freeSlots.set(slot);
+        }
     }
 
     public boolean isFull() {
