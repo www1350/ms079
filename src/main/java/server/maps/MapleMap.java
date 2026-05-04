@@ -90,6 +90,7 @@ public final class MapleMap {
     private final Map<MapleMapObjectType, ReentrantReadWriteLock> mapobjectlocks;
     private final List<MapleCharacter> characters = new ArrayList<>();
     private final ReentrantReadWriteLock charactersLock = new ReentrantReadWriteLock();
+    private final java.util.concurrent.atomic.AtomicInteger nonCloneCount = new java.util.concurrent.atomic.AtomicInteger(0);
     private int runningOid = 100000;
     private final Lock runningOidLock = new ReentrantLock();
     private final List<Spawns> monsterSpawn = new ArrayList<>();
@@ -1742,6 +1743,9 @@ public final class MapleMap {
         charactersLock.writeLock().lock();
         try {
             characters.add(chr);
+            if (!chr.isClone()) {
+                nonCloneCount.incrementAndGet();
+            }
         } finally {
             charactersLock.writeLock().unlock();
         }
@@ -1756,18 +1760,6 @@ public final class MapleMap {
             broadcastMessage(chr, MaplePacketCreator.spawnPlayerMapobject(chr), false);
             if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
                 LOGGER.debug("进入地图加载数据B");
-            }
-
-            for (final MaplePet pet : chr.getPets()) {
-                if (pet.getSummoned()) {
-                    pet.setPos(chr.getTruePosition());//设置宠物坐标。
-                    chr.getClient().getSession().write(PetPacket.updatePet(pet, chr.getInventory(MapleInventoryType.CASH).getItem((short) (byte) pet.getInventoryPosition()), true));
-                    broadcastMessage(chr, PetPacket.showPet(chr, pet, false, false), false);
-                    //broadcastMessage(chr, PetPacket.showPet(chr, pet, false, false), false);
-                    if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
-                        LOGGER.debug("进入地图加载数据B+");
-                    }
-                }
             }
 
             if (chr.isGM() && speedRunStart > 0) {
@@ -1820,7 +1812,9 @@ public final class MapleMap {
         }
         for (MaplePet pet : chr.getPets()) {
             if (pet.getSummoned()) {
+                pet.setPos(chr.getTruePosition());
                 chr.getClient().getSession().write(PetPacket.updatePet(pet, chr.getInventory(MapleInventoryType.CASH).getItem((short) (byte) pet.getInventoryPosition()), true));
+                chr.getClient().getSession().write(PetPacket.showPet(chr, pet, false, false));
                 broadcastMessage(chr, PetPacket.showPet(chr, pet, false, false), false);
             }
         }
@@ -2376,6 +2370,9 @@ public final class MapleMap {
         charactersLock.writeLock().lock();
         try {
             characters.remove(chr);
+            if (!chr.isClone()) {
+                nonCloneCount.decrementAndGet();
+            }
         } finally {
             charactersLock.writeLock().unlock();
         }
@@ -2819,21 +2816,7 @@ public final class MapleMap {
     }
 
     public int getCharactersSize() {
-        int ret = 0;
-        charactersLock.readLock().lock();
-        try {
-            final Iterator<MapleCharacter> ltr = characters.iterator();
-            MapleCharacter chr;
-            while (ltr.hasNext()) {
-                chr = ltr.next();
-                if (!chr.isClone()) {
-                    ret++;
-                }
-            }
-        } finally {
-            charactersLock.readLock().unlock();
-        }
-        return ret;
+        return nonCloneCount.get();
     }
 
     public Collection<MaplePortal> getPortals() {

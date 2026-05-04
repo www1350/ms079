@@ -1054,7 +1054,7 @@ public abstract class AbstractPlayerInteraction {
     }
 
     public final void gainCloseness(final int closeness, final int index) {
-        final MaplePet pet = getPlayer().getPet(index);
+        final MaplePet pet = getPlayer().getSummonedPet(index);
         if (pet != null) {
             pet.setCloseness(pet.getCloseness() + closeness);
             getClient().getSession().write(PetPacket.updatePet(pet, getPlayer().getInventory(MapleInventoryType.CASH).getItem((byte) pet.getInventoryPosition()), true));

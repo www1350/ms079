@@ -352,7 +352,7 @@ public class PacketHelper {
          */
         for (int i = 0; i < 3; i++) {
             if (channelserver) {
-                mplew.writeInt(chr.getPet(i) != null ? chr.getPet(i).getPetItemId() : 0);
+                mplew.writeInt(chr.getSummonedPet(i) != null ? chr.getSummonedPet(i).getPetItemId() : 0);
             } else {
                 mplew.writeInt(0);
             }

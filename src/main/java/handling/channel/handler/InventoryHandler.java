@@ -2217,18 +2217,18 @@ public class InventoryHandler {
             case 5190008:
             case 5190000: { // Pet Flags
                 final int uniqueid = (int) slea.readLong();
-                MaplePet pet = c.getPlayer().getPet(0);
+                MaplePet pet = c.getPlayer().getSummonedPet(0);
                 int slo = 0;
 
                 if (pet == null) {
                     break;
                 }
                 if (pet.getUniqueId() != uniqueid) {
-                    pet = c.getPlayer().getPet(1);
+                    pet = c.getPlayer().getSummonedPet(1);
                     slo = 1;
                     if (pet != null) {
                         if (pet.getUniqueId() != uniqueid) {
-                            pet = c.getPlayer().getPet(2);
+                            pet = c.getPlayer().getSummonedPet(2);
                             slo = 2;
                             if (pet != null) {
                                 if (pet.getUniqueId() != uniqueid) {
@@ -2258,18 +2258,18 @@ public class InventoryHandler {
             case 5191004:
             case 5191000: { // Pet Flags
                 final int uniqueid = (int) slea.readLong();
-                MaplePet pet = c.getPlayer().getPet(0);
+                MaplePet pet = c.getPlayer().getSummonedPet(0);
                 int slo = 0;
 
                 if (pet == null) {
                     break;
                 }
                 if (pet.getUniqueId() != uniqueid) {
-                    pet = c.getPlayer().getPet(1);
+                    pet = c.getPlayer().getSummonedPet(1);
                     slo = 1;
                     if (pet != null) {
                         if (pet.getUniqueId() != uniqueid) {
-                            pet = c.getPlayer().getPet(2);
+                            pet = c.getPlayer().getSummonedPet(2);
                             slo = 2;
                             if (pet != null) {
                                 if (pet.getUniqueId() != uniqueid) {
@@ -2297,7 +2297,7 @@ public class InventoryHandler {
 /*
                  * final int uniqueid = (int) slea.readLong();
                  */
-                MaplePet pet = c.getPlayer().getPet(0);
+                MaplePet pet = c.getPlayer().getSummonedPet(0);
                 int slo = 0;
 
                 if (pet == null) {
@@ -2305,9 +2305,9 @@ public class InventoryHandler {
                 }
                 /*
                  * if (pet.getUniqueId() != uniqueid) { pet =
-                 * c.getPlayer().getPet(1); slo = 1; if (pet != null) { if
+                 * c.getPlayer().getSummonedPet(1); slo = 1; if (pet != null) { if
                  * (pet.getUniqueId() != uniqueid) { pet =
-                 * c.getPlayer().getPet(2); slo = 2; if (pet != null) { if
+                 * c.getPlayer().getSummonedPet(2); slo = 2; if (pet != null) { if
                  * (pet.getUniqueId() != uniqueid) { break; } } else { break; }
                  * } } else { break; } }
                  */
@@ -2355,16 +2355,16 @@ public class InventoryHandler {
             case 5240026:
             case 5240027:
             case 5240028: { // Pet food
-                MaplePet pet = c.getPlayer().getPet(0);
+                MaplePet pet = c.getPlayer().getSummonedPet(0);
 
                 if (pet == null) {
                     break;
                 }
                 if (!pet.canConsume(itemId)) {
-                    pet = c.getPlayer().getPet(1);
+                    pet = c.getPlayer().getSummonedPet(1);
                     if (pet != null) {
                         if (!pet.canConsume(itemId)) {
-                            pet = c.getPlayer().getPet(2);
+                            pet = c.getPlayer().getSummonedPet(2);
                             if (pet != null) {
                                 if (!pet.canConsume(itemId)) {
                                     break;
@@ -2728,7 +2728,7 @@ public class InventoryHandler {
             return;
         }
         final byte petz = (byte) c.getPlayer().getPetIndex((int) slea.readLong());
-        final MaplePet pet = chr.getPet(petz);
+        final MaplePet pet = chr.getSummonedPet(petz);
         slea.skip(1); // [4] Zero, [4] Seems to be tickcount, [1] Always zero
         chr.updateTick(slea.readInt());
         final Vector Client_Reportedpos = slea.readPos();

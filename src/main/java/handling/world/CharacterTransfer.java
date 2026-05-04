@@ -137,16 +137,13 @@ public class CharacterTransfer implements Externalizable {
         this.battleshipHP = chr.currentBattleshipHP();
         this.prefix = chr.getPrefix();
         boolean uneq = false;
+        java.util.Arrays.fill(this.petStore, EquipSlot.SENTINEL);
         for (int i = 0; i < this.petStore.length; i++) {
-            final MaplePet pet = chr.getPet(i);
-            if (this.petStore[i] == 0) {
-                this.petStore[i] = EquipSlot.SENTINEL;
-            }
+            final MaplePet pet = chr.getSummonedPet(i);
             if (pet != null) {
                 uneq = true;
-                this.petStore[i] = (byte) Math.max(this.petStore[i], pet.getInventoryPosition());
+                this.petStore[i] = (byte) pet.getInventoryPosition();
             }
-
         }
         if (uneq) {
             chr.unequipAllPets();

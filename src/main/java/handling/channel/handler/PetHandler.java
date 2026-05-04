@@ -109,7 +109,7 @@ public class PetHandler {
         if (petIndex == -1) {
             return;
         }
-        MaplePet pet = chr.getPet(petIndex);
+        MaplePet pet = chr.getSummonedPet(petIndex);
         if (pet == null) {
             return;
         }
@@ -144,13 +144,13 @@ public class PetHandler {
             return;
         }
         int slot = 0;
-        List<MaplePet> pets = c.getPlayer().getPets();
-        for (MaplePet pet : pets) {
-            if (pet.getFullness() < GameConstants.PET_MAX_FULLNESS) {
-                slot = c.getPlayer().getPetSlot(pet);
+        MaplePet pet = null;
+        for (MaplePet p : c.getPlayer().getPets()) {
+            if (p.getSummoned() && p.getFullness() < GameConstants.PET_MAX_FULLNESS) {
+                pet = p;
+                slot = c.getPlayer().getPetIndex(p);
             }
         }
-        MaplePet pet = c.getPlayer().getPet(slot);
         if (pet == null) {
             c.getSession().write(MaplePacketCreator.enableActions());
             return;
@@ -208,10 +208,10 @@ public class PetHandler {
 
         if (res != null && chr != null && res.size() != 0) { // map crash hack
             final byte slot = chr.getPetIndex(petId);
-            if (slot == -1 || chr.getPet(slot) == null) {
+            if (slot == -1 || chr.getSummonedPet(slot) == null) {
                 return;
             }
-            chr.getPet(slot).updatePosition(res);
+            chr.getSummonedPet(slot).updatePosition(res);
             chr.getMap().broadcastMessage(chr, PetPacket.movePet(chr.getId(), petId, slot, res), false);
             if (chr.getPlayerShop() != null || chr.getConversation() > 0 || chr.getTrade() != null) { //hack
                 return;

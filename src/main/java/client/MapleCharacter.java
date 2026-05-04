@@ -3366,6 +3366,10 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         return petsComp.getPet(index);
     }
 
+    public final MaplePet getSummonedPet(final int index) {
+        return petsComp.getSummonedPet(index);
+    }
+
     public void removePetCS(MaplePet pet) {
         petsComp.removePetCS(pet);
     }

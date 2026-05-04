@@ -53,7 +53,13 @@ public final class CharacterPets {
 
     // --- Pet list accessors ---
 
+    /** Returns the pet at the given position in the pets list (list-index). */
     public MaplePet getPet(final int index) {
+        return index >= 0 && index < pets.size() ? pets.get(index) : null;
+    }
+
+    /** Returns the summoned pet at the given summoned-only index (0=first summoned, 1=second, etc.). */
+    public MaplePet getSummonedPet(final int index) {
         byte count = 0;
         for (final MaplePet pet : pets) {
             if (pet.getSummoned()) {
