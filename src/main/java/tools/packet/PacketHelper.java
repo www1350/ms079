@@ -340,9 +340,7 @@ public class PacketHelper {
 
         for (int i = 0; i < 3; i++) {
             if (channelserver) {
-                final int petEquipSlot = i == 1 ? EquipSlot.PET_EQUIP_2 : i == 2 ? EquipSlot.PET_EQUIP_3 : EquipSlot.PET_EQUIP_1;
-                final IItem petEquip = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) petEquipSlot);
-                mplew.writeInt(petEquip != null ? petEquip.getItemId() : 0);
+                mplew.writeInt(chr.getSummonedPet(i) != null ? chr.getSummonedPet(i).getPetItemId() : 0);
             } else {
                 mplew.writeInt(0);
             }

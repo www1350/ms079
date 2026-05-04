@@ -1762,17 +1762,6 @@ public final class MapleMap {
                 LOGGER.debug("进入地图加载数据B");
             }
 
-            for (final MaplePet pet : chr.getPets()) {
-                if (pet.getSummoned()) {
-                    pet.setPos(chr.getTruePosition());
-                    chr.getClient().getSession().write(PetPacket.updatePet(pet, chr.getInventory(MapleInventoryType.CASH).getItem((short) (byte) pet.getInventoryPosition()), true));
-                }
-            }
-
-            if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
-                LOGGER.debug("进入地图加载数据B+");
-            }
-
             if (chr.isGM() && speedRunStart > 0) {
                 endSpeedRun();
                 broadcastMessage(MaplePacketCreator.serverNotice(5, "The speed run has ended."));
@@ -1830,14 +1819,6 @@ public final class MapleMap {
             }
         }
 
-        // Refresh pet equipment items so the client renders them on the 3D pet model
-        for (final byte slot : new byte[]{EquipSlot.PET_EQUIP_1, EquipSlot.PET_EQUIP_2, EquipSlot.PET_EQUIP_3}) {
-            final IItem petEquip = chr.getInventory(MapleInventoryType.EQUIPPED).getItem(slot);
-            if (petEquip != null) {
-                chr.getClient().getSession().write(MaplePacketCreator.updateSpecialItemUse_(petEquip, MapleInventoryType.EQUIPPED.getType(), petEquip.getPosition()));
-            }
-        }
-
         if (hasForcedEquip()) {
             chr.getClient().getSession().write(MaplePacketCreator.showForcedEquip());
         }
@@ -1882,18 +1863,14 @@ public final class MapleMap {
         if (chr.getChalkboard() != null) {
             chr.getClient().getSession().write(MTSCSPacket.useChalkboard(chr.getId(), chr.getChalkboard()));
         }
-        LOGGER.info("[addPlayer] loveEffect start, char=" + chr.getName() + " mapid=" + mapid);
         broadcastMessage(MaplePacketCreator.loveEffect());
-        LOGGER.info("[addPlayer] loveEffect done");
         if (timeLimit > 0 && getForcedReturnMap() != null && !chr.isClone()) {
             chr.startMapTimeLimitTask(timeLimit, getForcedReturnMap());
             if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
                 LOGGER.debug("进入地图加载数据I");
             }
         }
-        LOGGER.info("[addPlayer] squadBegin check: " + (getSquadBegin() != null ? "squad=" + getSquadBegin().getLeaderName() + " timeLeft=" + getSquadBegin().getTimeLeft() + " status=" + getSquadBegin().getStatus() : "null"));
         if (getSquadBegin() != null && getSquadBegin().getTimeLeft() > 0 && getSquadBegin().getStatus() == 1) {
-            LOGGER.info("[addPlayer] sending squad clock, timeLeft=" + (getSquadBegin().getTimeLeft() / 1000));
             chr.getClient().getSession().write(MaplePacketCreator.getClock((int) (getSquadBegin().getTimeLeft() / 1000)));
             if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
                 LOGGER.debug("进入地图加载数据O");
