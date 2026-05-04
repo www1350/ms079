@@ -410,8 +410,14 @@ public class NPCHandler {
         final NPCConversationManager cm = NPCScriptManager.getInstance().getCM(c);
 
         if (cm == null || c.getPlayer().getConversation() == 0 || cm.getLastMsg() != lastMsg) {
+            if (cm != null) {
+                LOGGER.info("[NPCMoreTalk] REJECTED clientLastMsg=" + lastMsg + " serverLastMsg=" + cm.getLastMsg() + " conv=" + c.getPlayer().getConversation());
+            } else {
+                LOGGER.info("[NPCMoreTalk] REJECTED cm=null clientLastMsg=" + lastMsg);
+            }
             return;
         }
+        LOGGER.info("[NPCMoreTalk] ACCEPTED lastMsg=" + lastMsg + " action=" + action);
         cm.setLastMsg(EquipSlot.SENTINEL);
         if (lastMsg == 2) {
             if (action != 0) {

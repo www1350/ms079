@@ -1911,7 +1911,7 @@ public final class MapleMap {
         MapleEvent.mapLoad(chr, channel);
         LOGGER.info("[addPlayer] MapleEvent.mapLoad done");
         if (chr.getEventInstance() != null && chr.getEventInstance().isTimerStarted() && !chr.isClone()) {
-            LOGGER.info("[addPlayer] sending eventInstance clock, timeLeft=" + (chr.getEventInstance().getTimeLeft() / 1000));
+            LOGGER.info("[addPlayer] BLOCKED eventInstance clock, timeLeft=" + (chr.getEventInstance().getTimeLeft() / 1000));
             chr.getClient().getSession().write(MaplePacketCreator.getClock((int) (chr.getEventInstance().getTimeLeft() / 1000)));
             if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
                 LOGGER.debug("进入地图加载数据K");
