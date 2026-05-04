@@ -741,11 +741,13 @@ public class EventInstanceManager {
     }
 
     public void onMapLoad(final MapleCharacter chr) {
+        LOGGER.info("[EIM.onMapLoad] em=" + (em != null ? em.getName() : "null") + " instance=" + name + " char=" + (chr != null ? chr.getName() : "null") + " disposed=" + disposed);
         if (disposed) {
             return;
         }
         try {
             em.getIv().invokeFunction("onMapLoad", this, chr);
+            LOGGER.info("[EIM.onMapLoad] invokeFunction succeeded");
         } catch (ScriptException ex) {
             LOGGER.debug("Event name" + em.getName() + ", Instance name : " + name + ", method Name : onMapLoad:\n" + ex);
             FileoutputUtil.log(FileoutputUtil.ScriptEx_Log, "Event name" + em.getName() + ", Instance name : " + name + ", method Name : onMapLoad:\n" + ex);

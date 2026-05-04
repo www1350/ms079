@@ -30,9 +30,13 @@ import server.RandomRewards;
 import com.github.mrzhqiang.maplestory.timer.Timer;
 import server.maps.MapleMap;
 import server.maps.SavedLocationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.MaplePacketCreator;
 
 public abstract class MapleEvent {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MapleEvent.class);
 
     protected int[] mapid;
     protected int channel;
@@ -172,21 +176,26 @@ public abstract class MapleEvent {
 
     public static final void mapLoad(final MapleCharacter chr, final int channel) {
         if (chr == null) {
+            LOGGER.info("[MapleEvent.mapLoad] chr is null, returning");
             return;
-        } //o_o
+        }
+        LOGGER.info("[MapleEvent.mapLoad] char=" + chr.getName() + " mapId=" + chr.getMapId() + " channel=" + channel);
         for (MapleEventType t : MapleEventType.values()) {
             final MapleEvent e = ChannelServer.getInstance(channel).getEvent(t);
             if (e.isRunning) {
+                LOGGER.info("[MapleEvent.mapLoad] event type=" + t + " isRunning=true mapids=" + java.util.Arrays.toString(e.mapid));
                 if (chr.getMapId() == 109050000) { //finished map
                     e.finished(chr);
                 }
                 for (int i : e.mapid) {
                     if (chr.getMapId() == i) {
+                        LOGGER.info("[MapleEvent.mapLoad] MATCH mapId=" + i + " -> calling e.onMapLoad(chr)");
                         e.onMapLoad(chr);
                     }
                 }
             }
         }
+        LOGGER.info("[MapleEvent.mapLoad] done");
     }
 
     public static final void onStartEvent(final MapleCharacter chr) {

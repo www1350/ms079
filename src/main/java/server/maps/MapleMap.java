@@ -1882,32 +1882,42 @@ public final class MapleMap {
         if (chr.getChalkboard() != null) {
             chr.getClient().getSession().write(MTSCSPacket.useChalkboard(chr.getId(), chr.getChalkboard()));
         }
+        LOGGER.info("[addPlayer] loveEffect start, char=" + chr.getName() + " mapid=" + mapid);
         broadcastMessage(MaplePacketCreator.loveEffect());
+        LOGGER.info("[addPlayer] loveEffect done");
         if (timeLimit > 0 && getForcedReturnMap() != null && !chr.isClone()) {
             chr.startMapTimeLimitTask(timeLimit, getForcedReturnMap());
             if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
                 LOGGER.debug("进入地图加载数据I");
             }
         }
+        LOGGER.info("[addPlayer] squadBegin check: " + (getSquadBegin() != null ? "squad=" + getSquadBegin().getLeaderName() + " timeLeft=" + getSquadBegin().getTimeLeft() + " status=" + getSquadBegin().getStatus() : "null"));
         if (getSquadBegin() != null && getSquadBegin().getTimeLeft() > 0 && getSquadBegin().getStatus() == 1) {
+            LOGGER.info("[addPlayer] sending squad clock, timeLeft=" + (getSquadBegin().getTimeLeft() / 1000));
             chr.getClient().getSession().write(MaplePacketCreator.getClock((int) (getSquadBegin().getTimeLeft() / 1000)));
             if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
                 LOGGER.debug("进入地图加载数据O");
             }
         }
+        LOGGER.info("[addPlayer] carnival check: carnivalParty=" + (chr.getCarnivalParty() != null ? "yes" : "null") + " eventInstance=" + (chr.getEventInstance() != null ? "yes" : "null"));
         if (chr.getCarnivalParty() != null && chr.getEventInstance() != null) {
+            LOGGER.info("[addPlayer] calling EIM.onMapLoad for carnival");
             chr.getEventInstance().onMapLoad(chr);
             if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
                 LOGGER.debug("进入地图加载数据M");
             }
         }
+        LOGGER.info("[addPlayer] MapleEvent.mapLoad start");
         MapleEvent.mapLoad(chr, channel);
+        LOGGER.info("[addPlayer] MapleEvent.mapLoad done");
         if (chr.getEventInstance() != null && chr.getEventInstance().isTimerStarted() && !chr.isClone()) {
+            LOGGER.info("[addPlayer] sending eventInstance clock, timeLeft=" + (chr.getEventInstance().getTimeLeft() / 1000));
             chr.getClient().getSession().write(MaplePacketCreator.getClock((int) (chr.getEventInstance().getTimeLeft() / 1000)));
             if (ServerConstants.properties.isPacketLogger() || enterMapDisplayMapInfo) {
                 LOGGER.debug("进入地图加载数据K");
             }
         }
+        LOGGER.info("[addPlayer] hasClock check: " + hasClock());
         if (hasClock()) {
             final Calendar cal = Calendar.getInstance();
             chr.getClient().getSession().write((MaplePacketCreator.getClockTime(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND))));
