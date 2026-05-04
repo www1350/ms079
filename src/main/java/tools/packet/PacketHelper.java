@@ -338,21 +338,11 @@ public class PacketHelper {
         final IItem cWeapon = equip.getItem(EquipSlot.CASH_WEAPON);
         mplew.writeInt(cWeapon != null ? cWeapon.getItemId() : 0);
 
-        /*
-         * final IItem invA =
-         * chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -114);
-         * final IItem invB =
-         * chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -122);
-         * final IItem invC =
-         * chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) -124);
-         * //final int peteqid = inv != null ? inv.getItemId() : 0;
-         * mplew.writeInt(invA != null ? invA.getItemId() : 0);
-         * mplew.writeInt(invB != null ? invB.getItemId() : 0);
-         * mplew.writeInt(invC != null ? invC.getItemId() : 0);
-         */
         for (int i = 0; i < 3; i++) {
             if (channelserver) {
-                mplew.writeInt(chr.getSummonedPet(i) != null ? chr.getSummonedPet(i).getPetItemId() : 0);
+                final int petEquipSlot = i == 1 ? EquipSlot.PET_EQUIP_2 : i == 2 ? EquipSlot.PET_EQUIP_3 : EquipSlot.PET_EQUIP_1;
+                final IItem petEquip = chr.getInventory(MapleInventoryType.EQUIPPED).getItem((byte) petEquipSlot);
+                mplew.writeInt(petEquip != null ? petEquip.getItemId() : 0);
             } else {
                 mplew.writeInt(0);
             }
