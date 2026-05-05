@@ -20,7 +20,7 @@ public class DBossLog extends Model {
     String bossId;
     @NotNull
     @Column(name = "lastattempt")
-    LocalDateTime lastAttempt;
+    LocalDateTime lastAttempt = LocalDateTime.now();
 
     public Integer getId() {
         return id;
