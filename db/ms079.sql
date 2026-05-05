@@ -37984,6 +37984,20 @@ CREATE TABLE `guilds`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------
+-- Table structure for parties
+-- ----------------------------
+DROP TABLE IF EXISTS `parties`;
+CREATE TABLE `parties`  (
+  `id` int(11) NOT NULL,
+  `world_id` int(11) NOT NULL DEFAULT 0,
+  `leader_id` int(11) NOT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT current_timestamp(6),
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_parties_world`(`world_id`) USING BTREE,
+  INDEX `idx_parties_leader`(`leader_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
+
+-- ----------------------------
 -- Table structure for hiredmerch
 -- ----------------------------
 DROP TABLE IF EXISTS `hiredmerch`;
