@@ -4,6 +4,8 @@ import client.MapleCharacter;
 import client.MapleDisease;
 import client.MapleDiseaseValueHolder;
 import com.github.mrzhqiang.maplestory.timer.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.ConcurrentEnumMap;
 import tools.MaplePacketCreator;
 
@@ -13,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 public final class CharacterDiseases {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CharacterDiseases.class);
 
     private final MapleCharacter owner;
     private final Map<MapleDisease, MapleDiseaseValueHolder> diseases = new ConcurrentEnumMap<>(MapleDisease.class);
@@ -41,6 +45,7 @@ public final class CharacterDiseases {
                     }
                 }
 
+                LOGGER.info("[CharacterDiseases] giveDebuff char=" + owner.getName() + " disease=" + disease + " mask=" + disease.getValue() + " x=" + x + " skillid=" + skillid + " level=" + level + " duration=" + duration);
                 diseases.put(disease, new MapleDiseaseValueHolder(disease, System.currentTimeMillis(), duration));
                 owner.getClient().getSession().write(MaplePacketCreator.giveDebuff(debuff, skillid, level, (int) duration));
                 owner.getMap().broadcastMessage(owner, MaplePacketCreator.giveForeignDebuff(owner.getId(), debuff, skillid, level), false);

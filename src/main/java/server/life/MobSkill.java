@@ -17,7 +17,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MobSkill {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MobSkill.class);
 
     private int skillId, skillLevel, mpCon, spawnEffect, hp, x, y;
     private long duration, cooltime;
@@ -198,6 +203,7 @@ public class MobSkill {
                 disease = MapleDisease.getBySkill(skillId);
                 break;
             case 127:
+                LOGGER.info("[MobSkill] DISPEL skillId=" + skillId + " level=" + skillLevel + " hasArea=" + (lt != null && rb != null));
                 if (lt != null && rb != null && skill && monster != null && player != null) {
                     for (MapleCharacter character : getPlayersInRange(monster, player)) {
                         character.dispel();
@@ -208,6 +214,7 @@ public class MobSkill {
                 break;
 
             case 129: // Banish
+                LOGGER.info("[MobSkill] BANISH skillId=" + skillId + " level=" + skillLevel);
                 if (monster != null) {
                     if (monster.getEventInstance() != null && monster.getEventInstance().getName().indexOf("BossQuest") != -1) {
                         break;
@@ -225,6 +232,7 @@ public class MobSkill {
                 }
                 break;
             case 131: // Mist
+                LOGGER.info("[MobSkill] MIST skillId=" + skillId + " level=" + skillLevel + " x=" + x + " duration=" + duration);
                 if (monster != null) {
                     monster.getMap().spawnMist(new MapleMist(calculateBoundingBox(monster.getPosition(), true), monster, this), x * 10, false);
                 }
@@ -327,6 +335,7 @@ public class MobSkill {
             }
         }
         if (disease != null && player != null) {
+            LOGGER.info("[MobSkill] DEBUFF skillId=" + skillId + " level=" + skillLevel + " disease=" + disease + " x=" + x + " duration=" + duration + " hasArea=" + (lt != null && rb != null));
             if (lt != null && rb != null && skill && monster != null) {
                 for (MapleCharacter chr : getPlayersInRange(monster, player)) {
                     chr.giveDebuff(disease, this);

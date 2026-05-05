@@ -22,9 +22,14 @@ import tools.Pair;
 import tools.data.input.SeekableLittleEndianAccessor;
 import tools.packet.MobPacket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 public class MobHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MobHandler.class);
 
     public static void MoveMonster(SeekableLittleEndianAccessor slea, MapleClient c, MapleCharacter chr) {
         if (chr == null || chr.getMap() == null) {
@@ -68,6 +73,7 @@ public class MobHandler {
                         final int reqHp = (int) (((float) monster.getHp() / monster.getMobMaxHp()) * 100); // In case this monster have 2.1b and above HP
                         if (reqHp <= mobSkill.getHP()) {
                             used = true;
+                            LOGGER.info("[MobHandler] SKILL USE monster=" + monster.getId() + " oid=" + oid + " skill=" + realskill + " level=" + level + " char=" + chr.getName());
                             mobSkill.applyEffect(chr, monster, true);
                         }
                     }
