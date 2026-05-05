@@ -2652,6 +2652,7 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     public void forceReAddItem_NoUpdate(IItem item, MapleInventoryType type) {
         getInventory(type).moveSlot(item.getPosition());
         getInventory(type).addFromDB(item);
+        dirtyTracker.mark(DirtyTracker.Category.INVENTORY);
     }
 
     public void forceReAddItem(IItem item, MapleInventoryType type) { //used for stuff like durability, item exp/level, probably owner?
@@ -2757,6 +2758,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             } else {
                 getInventory(itemz.getLeft()).removeItem(item.getPosition(), item.getQuantity(), false);
             }
+        }
+        if (!toberemove.isEmpty()) {
+            dirtyTracker.mark(DirtyTracker.Category.INVENTORY);
         }
         for (final IItem itemz : tobeunlock) {
             itemz.setExpiration(-1);

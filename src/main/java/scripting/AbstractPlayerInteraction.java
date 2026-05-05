@@ -24,6 +24,7 @@ import KinMS.db.CherryMSLottery;
 import KinMS.db.CherryMScustomEventFactory;
 import client.ISkill;
 import client.MapleCharacter;
+import client.DirtyTracker;
 import client.MapleClient;
 import client.MapleQuestStatus;
 import client.SkillFactory;
@@ -437,6 +438,7 @@ public abstract class AbstractPlayerInteraction {
 
     public void clearAranPolearm() {
         this.c.getPlayer().getInventory(MapleInventoryType.EQUIPPED).removeItem(EquipSlot.WEAPON);
+        this.c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
     }
 
     public void forceStartQuest(final int id) {

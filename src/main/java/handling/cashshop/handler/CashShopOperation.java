@@ -1,5 +1,6 @@
 package handling.cashshop.handler;
 
+import client.DirtyTracker;
 import client.MapleCharacter;
 import client.MapleCharacterUtil;
 import client.MapleClient;
@@ -500,6 +501,7 @@ public class CashShopOperation {
                 if (item != null && item.getQuantity() > 0 && item.getUniqueId() > 0 && c.getPlayer().getCashInventory().getItemsSize() < 100) {
                     IItem item_ = item.copy();
                     c.getPlayer().getInventory(type).removeItem(item.getPosition(), item.getQuantity(), false);
+                    c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
                     int sn = CashItemFactory.getInstance().getItemSN(item_.getItemId());
                     if (item_.getPet() != null) {
                         c.getPlayer().removePet(item_.getPet(), false);

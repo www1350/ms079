@@ -59,6 +59,7 @@ public class MapleInventoryManipulator {
         if (!fromcs) {
             c.getSession().write(MaplePacketCreator.addInventorySlot(type, item));
         }
+        c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
         c.getPlayer().havePartyQuest(item.getItemId());
         return newSlot;
     }
@@ -280,6 +281,7 @@ public class MapleInventoryManipulator {
                     }
                 }
                 if (recieved) {
+                    c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
                     c.getPlayer().havePartyQuest(nItem.getItemId());
                     return nItem;
                 }
@@ -292,6 +294,7 @@ public class MapleInventoryManipulator {
                     return null;
                 }
                 c.getSession().write(MaplePacketCreator.addInventorySlot(type, nItem));
+                c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
                 c.getPlayer().havePartyQuest(nItem.getItemId());
                 return nItem;
             }
@@ -303,6 +306,7 @@ public class MapleInventoryManipulator {
                 return null;
             }
             c.getSession().write(MaplePacketCreator.addInventorySlot(type, item, true));
+            c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
             c.getPlayer().havePartyQuest(item.getItemId());
             return item;
         } else {
@@ -416,6 +420,7 @@ public class MapleInventoryManipulator {
                     break;
             }
         }
+        c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
         c.getPlayer().havePartyQuest(item.getItemId());
         if (show) {
             c.getSession().write(MaplePacketCreator.getShowItemGain(item.getItemId(), item.getQuantity()));
@@ -528,6 +533,7 @@ public class MapleInventoryManipulator {
                     break;
             }
         }
+        c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
         c.getPlayer().havePartyQuest(item.getItemId());
         if (show) {
             c.getSession().write(MaplePacketCreator.getShowItemGain(item.getItemId(), item.getQuantity()));
@@ -636,6 +642,7 @@ public class MapleInventoryManipulator {
                     break;
             }
         }
+        c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
         c.getPlayer().havePartyQuest(item.getItemId());
         if (show) {
             c.getSession().write(MaplePacketCreator.getShowItemGain(item.getItemId(), item.getQuantity()));
@@ -959,6 +966,7 @@ public class MapleInventoryManipulator {
         mods.add(new ModifyInventory(2, source, src));//移动道具
         c.getSession().write(MaplePacketCreator.moveInventoryItem(srcType, src, dst, 2));
         chr.equipChanged();
+        chr.getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
         c.getSession().write(MaplePacketCreator.updateSpecialItemUse_(source, GameConstants.getInventoryType(source.getItemId()).getType()));//刷新装备的信息
     }
 
@@ -1005,6 +1013,7 @@ public class MapleInventoryManipulator {
         }
         c.getSession().write(MaplePacketCreator.moveInventoryItem(MapleInventoryType.EQUIP, src, dst, 1));
         c.getPlayer().equipChanged();
+        c.getPlayer().getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
     }
 
     public static boolean drop(final MapleClient c, MapleInventoryType type, final int src, final int quantity) {

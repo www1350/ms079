@@ -1,5 +1,6 @@
 package handling.channel.handler;
 
+import client.DirtyTracker;
 import client.ISkill;
 import client.MapleCharacter;
 import client.MapleClient;
@@ -563,6 +564,7 @@ public class InventoryHandler {
         if (dst < 0 && (scrollSuccess == IEquip.ScrollResult.SUCCESS || scrollSuccess == IEquip.ScrollResult.CURSE) && vegas == 0) {
             chr.equipChanged();
         }
+        chr.getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
         return true;
     }
 

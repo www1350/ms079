@@ -1,5 +1,6 @@
 package client.messages.commands;
 
+import client.DirtyTracker;
 import client.ISkill;
 import client.LoginCrypto;
 import client.MapleCharacter;
@@ -3340,6 +3341,7 @@ public class AdminCommand {
                     client.inventory.IItem n = ii.copy();
                     player.getInventory(MapleInventoryType.EQUIP).addItem(n);
                 }
+                player.getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
                 player.fakeRelog();
             } else {
                 MapleInventoryType types;
@@ -3372,6 +3374,7 @@ public class AdminCommand {
                         player.getInventory(types).addItem(n);
                     }
                 }
+                player.getDirtyTracker().mark(DirtyTracker.Category.INVENTORY);
                 player.fakeRelog();
             }
             return 1;
