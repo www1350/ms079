@@ -15,6 +15,8 @@ import handling.world.MaplePartyCharacter;
 import handling.world.PartyOperation;
 import handling.world.World;
 import io.ebean.DB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.MaplePacketCreator;
 
 import javax.inject.Inject;
@@ -25,6 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Singleton
 public final class PartyService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PartyService.class);
 
     private final AtomicInteger runningPartyId = new AtomicInteger();
 
@@ -192,7 +196,12 @@ public final class PartyService {
         DParty dp = new DParty();
         dp.setId(partyid);
         dp.setLeaderId(chrfor.getId());
-        dp.save();
+        try {
+            dp.save();
+            LOGGER.info("[Party] Created party id={} leader={} in DB", partyid, chrfor.getName());
+        } catch (Exception e) {
+            LOGGER.error("[Party] Failed to save party id={} to DB", partyid, e);
+        }
         return party;
     }
 
