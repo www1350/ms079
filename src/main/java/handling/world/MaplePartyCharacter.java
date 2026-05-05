@@ -77,6 +77,30 @@ public class MaplePartyCharacter implements Serializable {
         return channel;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public void setChannel(int channel) {
+        this.channel = channel;
+    }
+
+    public void setJobId(int jobid) {
+        this.jobid = jobid;
+    }
+
+    public void setMapId(int mapid) {
+        this.mapid = mapid;
+    }
+
     public boolean isOnline() {
         return online;
     }

@@ -38,6 +38,12 @@ public class MapleParty implements Serializable {
         this.id = id;
     }
 
+    public MapleParty(int id, MaplePartyCharacter leader, List<MaplePartyCharacter> members) {
+        this.id = id;
+        this.leader = leader;
+        this.members.addAll(members);
+    }
+
     public boolean containsMembers(MaplePartyCharacter member) {
         return members.contains(member);
     }
