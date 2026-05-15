@@ -17,6 +17,7 @@ import tools.packet.PetPacket;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
@@ -72,8 +73,13 @@ public final class CharacterPets {
         return null;
     }
 
+    @Deprecated
     public List<MaplePet> getPets() {
         return pets;
+    }
+
+    public List<MaplePet> getPetsUnmodifiable() {
+        return Collections.unmodifiableList(pets);
     }
 
     public int getNoPets() {
@@ -216,8 +222,8 @@ public final class CharacterPets {
                             unequipPet(pet, true, false);
                         } else {
                             int leadid = GameConstants.getPetLeadSkill(owner.getJob());
-                            if (owner.getSkillLevel(SkillFactory.getSkill(leadid)) == 0 && getPet(0) != null) {
-                                unequipPet(getPet(0), false, false);
+                            if (owner.getSkillLevel(SkillFactory.getSkill(leadid)) == 0 && getSummonedPet(0) != null) {
+                                unequipPet(getSummonedPet(0), false, false);
                             } else if (lead || owner.getSkillLevel(SkillFactory.getSkill(leadid)) <= 0) {
                                 // shiftPetsRight();
                             }

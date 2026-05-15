@@ -8,7 +8,6 @@ import client.inventory.Equip;
 import client.inventory.IItem;
 import client.inventory.ItemFlag;
 import client.inventory.MapleInventoryType;
-import constants.EquipSlot;
 import constants.GameConstants;
 import handling.SendPacketOpcode;
 import org.slf4j.Logger;
@@ -36,6 +35,7 @@ import java.util.Map.Entry;
 public class NPCHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NPCHandler.class);
+    private static final byte LAST_MSG_PROCESSED = -1;
 
     public static final void NPCAnimation(final SeekableLittleEndianAccessor slea, final MapleClient c) {
 //        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
@@ -418,7 +418,7 @@ public class NPCHandler {
             return;
         }
         LOGGER.info("[NPCMoreTalk] ACCEPTED lastMsg=" + lastMsg + " action=" + action);
-        cm.setLastMsg(EquipSlot.SENTINEL);
+        cm.setLastMsg(LAST_MSG_PROCESSED);
         if (lastMsg == 2) {
             if (action != 0) {
                 cm.setGetText(slea.readMapleAsciiString());

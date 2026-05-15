@@ -82,14 +82,14 @@ public final class EquipSlot {
 
     // ======================== 工具方法 ========================
 
-    /** pos 是否属于身体装备区间 (-99 &lt; pos &lt; 0) */
+    /** pos 是否属于身体装备区间 (-99 &lt;= pos &lt; 0) */
     public static boolean isBodySlot(int pos) {
-        return pos < 0 && pos > BODY_SLOT_MIN;
+        return pos < 0 && pos >= BODY_SLOT_MIN;
     }
 
     /** pos 是否属于现金装备区间 (-999 &lt;= pos &lt;= -100) */
     public static boolean isCashSlot(int pos) {
-        return pos <= BODY_SLOT_MIN && pos > BLOCKED_BOUNDARY;
+        return pos < BODY_SLOT_MIN && pos > BLOCKED_BOUNDARY;
     }
 
     /** pos 是否为宠物装备槽位 */

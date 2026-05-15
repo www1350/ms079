@@ -110,6 +110,7 @@ public final class MapleMap {
     private String mapName, streetName, onUserEnter, onFirstUserEnter, speedRunLeader = "";
     private List<Integer> dced = new ArrayList<>();
     private ScheduledFuture<?> squadSchedule, hurtTask;
+    private final Object hurtTaskLock = new Object();
     private long speedRunStart = 0, lastSpawnTime = 0, lastHurtTime = 0;
     private MapleNodes nodes;
     private MapleSquadType squad;
@@ -3407,34 +3408,38 @@ public final class MapleMap {
     }
 
     private void startHurtTask() {
-        if (hurtTask != null || decHP <= 0) {
-            return;
-        }
-        final int interval = Math.max(decHPInterval, 1000);
-        hurtTask = Timer.MAP.register(() -> {
-            if (getCharactersSize() == 0) {
-                cancelHurtTask();
+        synchronized (hurtTaskLock) {
+            if (hurtTask != null || decHP <= 0) {
                 return;
             }
-            for (MapleCharacter chr : getCharactersThreadsafe()) {
-                if (!chr.isAlive()) {
-                    continue;
+            final int interval = Math.max(decHPInterval, 1000);
+            hurtTask = Timer.MAP.register(() -> {
+                if (getCharactersSize() == 0) {
+                    cancelHurtTask();
+                    return;
                 }
-                if (chr.getInventory(MapleInventoryType.EQUIPPED).findById(protectItem) != null) {
-                    continue;
+                for (MapleCharacter chr : getCharactersThreadsafe()) {
+                    if (!chr.isAlive()) {
+                        continue;
+                    }
+                    if (chr.getInventory(MapleInventoryType.EQUIPPED).findById(protectItem) != null) {
+                        continue;
+                    }
+                    if (mapid == 749040100 && chr.getInventory(MapleInventoryType.CASH).findById(5451000) != null) {
+                        continue;
+                    }
+                    chr.getActor().submit(() -> chr.addHP(-decHP));
                 }
-                if (mapid == 749040100 && chr.getInventory(MapleInventoryType.CASH).findById(5451000) != null) {
-                    continue;
-                }
-                chr.getActor().submit(() -> chr.addHP(-decHP));
-            }
-        }, interval, interval);
+            }, interval, interval);
+        }
     }
 
     private void cancelHurtTask() {
-        if (hurtTask != null) {
-            hurtTask.cancel(false);
-            hurtTask = null;
+        synchronized (hurtTaskLock) {
+            if (hurtTask != null) {
+                hurtTask.cancel(false);
+                hurtTask = null;
+            }
         }
     }
 

@@ -41,6 +41,15 @@ public final class CharacterBuffs {
         this.dirtyTracker = dirtyTracker;
     }
 
+    private void onActor(Runnable task) {
+        owner.getActor().execute(task);
+    }
+
+    public Map<MapleBuffStat, MapleBuffStatValueHolder> getEffects() {
+        return Collections.unmodifiableMap(effects);
+    }
+
+    @Deprecated
     public Map<MapleBuffStat, MapleBuffStatValueHolder> getEffectsInternal() {
         return effects;
     }
@@ -95,6 +104,7 @@ public final class CharacterBuffs {
 
     public void setBattleshipHP(int hp) {
         this.battleshipHP = hp;
+        dirtyTracker.mark(DirtyTracker.Category.CORE);
     }
 
     // --- combo ---
@@ -162,11 +172,13 @@ public final class CharacterBuffs {
     }
 
     public void setBuffedValue(MapleBuffStat effect, int value) {
-        final MapleBuffStatValueHolder mbsvh = effects.get(effect);
-        if (mbsvh == null) {
-            return;
-        }
-        mbsvh.value = value;
+        onActor(() -> {
+            final MapleBuffStatValueHolder mbsvh = effects.get(effect);
+            if (mbsvh == null) {
+                return;
+            }
+            mbsvh.value = value;
+        });
     }
 
     public Long getBuffedStarttime(MapleBuffStat effect) {
@@ -376,15 +388,19 @@ public final class CharacterBuffs {
     }
 
     public void cancelBuffStats(MapleBuffStat... stat) {
-        List<MapleBuffStat> buffStatList = Arrays.asList(stat);
-        deregisterBuffStats(buffStatList);
-        cancelPlayerBuffs(buffStatList);
+        onActor(() -> {
+            List<MapleBuffStat> buffStatList = Arrays.asList(stat);
+            deregisterBuffStats(buffStatList);
+            cancelPlayerBuffs(buffStatList);
+        });
     }
 
     public void cancelEffectFromBuffStat(MapleBuffStat stat) {
-        if (effects.get(stat) != null) {
-            cancelEffect(effects.get(stat).effect, false, -1);
-        }
+        onActor(() -> {
+            if (effects.get(stat) != null) {
+                cancelEffect(effects.get(stat).effect, false, -1);
+            }
+        });
     }
 
     // --- cancelPlayerBuffs ---
@@ -524,124 +540,133 @@ public final class CharacterBuffs {
     // --- Skill effect handlers ---
 
     public void handleEnergyCharge(final int skillid, final int targets) {
-        final ISkill echskill = SkillFactory.getSkill(skillid);
-        final byte skilllevel = owner.getSkillLevel(echskill);
-        if (skilllevel > 0) {
-            final MapleStatEffect echeff = echskill.getEffect(skilllevel);
-            if (targets > 0) {
-                if (getBuffedValue(MapleBuffStat.ENERGY_CHARGE) == null) {
-                    echeff.applyEnergyBuff(owner, true);
-                } else {
-                    Integer energyLevel = getBuffedValue(MapleBuffStat.ENERGY_CHARGE);
-                    if (energyLevel <= 15000) {
-                        energyLevel += (echeff.getX() * targets);
+        onActor(() -> {
+            final ISkill echskill = SkillFactory.getSkill(skillid);
+            final byte skilllevel = owner.getSkillLevel(echskill);
+            if (skilllevel > 0) {
+                final MapleStatEffect echeff = echskill.getEffect(skilllevel);
+                if (targets > 0) {
+                    if (getBuffedValue(MapleBuffStat.ENERGY_CHARGE) == null) {
+                        echeff.applyEnergyBuff(owner, true);
+                    } else {
+                        Integer energyLevel = getBuffedValue(MapleBuffStat.ENERGY_CHARGE);
+                        if (energyLevel <= 15000) {
+                            energyLevel += (echeff.getX() * targets);
 
-                        owner.getClient().getSession().write(MaplePacketCreator.showOwnBuffEffect(skillid, 2));
-                        owner.getMap().broadcastMessage(owner, MaplePacketCreator.showBuffeffect(owner.getId(), skillid, 2), false);
+                            owner.getClient().getSession().write(MaplePacketCreator.showOwnBuffEffect(skillid, 2));
+                            owner.getMap().broadcastMessage(owner, MaplePacketCreator.showBuffeffect(owner.getId(), skillid, 2), false);
 
-                        if (energyLevel >= 15000) {
-                            energyLevel = 15000;
+                            if (energyLevel >= 15000) {
+                                energyLevel = 15000;
+                            }
+
+                            List<Pair<MapleBuffStat, Integer>> stat = Collections.singletonList(new Pair<>(MapleBuffStat.ENERGY_CHARGE, energyLevel));
+                            owner.getClient().getSession().write(MaplePacketCreator.能量条(stat, energyLevel / 1000));
+                            setBuffedValue(MapleBuffStat.ENERGY_CHARGE, Integer.valueOf(energyLevel));
+                            Timer.BUFF.schedule(() -> {
+                                Integer el = 0;
+                                setBuffedValue(MapleBuffStat.ENERGY_CHARGE, Integer.valueOf(el));
+                                List<Pair<MapleBuffStat, Integer>> s = Collections.singletonList(new Pair<>(MapleBuffStat.ENERGY_CHARGE, el));
+                                owner.getClient().getSession().write(MaplePacketCreator.能量条(s, 0));
+                            }, 3 * 60 * 1000);
                         }
-
-                        List<Pair<MapleBuffStat, Integer>> stat = Collections.singletonList(new Pair<>(MapleBuffStat.ENERGY_CHARGE, energyLevel));
-                        owner.getClient().getSession().write(MaplePacketCreator.能量条(stat, energyLevel / 1000));
-                        setBuffedValue(MapleBuffStat.ENERGY_CHARGE, Integer.valueOf(energyLevel));
-                        Timer.BUFF.schedule(() -> {
-                            Integer el = 0;
-                            setBuffedValue(MapleBuffStat.ENERGY_CHARGE, Integer.valueOf(el));
-                            List<Pair<MapleBuffStat, Integer>> s = Collections.singletonList(new Pair<>(MapleBuffStat.ENERGY_CHARGE, el));
-                            owner.getClient().getSession().write(MaplePacketCreator.能量条(s, 0));
-                        }, 3 * 60 * 1000);
                     }
                 }
             }
-        }
+        });
     }
 
     public void handleBattleshipHP(int damage) {
-        if (isActiveBuffedValue(5221006)) {
-            battleshipHP -= damage;
-            if (battleshipHP <= 0) {
-                battleshipHP = 0;
-                final MapleStatEffect effect = getStatForBuff(MapleBuffStat.骑兽技能);
-                owner.getClient().getSession().write(MaplePacketCreator.skillCooldown(5221006, effect.getCooldown()));
-                owner.addCooldown(5221006, System.currentTimeMillis(), effect.getCooldown() * 1000);
-                dispelSkill(5221006);
+        onActor(() -> {
+            if (isActiveBuffedValue(5221006)) {
+                battleshipHP -= damage;
+                dirtyTracker.mark(DirtyTracker.Category.CORE);
+                if (battleshipHP <= 0) {
+                    battleshipHP = 0;
+                    final MapleStatEffect effect = getStatForBuff(MapleBuffStat.骑兽技能);
+                    owner.getClient().getSession().write(MaplePacketCreator.skillCooldown(5221006, effect.getCooldown()));
+                    owner.addCooldown(5221006, System.currentTimeMillis(), effect.getCooldown() * 1000);
+                    dispelSkill(5221006);
+                }
             }
-        }
+        });
     }
 
     public void handleOrbgain() {
-        int orbcount = getBuffedValue(MapleBuffStat.COMBO);
-        ISkill comboSkill;
-        ISkill advcombo;
+        onActor(() -> {
+            int orbcount = getBuffedValue(MapleBuffStat.COMBO);
+            ISkill comboSkill;
+            ISkill advcombo;
 
-        switch (owner.getJob()) {
-            case 1110:
-            case 1111:
-            case 1112:
-                comboSkill = SkillFactory.getSkill(11111001);
-                advcombo = SkillFactory.getSkill(11110005);
-                break;
-            default:
-                comboSkill = SkillFactory.getSkill(1111002);
-                advcombo = SkillFactory.getSkill(1120003);
-                break;
-        }
-
-        MapleStatEffect ceffect = null;
-        int advComboSkillLevel = owner.getSkillLevel(advcombo);
-        if (advComboSkillLevel > 0) {
-            ceffect = advcombo.getEffect(advComboSkillLevel);
-        } else if (owner.getSkillLevel(comboSkill) > 0) {
-            ceffect = comboSkill.getEffect(owner.getSkillLevel(comboSkill));
-        } else {
-            return;
-        }
-
-        if (orbcount < ceffect.getX() + 1) {
-            int neworbcount = orbcount + 1;
-            if (advComboSkillLevel > 0 && ceffect.makeChanceResult()) {
-                if (neworbcount < ceffect.getX() + 1) {
-                    neworbcount++;
-                }
+            switch (owner.getJob()) {
+                case 1110:
+                case 1111:
+                case 1112:
+                    comboSkill = SkillFactory.getSkill(11111001);
+                    advcombo = SkillFactory.getSkill(11110005);
+                    break;
+                default:
+                    comboSkill = SkillFactory.getSkill(1111002);
+                    advcombo = SkillFactory.getSkill(1120003);
+                    break;
             }
-            List<Pair<MapleBuffStat, Integer>> stat = Collections.singletonList(new Pair<>(MapleBuffStat.COMBO, neworbcount));
-            setBuffedValue(MapleBuffStat.COMBO, neworbcount);
+
+            MapleStatEffect ceffect = null;
+            int advComboSkillLevel = owner.getSkillLevel(advcombo);
+            if (advComboSkillLevel > 0) {
+                ceffect = advcombo.getEffect(advComboSkillLevel);
+            } else if (owner.getSkillLevel(comboSkill) > 0) {
+                ceffect = comboSkill.getEffect(owner.getSkillLevel(comboSkill));
+            } else {
+                return;
+            }
+
+            if (orbcount < ceffect.getX() + 1) {
+                int neworbcount = orbcount + 1;
+                if (advComboSkillLevel > 0 && ceffect.makeChanceResult()) {
+                    if (neworbcount < ceffect.getX() + 1) {
+                        neworbcount++;
+                    }
+                }
+                List<Pair<MapleBuffStat, Integer>> stat = Collections.singletonList(new Pair<>(MapleBuffStat.COMBO, neworbcount));
+                setBuffedValue(MapleBuffStat.COMBO, neworbcount);
+                int duration = ceffect.getDuration();
+                duration += (int) ((getBuffedStarttime(MapleBuffStat.COMBO) - System.currentTimeMillis()));
+
+                owner.getClient().getSession().write(MaplePacketCreator.giveBuff(comboSkill.getId(), duration, stat, ceffect));
+                owner.getMap().broadcastMessage(owner, MaplePacketCreator.giveForeignBuff(owner, owner.getId(), stat, ceffect), false);
+            }
+        });
+    }
+
+    public void handleOrbconsume() {
+        onActor(() -> {
+            ISkill comboSkill;
+
+            switch (owner.getJob()) {
+                case 1110:
+                case 1111:
+                    comboSkill = SkillFactory.getSkill(11111001);
+                    break;
+                default:
+                    comboSkill = SkillFactory.getSkill(1111002);
+                    break;
+            }
+            if (owner.getSkillLevel(comboSkill) <= 0) {
+                return;
+            }
+            MapleStatEffect ceffect = getStatForBuff(MapleBuffStat.COMBO);
+            if (ceffect == null) {
+                return;
+            }
+            List<Pair<MapleBuffStat, Integer>> stat = Collections.singletonList(new Pair<>(MapleBuffStat.COMBO, 1));
+            setBuffedValue(MapleBuffStat.COMBO, 1);
             int duration = ceffect.getDuration();
             duration += (int) ((getBuffedStarttime(MapleBuffStat.COMBO) - System.currentTimeMillis()));
 
             owner.getClient().getSession().write(MaplePacketCreator.giveBuff(comboSkill.getId(), duration, stat, ceffect));
             owner.getMap().broadcastMessage(owner, MaplePacketCreator.giveForeignBuff(owner, owner.getId(), stat, ceffect), false);
-        }
-    }
-
-    public void handleOrbconsume() {
-        ISkill comboSkill;
-
-        switch (owner.getJob()) {
-            case 1110:
-            case 1111:
-                comboSkill = SkillFactory.getSkill(11111001);
-                break;
-            default:
-                comboSkill = SkillFactory.getSkill(1111002);
-                break;
-        }
-        if (owner.getSkillLevel(comboSkill) <= 0) {
-            return;
-        }
-        MapleStatEffect ceffect = getStatForBuff(MapleBuffStat.COMBO);
-        if (ceffect == null) {
-            return;
-        }
-        List<Pair<MapleBuffStat, Integer>> stat = Collections.singletonList(new Pair<>(MapleBuffStat.COMBO, 1));
-        setBuffedValue(MapleBuffStat.COMBO, 1);
-        int duration = ceffect.getDuration();
-        duration += (int) ((getBuffedStarttime(MapleBuffStat.COMBO) - System.currentTimeMillis()));
-
-        owner.getClient().getSession().write(MaplePacketCreator.giveBuff(comboSkill.getId(), duration, stat, ceffect));
-        owner.getMap().broadcastMessage(owner, MaplePacketCreator.giveForeignBuff(owner, owner.getId(), stat, ceffect), false);
+        });
     }
 
     // --- Private helpers ---

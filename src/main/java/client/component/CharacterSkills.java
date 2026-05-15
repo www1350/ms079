@@ -47,8 +47,15 @@ public final class CharacterSkills {
         return remainingSp[skillbook];
     }
 
+    @Deprecated
     public int[] getRemainingSps() {
         return remainingSp;
+    }
+
+    public int[] getRemainingSpsCopy() {
+        int[] copy = new int[remainingSp.length];
+        System.arraycopy(remainingSp, 0, copy, 0, remainingSp.length);
+        return copy;
     }
 
     public int getRemainingSpSize() {
@@ -110,6 +117,7 @@ public final class CharacterSkills {
         return Collections.unmodifiableMap(skills);
     }
 
+    @Deprecated
     public Map<ISkill, SkillEntry> getSkillsInternal() {
         return skills;
     }
@@ -236,6 +244,7 @@ public final class CharacterSkills {
             pendingSkills = new ArrayList<>();
         }
         pendingSkills.add(skillId);
+        dirtyTracker.mark(DirtyTracker.Category.SKILLS);
     }
 
     public List<Integer> getPendingSkills() {
@@ -256,6 +265,7 @@ public final class CharacterSkills {
         for (ISkill skil : toberem) {
             addPendingSkill(skil.getId());
             skills.remove(skil);
+            dirtyTracker.mark(DirtyTracker.Category.SKILLS);
         }
     }
 
@@ -277,7 +287,14 @@ public final class CharacterSkills {
         });
     }
 
+    @Deprecated
     public SkillMacro[] getMacros() {
         return skillMacros;
+    }
+
+    public SkillMacro[] getMacrosCopy() {
+        SkillMacro[] copy = new SkillMacro[skillMacros.length];
+        System.arraycopy(skillMacros, 0, copy, 0, skillMacros.length);
+        return copy;
     }
 }

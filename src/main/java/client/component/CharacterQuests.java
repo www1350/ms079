@@ -6,6 +6,7 @@ import client.MapleQuestStatus;
 import server.quest.MapleQuest;
 import tools.MaplePacketCreator;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,12 +27,13 @@ public final class CharacterQuests {
 
     // --- Quest info ---
 
+    @Deprecated
     public Map<Integer, String> getInfoQuestMapInternal() {
         return questinfo;
     }
 
     public Map<Integer, String> getInfoQuestMap() {
-        return questinfo;
+        return Collections.unmodifiableMap(questinfo);
     }
 
     public void questInfoPacket(final tools.data.output.MaplePacketLittleEndianWriter mplew) {
@@ -59,12 +61,13 @@ public final class CharacterQuests {
 
     // --- Quest status ---
 
+    @Deprecated
     public Map<MapleQuest, MapleQuestStatus> getQuestMapInternal() {
         return quests;
     }
 
     public Map<MapleQuest, MapleQuestStatus> getQuestMap() {
-        return quests;
+        return Collections.unmodifiableMap(quests);
     }
 
     public int getQuestStatus(int quest) {

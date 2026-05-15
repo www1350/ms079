@@ -1030,15 +1030,16 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         if (isClone()) {
             return;
         }
-
         long saveStart = System.nanoTime();
+        actor.execute(() -> saveToDBInternal(dc, fromcs, saveStart));
+    }
+
+    private void saveToDBInternal(boolean dc, boolean fromcs, long saveStart) {
         long coreStart, coreEnd;
         int dirtyCount = 0;
         StringBuilder timings = new StringBuilder();
 
-        playerLock.lock();
-        try {
-            Transaction transaction = DB.beginTransaction();
+        Transaction transaction = DB.beginTransaction();
         try {
             coreStart = System.nanoTime();
             if (character.getHp() < 1) {
@@ -1377,9 +1378,6 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
             dirtyTracker.clear();
         } finally {
             transaction.end();
-        }
-        } finally {
-            playerLock.unlock();
         }
     }
 

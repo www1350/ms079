@@ -46,7 +46,7 @@ public final class PartyService {
 
     public void init() {
         int maxPartyId = 0;
-        List<DParty> allParties = DB.find(DParty.class).findList();
+        List<DParty> allParties = DB.find(DParty.class).where().eq("worldId", 0).findList();
         for (DParty dp : allParties) {
             if (dp.getId() > maxPartyId) {
                 maxPartyId = dp.getId();
@@ -113,10 +113,18 @@ public final class PartyService {
         switch (operation) {
             case JOIN:
                 party.addMember(target);
+                DB.update(DCharacter.class)
+                    .set("party", party.getId())
+                    .where().idEq(target.getId())
+                    .update();
                 break;
             case EXPEL:
             case LEAVE:
                 party.removeMember(target);
+                DB.update(DCharacter.class)
+                    .set("party", -1)
+                    .where().idEq(target.getId())
+                    .update();
                 break;
             case DISBAND:
                 disbandParty(partyid);
@@ -196,6 +204,7 @@ public final class PartyService {
         DParty dp = new DParty();
         dp.setId(partyid);
         dp.setLeaderId(chrfor.getId());
+        dp.setWorldId(0);
         try {
             dp.save();
             LOGGER.info("[Party] Created party id={} leader={} in DB", partyid, chrfor.getName());
@@ -210,6 +219,10 @@ public final class PartyService {
     }
 
     public void disbandParty(int partyid) {
+        DB.update(DCharacter.class)
+            .set("party", -1)
+            .where().eq("party", partyid)
+            .update();
         DB.delete(DParty.class, partyid);
         cached.invalidate(partyid);
     }

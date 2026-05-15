@@ -1,10 +1,13 @@
 package client;
 
-import java.util.EnumSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Tracks which data categories have changed since the last save, so saveToDB
  * can skip expensive delete-then-insert cycles for unchanged tables.
+ *
+ * Thread-safe: uses ConcurrentHashMap so mark() from any thread (IO, Timer,
+ * Actor) and isDirty()+clear() from saveToDB thread are safe.
  */
 public final class DirtyTracker {
 
@@ -24,18 +27,18 @@ public final class DirtyTracker {
         WISHLIST,       // wishlist table
     }
 
-    private final EnumSet<Category> dirty = EnumSet.noneOf(Category.class);
+    private final ConcurrentHashMap<Category, Boolean> dirty = new ConcurrentHashMap<>();
 
     public void mark(Category category) {
-        dirty.add(category);
+        dirty.put(category, Boolean.TRUE);
     }
 
     public boolean isDirty(Category category) {
-        return dirty.contains(category);
+        return dirty.containsKey(category);
     }
 
     public boolean isClean(Category category) {
-        return !dirty.contains(category);
+        return !dirty.containsKey(category);
     }
 
     public void clear() {

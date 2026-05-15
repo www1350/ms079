@@ -85,6 +85,7 @@ public final class CharacterCooldowns {
         return new ArrayList<>(coolDowns.values());
     }
 
+    @Deprecated
     public Map<Integer, MapleCoolDownValueHolder> getCoolDownsMap() {
         return coolDowns;
     }

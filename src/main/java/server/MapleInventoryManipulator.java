@@ -17,6 +17,8 @@ import client.inventory.ModifyInventory;
 import com.github.mrzhqiang.maplestory.wz.element.data.Vector;
 import constants.EquipSlot;
 import constants.GameConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.maps.AramiaFireWorks;
 import tools.MaplePacketCreator;
 import tools.packet.MTSCSPacket;
@@ -27,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MapleInventoryManipulator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MapleInventoryManipulator.class);
 
     public static void addRing(MapleCharacter chr, int itemId, int ringId, int sn) {
         CashItemInfo csi = CashItemFactory.getInstance().getItem(sn);
@@ -787,6 +791,16 @@ public class MapleInventoryManipulator {
         if (chr == null) {
             return;
         }
+        if (srcType != MapleInventoryType.EQUIP) {
+            LOGGER.debug("Equip hack: srcType={} from character={}", srcType, chr.getName());
+            c.getSession().write(MaplePacketCreator.enableActions());
+            return;
+        }
+        if (dst < EquipSlot.CASH_SLOT_MIN || dst >= 0) {
+            LOGGER.debug("Equip hack: dst={} from character={}", dst, chr.getName());
+            c.getSession().write(MaplePacketCreator.enableActions());
+            return;
+        }
         // chr.expirationTask(true, false);
         final PlayerStats statst = c.getPlayer().getStat();
         final IItem sourceItem = chr.getInventory(srcType).getItem(src);
@@ -816,7 +830,6 @@ public class MapleInventoryManipulator {
             c.getSession().write(MaplePacketCreator.enableActions());
             return;
         } else if (dst >= EquipSlot.CASH_SLOT_MIN && dst < EquipSlot.BODY_SLOT_MIN && stats.get("cash") == 0
-                && !EquipSlot.isPetEquipSlot((short) dst)
                 && !GameConstants.is豆豆装备(source.getItemId()) && !GameConstants.isEffectRing(source.getItemId())) {
             c.getSession().write(MaplePacketCreator.enableActions());
             return;

@@ -431,7 +431,7 @@ public final class MapleServerHandler extends IoHandlerAdapter {
                 return;
             }
             // opCode
-            int header_num = slea.readShort();
+            int header_num = slea.readShort() & 0xFFFF;
             RecvPacketOpcode recv = OPCODE_MAP.get(header_num);
             if (recv != null) {
                     if (ServerConstants.properties.isDebug()) {//&& !RecvPacketOpcode.isSpamHeader(recv)
