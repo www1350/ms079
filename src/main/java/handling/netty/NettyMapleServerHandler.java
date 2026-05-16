@@ -10,6 +10,7 @@ import handling.cashshop.CashShopServer;
 import handling.channel.ChannelServer;
 import handling.login.LoginServer;
 import handling.login.handler.CharLoginHandler;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -136,9 +137,12 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
 
         client.setChannel(channel);
 
-        session.write(LoginPacket.getHello(ServerConstants.MAPLE_VERSION,
+        // Write hello as raw ByteBuf to bypass encoder — must never be encrypted,
+        // because Netty's async write may process the encoder AFTER CLIENT_KEY is set.
+        byte[] helloBytes = LoginPacket.getHello(ServerConstants.MAPLE_VERSION,
                 ServerConstants.Use_Fixed_IV ? serverSend : ivSend,
-                ServerConstants.Use_Fixed_IV ? serverRecv : ivRecv));
+                ServerConstants.Use_Fixed_IV ? serverRecv : ivRecv).getBytes();
+        ctx.channel().writeAndFlush(Unpooled.wrappedBuffer(helloBytes));
 
         ctx.channel().attr(MaplePacketDecoderNetty.CLIENT_KEY).set(client);
         session.setAttribute(MapleClient.CLIENT_KEY, client);
