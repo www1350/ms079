@@ -4,9 +4,18 @@ import com.github.mrzhqiang.maplestory.api.RunnableServer;
 import com.github.mrzhqiang.maplestory.config.ServerProperties;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import handling.MapleServerHandler;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import handling.netty.MaplePacketDecoderNetty;
+import handling.netty.MaplePacketEncoderNetty;
+import handling.netty.NettyMapleServerHandler;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.Triple;
@@ -14,7 +23,6 @@ import tools.Triple;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,20 +38,18 @@ public final class AuthenticationServer implements RunnableServer {
     private int usersOn = 0;
     private int userLimit;
 
-    private final NioSocketAcceptor acceptor;
-    private final MapleServerHandler serverHandler;
-    private final ProtocolCodecFilter codecFilter;
     private final ServerProperties properties;
+    private final NettyMapleServerHandler serverHandler;
 
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
+    private Channel serverChannel;
     private boolean finishedShutdown = true;
 
     @Inject
-    public AuthenticationServer(NioSocketAcceptor acceptor, MapleServerHandler serverHandler,
-                                ProtocolCodecFilter codecFilter, ServerProperties properties) {
-        this.acceptor = acceptor;
-        this.serverHandler = serverHandler;
-        this.codecFilter = codecFilter;
+    public AuthenticationServer(ServerProperties properties, NettyMapleServerHandler serverHandler) {
         this.properties = properties;
+        this.serverHandler = serverHandler;
         this.userLimit = properties.getOnlineLimit();
     }
 
@@ -103,22 +109,31 @@ public final class AuthenticationServer implements RunnableServer {
 
     @Override
     public void init() {
-        // 注释掉的代码，已经是默认值，不需要初始化
-//        IoBuffer.setUseDirectBuffer(false);
-//        IoBuffer.setAllocator(new SimpleBufferAllocator());
-        acceptor.getFilterChain().addLast("codec", codecFilter);
-        acceptor.setHandler(serverHandler);
-        //acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 30);
-        acceptor.getSessionConfig().setTcpNoDelay(true);
+        bossGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
     }
 
     @Override
     public void run() {
         int port = properties.getLoginPort();
         try {
-            acceptor.bind(new InetSocketAddress(port));
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) {
+                            ch.pipeline()
+                                    .addLast("idle", new IdleStateHandler(60, 60, 0))
+                                    .addLast("decoder", new MaplePacketDecoderNetty(properties))
+                                    .addLast("encoder", new MaplePacketEncoderNetty(properties))
+                                    .addLast("handler", serverHandler);
+                        }
+                    })
+                    .childOption(ChannelOption.TCP_NODELAY, true);
+            serverChannel = b.bind(port).sync().channel();
             LOGGER.info("登录器服务器绑定端口：" + port);
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("绑定到端口 " + port + " 失败！", e);
         }
     }
@@ -129,11 +144,20 @@ public final class AuthenticationServer implements RunnableServer {
             return;
         }
         LOGGER.info("正在关闭登录服务器...");
-        //       acceptor.setCloseOnDeactivation(true);
-//        for (IoSession ss : acceptor.getManagedSessions().values()) {
-//            ss.close(true);
-//        }
-        //acceptor.unbind();
-        finishedShutdown = true; //nothing. lol
+        try {
+            if (serverChannel != null) {
+                serverChannel.close().sync();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            if (bossGroup != null) {
+                bossGroup.shutdownGracefully();
+            }
+            if (workerGroup != null) {
+                workerGroup.shutdownGracefully();
+            }
+        }
+        finishedShutdown = true;
     }
 }

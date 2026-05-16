@@ -19,6 +19,7 @@ import tools.data.input.GenericLittleEndianAccessor;
 
 import javax.inject.Inject;
 
+@Deprecated
 public final class MaplePacketDecoder extends CumulativeProtocolDecoder {
 
     public static class DecoderState {

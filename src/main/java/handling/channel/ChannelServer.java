@@ -8,16 +8,20 @@ import com.github.mrzhqiang.maplestory.di.Injectors;
 import constants.ServerConstants;
 import handling.ByteArrayMaplePacket;
 import handling.MaplePacket;
-import handling.MapleServerHandler;
 import handling.cashshop.CashShopServer;
-import handling.mina.MapleCodecFactory;
+import handling.netty.MaplePacketDecoderNetty;
+import handling.netty.MaplePacketEncoderNetty;
+import handling.netty.NettyMapleServerHandler;
 import handling.world.CheaterData;
-import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.buffer.SimpleBufferAllocator;
-import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.SocketSessionConfig;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scripting.EventScriptManager;
@@ -69,11 +73,13 @@ public final class ChannelServer implements Serializable {
     private String serverMessage, key, ip, serverName;
     private boolean shutdown = false, finishedShutdown = false, MegaphoneMuteState = false, adminOnly = false;
     private PlayerStorage players;
-    private IoAcceptor acceptor;
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
+    private Channel serverChannel;
 
-    private final MapleServerHandler serverHandler;
+    private final NettyMapleServerHandler serverHandler;
     private final MapleMapFactory mapFactory;
-    private final MapleCodecFactory codecFactory;
+    private final ServerProperties properties;
 
     private EventScriptManager eventSM;
     private static final Map<Integer, ChannelServer> INSTANCE_CACHED = new ConcurrentHashMap<>();
@@ -95,15 +101,10 @@ public final class ChannelServer implements Serializable {
 //        mapFactory.setChannel(channel);
 //    }
     @Inject
-    public ChannelServer(MapleCodecFactory codecFactory, MapleServerHandler serverHandler) {
+    public ChannelServer(ServerProperties properties, NettyMapleServerHandler serverHandler) {
         this.mapFactory = new MapleMapFactory();
-        /*
-         * this.channel = channel; mapFactory = new MapleMapFactory();
-         * mapFactory.setChannel(channel);
-         */
+        this.properties = properties;
         this.serverHandler = serverHandler;
-//        this.serverHandler.setChannel(channel);
-        this.codecFactory = codecFactory;
     }
 
     public static Set<Integer> getAllInstance() {
@@ -141,10 +142,9 @@ public final class ChannelServer implements Serializable {
 
         ip = ServerConstants.properties.getAddress() + ":" + port;
 
-        IoBuffer.setUseDirectBuffer(false);
-        IoBuffer.setAllocator(new SimpleBufferAllocator());
-        acceptor = new NioSocketAcceptor();
-        acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(codecFactory));
+        bossGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
+
         players = new PlayerStorage(channel);
         loadEvents();
         Timer tMan = Timer.MANAGER;
@@ -152,14 +152,26 @@ public final class ChannelServer implements Serializable {
             tMan.register(AutoCherryMSEventManager.getInstance(this, getMapFactory()), 120000L);
         }
         try {
-            acceptor.setHandler(serverHandler);
-            acceptor.bind(new InetSocketAddress(port));
-            ((SocketSessionConfig) acceptor.getSessionConfig()).setTcpNoDelay(true);
-            PORT_CHANNEL_CACHED.put(port,channel);
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) {
+                            ch.pipeline()
+                                    .addLast("idle", new IdleStateHandler(60, 60, 0))
+                                    .addLast("decoder", new MaplePacketDecoderNetty(properties))
+                                    .addLast("encoder", new MaplePacketEncoderNetty(properties))
+                                    .addLast("handler", serverHandler);
+                        }
+                    })
+                    .childOption(ChannelOption.TCP_NODELAY, true);
+            serverChannel = b.bind(port).sync().channel();
+            PORT_CHANNEL_CACHED.put(port, channel);
 
             LOGGER.info("频道 {}: 绑定端口 {}: 服务器IP {}", channel, port, ip);
             eventSM.init();
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("Binding to port " + port + " failed (ch: " + getChannel() + ")" + e);
         }
     }
@@ -604,7 +616,7 @@ public final class ChannelServer implements Serializable {
         return INSTANCE_CACHED.size();
     }
 
-    public final MapleServerHandler getServerHandler() {
+    public final NettyMapleServerHandler getServerHandler() {
         return serverHandler;
     }
 
@@ -703,7 +715,20 @@ public final class ChannelServer implements Serializable {
 
         // getPlayerStorage().disconnectAll();
         LOGGER.debug("频道 " + this.channel + " 解除绑定端口...");
-        acceptor.unbind(new InetSocketAddress(port));
+        try {
+            if (serverChannel != null) {
+                serverChannel.close().sync();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            if (bossGroup != null) {
+                bossGroup.shutdownGracefully();
+            }
+            if (workerGroup != null) {
+                workerGroup.shutdownGracefully();
+            }
+        }
         INSTANCE_CACHED.remove(Integer.valueOf(this.channel));
         setFinishShutdown();
     }

@@ -21,6 +21,7 @@ import tools.data.input.GenericLittleEndianAccessor;
 import javax.inject.Inject;
 import java.util.concurrent.locks.Lock;
 
+@Deprecated
 public final class MaplePacketEncoder implements ProtocolEncoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MaplePacketEncoder.class);

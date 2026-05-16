@@ -792,15 +792,19 @@ public class MapleClient implements Serializable {
 
     public final void pongReceived() {
         lastPong = System.currentTimeMillis();
+        LOGGER.debug("[PONG] received, latency={}ms", getLatency());
     }
 
     public final void sendPing() {
         lastPing = System.currentTimeMillis();
+        LOGGER.debug("[PING] sending, player={}", player != null ? player.getName() : "null");
         session.write(LoginPacket.getPing());
 
         Timer.PING.schedule(() -> {
             try {
                 if (getLatency() < 0) {
+                    LOGGER.warn("[PING] 超时断开, player={}, lastPing={}, lastPong={}",
+                            player != null ? player.getName() : "null", lastPing, lastPong);
                     MapleClient.this.disconnect(true, false);
                     if (getSession().isConnected()) {
                         updateLoginState(LoginState.NOT_LOGIN, getSessionIPAddress());
@@ -808,6 +812,7 @@ public class MapleClient implements Serializable {
                     }
                 }
             } catch (final NullPointerException e) {
+                LOGGER.warn("[PING] NPE断开", e);
                 getSession().close();
                 // client already gone
             }

@@ -19,7 +19,7 @@ public enum Injectors {
     private final Injector injector = Guice.createInjector(
             ConfigurationModule.INSTANCE,
             DatabaseModule.INSTANCE,
-            MinaModule.INSTANCE
+            NettyModule.INSTANCE
     );
 
     /**

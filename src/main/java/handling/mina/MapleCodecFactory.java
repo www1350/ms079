@@ -7,6 +7,7 @@ import org.apache.mina.filter.codec.ProtocolEncoder;
 
 import javax.inject.Inject;
 
+@Deprecated
 public final class MapleCodecFactory implements ProtocolCodecFactory {
 
     private final MaplePacketEncoder encoder;

@@ -61,7 +61,7 @@ echo "  旧进程已清理"
 # ============================================================
 echo ""
 echo ">>> [2/4] 编译打包..."
-mvn clean package -DskipTests -q
+mvn clean package -DskipTests
 echo "  打包完成"
 
 # ============================================================
@@ -71,6 +71,21 @@ echo ""
 echo ">>> [3/4] 准备运行环境..."
 mkdir -p "$LOG_DIR"
 
+# 解压分发包到 target/runtime，获取完整 lib/（含 Netty 等所有依赖）
+RUNTIME_DIR="$HOME/target/runtime"
+rm -rf "$RUNTIME_DIR"
+mkdir -p "$RUNTIME_DIR"
+DIST_ZIP="$HOME/target/ms079-1.0-SNAPSHOT-dist.zip"
+echo "  解压分发包..."
+unzip -qo "$DIST_ZIP" -d "$RUNTIME_DIR"
+
+# 复制 wz 资源目录（分发包里已有，但确保最新）
+if [ -d "$HOME/wz" ]; then
+    cp -r "$HOME/wz" "$RUNTIME_DIR/wz" 2>/dev/null || true
+fi
+
+echo "  运行环境就绪: $RUNTIME_DIR"
+
 # ============================================================
 # [4/4] 启动服务端
 # ============================================================
@@ -78,7 +93,7 @@ echo ""
 echo ">>> [4/4] 启动服务端 ($MODE 模式)..."
 
 JAVA_OPTS="-server -Dwzpath=wz"
-nohup java $JAVA_OPTS -cp "target/ms079.jar;lib/*" $MAIN_CLASS \
+java $JAVA_OPTS -cp "target/runtime/ms079.jar;target/runtime/lib/*" $MAIN_CLASS \
     > "$LOG_DIR/server.log" 2>&1 &
 
 NEW_PID=$!

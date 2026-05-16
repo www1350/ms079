@@ -60,6 +60,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
+@Deprecated
 public final class MapleServerHandler extends IoHandlerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MapleServerHandler.class);
@@ -463,7 +464,7 @@ public final class MapleServerHandler extends IoHandlerAdapter {
 //                    if (Log_Packets) {
 //                        log(slea, recv, client, session);
 //                    }
-                    handlePacket(recv, slea, client, cs);
+                    handlePacket(recv, slea, client, cs, handler);
 
                     //处理完数据包后记录。你会明白为什么=]
 //                    FileWriter fw = isLoggedIP(session);
@@ -515,8 +516,8 @@ public final class MapleServerHandler extends IoHandlerAdapter {
         super.sessionIdle(session, status);
     }
 
-    public void handlePacket(RecvPacketOpcode header, SeekableLittleEndianAccessor slea,
-                             MapleClient client, boolean cs) {
+    public static void handlePacket(RecvPacketOpcode header, SeekableLittleEndianAccessor slea,
+                                    MapleClient client, boolean cs, CharLoginHandler handler) {
         //LOGGER.debug(header);
         switch (header) {
             case PONG:

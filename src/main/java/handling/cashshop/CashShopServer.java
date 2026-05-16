@@ -1,21 +1,24 @@
 package handling.cashshop;
 
 import com.github.mrzhqiang.maplestory.config.ServerProperties;
-import handling.MapleServerHandler;
 import handling.channel.PlayerStorage;
-import handling.mina.MapleCodecFactory;
-import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.buffer.SimpleBufferAllocator;
-import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.SocketSessionConfig;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import handling.netty.MaplePacketDecoderNetty;
+import handling.netty.MaplePacketEncoderNetty;
+import handling.netty.NettyMapleServerHandler;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,18 +30,19 @@ public final class CashShopServer {
     private static String IP;
 
     private final ServerProperties properties;
-    private final MapleCodecFactory factory;
-    private final MapleServerHandler serverHandler;
+    private final NettyMapleServerHandler serverHandler;
 
     private static PlayerStorage players, playersMTS;
     private static boolean finishedShutdown = false;
 
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
+    private Channel serverChannel;
+
     @Inject
-    public CashShopServer(ServerProperties properties, MapleCodecFactory factory, MapleServerHandler handler) {
+    public CashShopServer(ServerProperties properties, NettyMapleServerHandler serverHandler) {
         this.properties = properties;
-        this.factory = factory;
-        this.serverHandler = handler;
-//        this.serverHandler.setCs(true);
+        this.serverHandler = serverHandler;
     }
 
     public void start() {
@@ -46,20 +50,29 @@ public final class CashShopServer {
         int port = properties.getMallPort();
         IP = address + ":" + port;
 
-        IoBuffer.setUseDirectBuffer(false);
-        IoBuffer.setAllocator(new SimpleBufferAllocator());
-        // todo refactor as netty
-        IoAcceptor acceptor = new NioSocketAcceptor();
-        acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(factory));
+        bossGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
 
-        ((SocketSessionConfig) acceptor.getSessionConfig()).setTcpNoDelay(true);
         players = new PlayerStorage(-10);
         playersMTS = new PlayerStorage(-20);
 
         try {
-            acceptor.setHandler(serverHandler);
-            acceptor.bind(new InetSocketAddress(port));
-            PORT_CS_CACHED.put(port,true);
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) {
+                            ch.pipeline()
+                                    .addLast("idle", new IdleStateHandler(60, 60, 0))
+                                    .addLast("decoder", new MaplePacketDecoderNetty(properties))
+                                    .addLast("encoder", new MaplePacketEncoderNetty(properties))
+                                    .addLast("handler", serverHandler);
+                        }
+                    })
+                    .childOption(ChannelOption.TCP_NODELAY, true);
+            serverChannel = b.bind(port).sync().channel();
+            PORT_CS_CACHED.put(port, true);
             LOGGER.info("商城服务器绑定端口: {}", port);
         } catch (Exception e) {
             LOGGER.error("Binding to port " + port + " failed", e);
@@ -71,7 +84,7 @@ public final class CashShopServer {
     private static final Map<Integer, Boolean> PORT_CS_CACHED = new ConcurrentHashMap<>();
 
     public static boolean getCsByPort(Integer port) {
-        return PORT_CS_CACHED.getOrDefault(port,false);
+        return PORT_CS_CACHED.getOrDefault(port, false);
     }
 
     public static String getIP() {
@@ -92,10 +105,7 @@ public final class CashShopServer {
         }
         LOGGER.info("正在断开商城内玩家...");
         players.disconnectAll();
-        //playersMTS.disconnectAll();
-        // MTSStorage.getInstance().saveBuyNow(true);
         LOGGER.info("正在关闭商城伺服器...");
-        //acceptor.unbindAll();
         finishedShutdown = true;
     }
 

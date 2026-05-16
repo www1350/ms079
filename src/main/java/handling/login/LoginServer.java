@@ -1,16 +1,7 @@
 package handling.login;
 
 import com.github.mrzhqiang.maplestory.config.ServerProperties;
-import com.github.mrzhqiang.maplestory.di.Injectors;
 import com.google.common.collect.Maps;
-import handling.MapleServerHandler;
-import handling.mina.MapleCodecFactory;
-import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.buffer.SimpleBufferAllocator;
-import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.SocketSessionConfig;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.apache.mina.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +9,6 @@ import tools.Triple;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -85,24 +74,13 @@ public final class LoginServer {
         load.remove(channel);
     }
 
+    /**
+     * @deprecated Replaced by {@link com.github.mrzhqiang.maplestory.auth.AuthenticationServer}
+     *             which uses Netty instead of MINA.
+     */
+    @Deprecated
     public static void run_startup_configurations() {
-        // todo guice DI
-        IoBuffer.setUseDirectBuffer(false);
-        IoBuffer.setAllocator(new SimpleBufferAllocator());
-        IoAcceptor acceptor = new NioSocketAcceptor();
-        acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(Injectors.get(MapleCodecFactory.class)));
-        acceptor.setHandler(Injectors.get(MapleServerHandler.class));
-        //acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 30);
-        ((SocketSessionConfig) acceptor.getSessionConfig()).setTcpNoDelay(true);
-
-        ServerProperties properties = Injectors.get(ServerProperties.class);
-        int port = properties.getLoginPort();
-        try {
-            acceptor.bind(new InetSocketAddress(port));
-            LOGGER.info("登录器服务器绑定端口：" + port);
-        } catch (IOException e) {
-            LOGGER.error("绑定到端口 " + port + " 失败！", e);
-        }
+        // No-op: Netty-based AuthenticationServer handles login server startup now.
     }
 
     public void start() {
