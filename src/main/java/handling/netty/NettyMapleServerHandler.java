@@ -65,6 +65,7 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+        LOGGER.info("[ACTIVE] channelActive fired, remote={}", ctx.channel().remoteAddress());
         InetSocketAddress remote = (InetSocketAddress) ctx.channel().remoteAddress();
         String address = remote.getAddress().getHostAddress();
         int port = ((InetSocketAddress) ctx.channel().localAddress()).getPort();
@@ -147,6 +148,12 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
         ctx.channel().attr(MaplePacketDecoderNetty.CLIENT_KEY).set(client);
         session.setAttribute(MapleClient.CLIENT_KEY, client);
 
+        // Diagnostic heartbeat — logs every 10s on the event loop.
+        // If this stops, the event loop is blocked/deadlocked.
+        ctx.channel().eventLoop().scheduleAtFixedRate(() -> {
+            LOGGER.info("[HEARTBEAT] eventLoop alive, channel={}, address={}", channel, address);
+        }, 10, 10, java.util.concurrent.TimeUnit.SECONDS);
+
         StringBuilder sb = new StringBuilder();
         if (channel > -1) {
             sb.append("[频道服务器] 频道 ").append(channel).append(" : ");
@@ -184,12 +191,17 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
                 } else {
                     sb.append("[登录服务器]");
                 }
+                LOGGER.warn("{} Channel closed - address={} cs={} channel={} player={}",
+                        sb.toString(), client.getSession().getRemoteAddress(), cs, channel,
+                        client.getPlayer() != null ? client.getPlayer().getName() : "null");
                 CLIENT_PACKET_LOGGER.info("{} Channel closed {} cs {} channel {}",
                         sb.toString(), client.getSession().getRemoteAddress(), cs, channel);
                 client.disconnect(true, cs);
             } finally {
                 ctx.channel().attr(MaplePacketDecoderNetty.CLIENT_KEY).set(null);
             }
+        } else {
+            LOGGER.warn("Channel closed with no client - address={}", ctx.channel().remoteAddress());
         }
         super.channelInactive(ctx);
     }
@@ -244,7 +256,9 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
                         + tools.HexTool.toStringFromAscii(message);
                 LOGGER.debug(sb);
             }
-        } catch (RejectedExecutionException ignored) {
+        } catch (RejectedExecutionException ree) {
+            LOGGER.warn("[CHANNEL_READ] RejectedExecutionException - actor likely shutdown. address={}",
+                    ctx.channel().remoteAddress(), ree);
         } catch (Exception e) {
             FileoutputUtil.outputFileError(FileoutputUtil.PacketEx_Log, e);
             LOGGER.error("处理消息时出错", e);
@@ -285,10 +299,13 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        MapleClient client = ctx.channel().attr(MaplePacketDecoderNetty.CLIENT_KEY).get();
+        String playerInfo = client != null && client.getPlayer() != null
+                ? client.getPlayer().getName() : "null";
         if (cause instanceof java.net.SocketException) {
-            LOGGER.debug("客户端连接重置", cause);
+            LOGGER.warn("客户端连接重置, address={}, player={}", ctx.channel().remoteAddress(), playerInfo, cause);
         } else {
-            LOGGER.error("连接出现异常", cause);
+            LOGGER.error("连接出现异常, address={}, player={}", ctx.channel().remoteAddress(), playerInfo, cause);
         }
         ctx.close();
     }

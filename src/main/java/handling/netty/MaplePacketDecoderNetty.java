@@ -47,6 +47,9 @@ public final class MaplePacketDecoderNetty extends ByteToMessageDecoder {
             if (in.readableBytes() >= 4) {
                 int packetHeader = in.readInt();
                 if (!client.getReceiveCrypto().checkPacket(packetHeader)) {
+                    LOGGER.warn("[DECODE] checkPacket failed, closing channel. address={}, player={}",
+                            ctx.channel().remoteAddress(),
+                            client.getPlayer() != null ? client.getPlayer().getName() : "null");
                     ctx.close();
                     return;
                 }
