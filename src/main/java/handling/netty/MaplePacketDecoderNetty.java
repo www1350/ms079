@@ -18,6 +18,7 @@ import tools.data.input.ByteArrayByteStream;
 import tools.data.input.GenericLittleEndianAccessor;
 
 import javax.inject.Inject;
+import java.nio.ByteOrder;
 import java.util.List;
 
 public final class MaplePacketDecoderNetty extends ByteToMessageDecoder {
@@ -49,6 +50,9 @@ public final class MaplePacketDecoderNetty extends ByteToMessageDecoder {
             state = new DecoderState();
             ctx.channel().attr(DECODER_STATE_KEY).set(state);
         }
+
+        // ✅ 修复：设置 ByteBuf 为小端序（MapleStory 协议要求）
+        in = in.order(ByteOrder.LITTLE_ENDIAN);
 
         if (state.packetlength == -1) {
             if (in.readableBytes() >= 4) {
