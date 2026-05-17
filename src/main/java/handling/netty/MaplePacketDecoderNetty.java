@@ -23,6 +23,7 @@ import java.util.List;
 public final class MaplePacketDecoderNetty extends ByteToMessageDecoder {
 
     public static final AttributeKey<MapleClient> CLIENT_KEY = AttributeKey.valueOf("CLIENT");
+    private static final AttributeKey<DecoderState> DECODER_STATE_KEY = AttributeKey.valueOf("DECODER_STATE");
 
     public static class DecoderState {
         public int packetlength = -1;
@@ -32,7 +33,6 @@ public final class MaplePacketDecoderNetty extends ByteToMessageDecoder {
     private static final Logger CLIENT_PACKET_LOGGER = LoggerFactory.getLogger("CLIENT_PACKET");
 
     private final ServerProperties properties;
-    private final DecoderState state = new DecoderState();
 
     @Inject
     public MaplePacketDecoderNetty(ServerProperties properties) {
@@ -42,6 +42,13 @@ public final class MaplePacketDecoderNetty extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         MapleClient client = ctx.channel().attr(CLIENT_KEY).get();
+        
+        // ✅ 修复：从 Channel 属性中获取 DecoderState，每个连接独立
+        DecoderState state = ctx.channel().attr(DECODER_STATE_KEY).get();
+        if (state == null) {
+            state = new DecoderState();
+            ctx.channel().attr(DECODER_STATE_KEY).set(state);
+        }
 
         if (state.packetlength == -1) {
             if (in.readableBytes() >= 4) {
