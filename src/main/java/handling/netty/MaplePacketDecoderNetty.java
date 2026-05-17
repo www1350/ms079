@@ -51,12 +51,23 @@ public final class MaplePacketDecoderNetty extends ByteToMessageDecoder {
             ctx.channel().attr(DECODER_STATE_KEY).set(state);
         }
 
-        // ✅ 修复：设置 ByteBuf 为小端序（MapleStory 协议要求）
-        in = in.order(ByteOrder.LITTLE_ENDIAN);
-
         if (state.packetlength == -1) {
             if (in.readableBytes() >= 4) {
-                int packetHeader = in.readInt();
+                // ✅ 诊断日志：原始数据包内容
+                byte[] rawHeader = new byte[4];
+                in.getBytes(in.readerIndex(), rawHeader);
+                LOGGER.info("[DECODE] 接收到数据包头 - raw={}, readableBytes={}", 
+                        tools.HexTool.toString(rawHeader),
+                        in.readableBytes());
+                
+                // ✅ 修复：使用 readIntLE() 读取小端序整数
+                int packetHeader = in.readIntLE();
+                
+                // ✅ 诊断日志：解析后的 header 值
+                LOGGER.info("[DECODE] 解析包头 - packetHeader=0x{}, checkPacket结果={}", 
+                        Integer.toHexString(packetHeader).toUpperCase(),
+                        client.getReceiveCrypto().checkPacket(packetHeader));
+                
                 if (!client.getReceiveCrypto().checkPacket(packetHeader)) {
                     LOGGER.warn("[DECODE] checkPacket failed, closing channel. address={}, player={}",
                             ctx.channel().remoteAddress(),
@@ -65,17 +76,32 @@ public final class MaplePacketDecoderNetty extends ByteToMessageDecoder {
                     return;
                 }
                 state.packetlength = MapleAESOFB.getPacketLength(packetHeader);
+                LOGGER.info("[DECODE] 包长度计算完成 - packetlength={}", state.packetlength);
             } else {
                 return;
             }
         }
         if (in.readableBytes() >= state.packetlength) {
+            LOGGER.info("[DECODE] 开始读取包体 - packetlength={}, readableBytes={}", 
+                    state.packetlength, in.readableBytes());
+            
             byte[] decryptedPacket = new byte[state.packetlength];
             in.readBytes(decryptedPacket, 0, state.packetlength);
             state.packetlength = -1;
 
+            // ✅ 诊断日志：解密前的数据
+            LOGGER.debug("[DECODE] 解密前数据 - length={}, data={}", 
+                    decryptedPacket.length,
+                    decryptedPacket.length <= 32 ? tools.HexTool.toString(decryptedPacket) : tools.HexTool.toString(decryptedPacket));
+            
             client.getReceiveCrypto().crypt(decryptedPacket);
             MapleCustomEncryption.decryptData(decryptedPacket);
+            
+            // ✅ 诊断日志：解密后的数据
+            int opcode = readFirstShort(decryptedPacket);
+            String opcodeStr = Integer.toHexString(opcode).toUpperCase();
+            LOGGER.info("[DECODE] 解密后数据 - opcode=0x{}, length={}", opcodeStr, decryptedPacket.length);
+            
             out.add(decryptedPacket);
 
             if (properties.isPacketLogger()) {
