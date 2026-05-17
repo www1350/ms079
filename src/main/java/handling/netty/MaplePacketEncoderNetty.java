@@ -18,7 +18,6 @@ import tools.data.input.ByteArrayByteStream;
 import tools.data.input.GenericLittleEndianAccessor;
 
 import javax.inject.Inject;
-import java.nio.ByteOrder;
 import java.util.concurrent.locks.Lock;
 
 public final class MaplePacketEncoderNetty extends MessageToByteEncoder<MaplePacket> {
@@ -35,9 +34,6 @@ public final class MaplePacketEncoderNetty extends MessageToByteEncoder<MaplePac
 
     @Override
     protected void encode(ChannelHandlerContext ctx, MaplePacket msg, ByteBuf out) {
-        // ✅ 修复：设置 ByteBuf 为小端序（MapleStory 协议要求）
-        out = out.order(ByteOrder.LITTLE_ENDIAN);
-        
         MapleClient client = ctx.channel().attr(MaplePacketDecoderNetty.CLIENT_KEY).get();
         if (client != null) {
             MapleAESOFB sendCrypto = client.getSendCrypto();
