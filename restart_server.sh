@@ -93,8 +93,9 @@ echo ""
 echo ">>> [4/4] 启动服务端 ($MODE 模式)..."
 
 JAVA_OPTS="-server -Dwzpath=wz"
-java $JAVA_OPTS -cp "target/runtime/ms079.jar;target/runtime/lib/*" $MAIN_CLASS \
+nohup java $JAVA_OPTS -cp "target/runtime/ms079.jar;target/runtime/lib/*" $MAIN_CLASS \
     > "$LOG_DIR/server.log" 2>&1 &
+disown
 
 NEW_PID=$!
 echo "$NEW_PID" > "$PID_FILE"
