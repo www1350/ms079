@@ -283,13 +283,9 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
             IdleStateEvent e = (IdleStateEvent) evt;
             if (e.state() == IdleState.READER_IDLE || e.state() == IdleState.WRITER_IDLE) {
                 MapleClient client = ctx.channel().attr(MaplePacketDecoderNetty.CLIENT_KEY).get();
-                if (client != null && client.getPlayer() != null) {
-                    LOGGER.info("[IDLE] 发送Ping, 地址={}, player={}",
-                            ctx.channel().remoteAddress(), client.getPlayer().getName());
+                if (client != null) {
                     client.sendPing();
                 } else {
-                    LOGGER.info("[IDLE] 关闭空闲连接, 地址={}, client={}",
-                            ctx.channel().remoteAddress(), client);
                     ctx.close();
                     return;
                 }
