@@ -34,5 +34,11 @@ public final class MapleStoryApplication {
         Stopwatch stopwatch = Stopwatch.createStarted();
         starter.startServer();
         LOGGER.info("服务端启动完毕！总计耗时：{}，现在可以进入游戏了...", stopwatch.stop());
+        // 阻塞主线程，防止 JVM 退出（MINA 的 NioSocketAcceptor 会自动创建非守护线程保活，Netty 不一定）
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
