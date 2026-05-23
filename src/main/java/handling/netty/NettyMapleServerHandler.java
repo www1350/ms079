@@ -130,12 +130,6 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
         byte[] ivRecv = ServerConstants.Use_Fixed_IV ? new byte[]{9, 0, 0x5, 0x5F} : serverRecv;
         byte[] ivSend = ServerConstants.Use_Fixed_IV ? new byte[]{1, 0x5F, 4, 0x3F} : serverSend;
 
-        // ✅ 诊断日志：IV 初始化值
-        LOGGER.info("[HANDSHAKE] IV初始化 - sendIv={}, recvIv={}, Use_Fixed_IV={}", 
-                tools.HexTool.toString(ivSend), 
-                tools.HexTool.toString(ivRecv), 
-                ServerConstants.Use_Fixed_IV);
-
         NettySession session = new NettySession(ctx.channel());
         MapleClient client = new MapleClient(
                 new MapleAESOFB(ivSend, (short) (0xFFFF - ServerConstants.MAPLE_VERSION)),
@@ -150,21 +144,11 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
                 ServerConstants.Use_Fixed_IV ? serverSend : ivSend,
                 ServerConstants.Use_Fixed_IV ? serverRecv : ivRecv).getBytes();
         
-        // ✅ 诊断日志：握手包内容
-        LOGGER.info("[HANDSHAKE] 发送握手包 - 长度={}, 内容={}", 
-                helloBytes.length, 
-                tools.HexTool.toString(helloBytes));
-        
         ctx.channel().writeAndFlush(Unpooled.wrappedBuffer(helloBytes));
 
         ctx.channel().attr(MaplePacketDecoderNetty.CLIENT_KEY).set(client);
         session.setAttribute(MapleClient.CLIENT_KEY, client);
 
-        // Diagnostic heartbeat — logs every 10s on the event loop.
-        // If this stops, the event loop is blocked/deadlocked.
-        ctx.channel().eventLoop().scheduleAtFixedRate(() -> {
-            LOGGER.info("[HEARTBEAT] eventLoop alive, channel={}, address={}", channel, address);
-        }, 10, 10, java.util.concurrent.TimeUnit.SECONDS);
 
         StringBuilder sb = new StringBuilder();
         if (channel > -1) {
