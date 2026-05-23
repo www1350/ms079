@@ -142,8 +142,8 @@ public final class ChannelServer implements Serializable {
 
         ip = ServerConstants.properties.getAddress() + ":" + port;
 
-        bossGroup = new NioEventLoopGroup(1);
-        workerGroup = new NioEventLoopGroup();
+        bossGroup = new NioEventLoopGroup(1,r -> { Thread t = new Thread(r); t.setDaemon(false); return t; });
+        workerGroup = new NioEventLoopGroup(0,r -> { Thread t = new Thread(r); t.setDaemon(false); return t; });
 
         players = new PlayerStorage(channel);
         loadEvents();
