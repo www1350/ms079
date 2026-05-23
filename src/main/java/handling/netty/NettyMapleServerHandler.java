@@ -77,8 +77,8 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
         ctx.channel().attr(ChannelAttributes.CS).set(cs);
 
         if (blockedIPs.contains(address)) {
-            ctx.close();
-            return;
+            // Note: disabled close to match original MINA behavior (was commented out)
+            LOGGER.debug("Blocked IP detected but allowing connection (legacy behavior): {}", address);
         }
         Pair<Long, Byte> track = tracker.get(address);
         byte count;
@@ -108,9 +108,9 @@ public final class NettyMapleServerHandler extends ChannelDuplexHandler {
                 ctx.close();
                 return;
             }
+            // Note: IPAuth check disabled to match original MINA behavior
             if (!LoginServer.containsIPAuth(address)) {
-                ctx.close();
-                return;
+                LOGGER.debug("IPAuth not found for address={}, allowing connection (legacy behavior)", address);
             }
         } else if (cs) {
             if (CashShopServer.isShutdown()) {
