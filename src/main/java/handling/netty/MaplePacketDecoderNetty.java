@@ -60,8 +60,8 @@ public final class MaplePacketDecoderNetty extends ByteToMessageDecoder {
                         tools.HexTool.toString(rawHeader),
                         in.readableBytes());
                 
-                // ✅ 修复：使用 readIntLE() 读取小端序整数
-                int packetHeader = in.readIntLE();
+                // 使用 readInt() 读取大端序整数，与 MINA IoBuffer.getInt() 行为一致
+                int packetHeader = in.readInt();
                 
                 // ✅ 诊断日志：解析后的 header 值
                 LOGGER.info("[DECODE] 解析包头 - packetHeader=0x{}, checkPacket结果={}", 
